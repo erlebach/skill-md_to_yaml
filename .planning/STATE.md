@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-dsl-schema-02-PLAN.md
-last_updated: "2026-03-22T04:09:39.648Z"
+stopped_at: Phase 01.1 context gathered
+last_updated: "2026-03-22T11:42:28.524Z"
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 1
   total_plans: 2
   completed_plans: 2
@@ -51,6 +51,10 @@ Plan: 2 of 2 (all plans complete)
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- Phase 01.1 inserted after Phase 01: Real-World DSL Validation (URGENT)
+
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
@@ -77,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T04:05:22Z
-Stopped at: Completed 01-dsl-schema-02-PLAN.md
-Resume file: None
+Last session: 2026-03-22T11:42:28.521Z
+Stopped at: Phase 01.1 context gathered
+Resume file: .planning/phases/01.1-real-world-dsl-validation/01.1-CONTEXT.md
