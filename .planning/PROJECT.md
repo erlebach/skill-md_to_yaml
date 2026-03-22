@@ -12,7 +12,7 @@ The YAML DSL must be simple enough that an LLM generates it reliably with high l
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Define the YAML DSL schema (layout types, fields, sections, metadata) — Validated in Phase 01: dsl-schema
 
 ### Active
 
