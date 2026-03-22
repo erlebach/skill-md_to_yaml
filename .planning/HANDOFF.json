@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-03-22T00:18:54.190Z",
+  "phase": "init",
+  "phase_name": "project-initialization",
+  "phase_dir": ".planning",
+  "plan": 0,
+  "task": 0,
+  "total_tasks": 0,
+  "status": "paused",
+  "workflow_position": "new-project Step 6 (Research)",
+  "completed_steps": [
+    {"step": 1, "name": "Setup", "status": "done", "details": "Git init, GSD init"},
+    {"step": 2, "name": "Brownfield Offer", "status": "done", "details": "Greenfield detected, skipped"},
+    {"step": 3, "name": "Deep Questioning", "status": "done", "details": "Read Perplexity doc, discussed architecture"},
+    {"step": 4, "name": "Write PROJECT.md", "status": "done", "commit": "3a10da5"},
+    {"step": 5, "name": "Workflow Preferences", "status": "done", "commit": "24ae2d3"}
+  ],
+  "remaining_steps": [
+    {"step": 6, "name": "Research", "status": "not_started", "details": "Spawn 4 parallel researchers (stack, features, architecture, pitfalls)"},
+    {"step": 7, "name": "Define Requirements", "status": "not_started"},
+    {"step": 8, "name": "Create Roadmap", "status": "not_started"},
+    {"step": 9, "name": "Done", "status": "not_started"}
+  ],
+  "blockers": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {"decision": "YAML as DSL format with ~15 layout primitives", "rationale": "Simple for LLM, fewer tokens, deterministic compilation", "phase": "init"},
+    {"decision": "No PPTX support", "rationale": "HTML-only simplifies architecture", "phase": "init"},
+    {"decision": "Phase 1 should analyze existing HTML decks to derive primitives", "rationale": "Empirical approach before committing to schema", "phase": "init"},
+    {"decision": "Python + Jinja2 compiler, KaTeX for math", "rationale": "Deterministic rendering, already used in existing decks", "phase": "init"}
+  ],
+  "uncommitted_files": [],
+  "next_action": "Resume /gsd:new-project from Step 6: spawn 4 parallel research agents (stack, features, architecture, pitfalls) for the slide DSL domain",
+  "context_notes": "Project is 'Slide DSL: YAML-to-HTML Presentation Compiler'. User has ~20 existing HTML decks in ../n8n_to_python/output_html_files/ that serve as ground truth. Config: yolo mode, coarse granularity, parallel execution, balanced models, all workflow agents enabled. The domain is a YAML-based slide DSL that replaces direct HTML generation by LLMs — like 'Beamer for HTML'."
+}
