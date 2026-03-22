@@ -42,9 +42,9 @@ $$w \rightarrow \text{angles}(\theta) \rightarrow U_w(\theta) \in U(2^n)$$
 
 Each token `w` is mapped to rotation angles theta, which parameterize a unitary gate `U_w` in the unitary group of dimension 2 to the n. Because unitaries preserve norm and are invertible, the embedding inherently maintains quantum coherence.
 ---
-layout: diagram
+layout: two-column
 title: "Mathematics: Linear Combination of Unitaries"
-alt_text: "LCU quantum circuit with two horizontal wires. Top wire (Ancilla, initialized to |0>) has gate B (blue, Prepare alpha), then control dots connecting to controlled-U gates on the bottom wire, then gate B-dagger (orange, Unprepare), then measurement M. Bottom wire (System, initialized to |psi>) has green boxes U_w1, U_w2, etc. as controlled operations. Post-selection on ancilla zero state yields mixed operator A applied to psi."
+proportion: 50/50
 ---
 In classical attention, the output is a weighted sum of value vectors. Quixer achieves analogous mixing using the LCU primitive:
 
@@ -55,6 +55,12 @@ Key properties:
 - The coefficients `alpha_j` are **complex-valued** and trainable — encoding both magnitude and phase (interference patterns).
 - The result `A` is generally **not unitary** — it is a general linear operator, essential for expressivity.
 - LCU is implemented using ancilla qubits that prepare a superposition state encoding the coefficients.
+
+<!-- split -->
+
+**LCU circuit:**
+
+Ancilla register (top wire, initialized to |0>) receives gate B (Prepare alpha) to create a superposition encoding the complex coefficients. Controlled-U gates (U_w1, U_w2, ...) apply each token's unitary to the System register (bottom wire, |psi>) conditioned on the ancilla state. Gate B-dagger (Unprepare) uncomputes the ancilla. Measurement M post-selects on the zero state. When post-selection succeeds, the system register contains A|psi>.
 ---
 layout: content
 title: "Mathematics: QSVT Non-linearity"
