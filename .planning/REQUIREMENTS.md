@@ -36,13 +36,13 @@
 
 ### Rich Content
 
-- [ ] **RICH-01**: KaTeX math rendering via CDN auto-render (supports `$$...$$` and `$...$` blocks)
-- [ ] **RICH-02**: Code blocks with syntax highlighting (Pygments or Highlight.js, language specified in YAML)
-- [ ] **RICH-03**: JPEG/PNG images embedded as base64 or referenced by path, with required alt text
-- [ ] **RICH-04**: SVG direct embedding with ADA wrapper (`<title>`, `<desc>`, `role="img"`, `aria-labelledby`)
-- [ ] **RICH-05**: Inline Markdown rendering within slide content fields (bold, italic, lists, links)
-- [ ] **RICH-06**: Mermaid diagrams compiled to static inline SVG with ADA attributes
-- [ ] **RICH-07**: Tables with accessible markup (`<caption>`, `<th scope="col|row">`, proper header associations)
+- [x] **RICH-01**: KaTeX math rendering via CDN auto-render (supports `$$...$$` and `$...$` blocks)
+- [x] **RICH-02**: Code blocks with syntax highlighting (Pygments or Highlight.js, language specified in YAML)
+- [x] **RICH-03**: JPEG/PNG images embedded as base64 or referenced by path, with required alt text
+- [x] **RICH-04**: SVG direct embedding with ADA wrapper (`<title>`, `<desc>`, `role="img"`, `aria-labelledby`)
+- [x] **RICH-05**: Inline Markdown rendering within slide content fields (bold, italic, lists, links)
+- [x] **RICH-06**: Mermaid diagrams compiled to static inline SVG with ADA attributes
+- [x] **RICH-07**: Tables with accessible markup (`<caption>`, `<th scope="col|row">`, proper header associations)
 
 ### LLM Authoring
 
@@ -96,13 +96,13 @@
 | ADA-06 | Phase 2 | Complete |
 | ADA-07 | Phase 2 | Complete |
 | ADA-08 | Phase 2 | Complete |
-| RICH-01 | Phase 3 | Pending |
-| RICH-02 | Phase 3 | Pending |
-| RICH-03 | Phase 3 | Pending |
-| RICH-04 | Phase 3 | Pending |
-| RICH-05 | Phase 3 | Pending |
-| RICH-06 | Phase 3 | Pending |
-| RICH-07 | Phase 3 | Pending |
+| RICH-01 | Phase 3 | Complete |
+| RICH-02 | Phase 3 | Complete |
+| RICH-03 | Phase 3 | Complete |
+| RICH-04 | Phase 3 | Complete |
+| RICH-05 | Phase 3 | Complete |
+| RICH-06 | Phase 3 | Complete |
+| RICH-07 | Phase 3 | Complete |
 | LLM-01 | Phase 4 | Pending |
 | LLM-02 | Phase 4 | Pending |
 | LLM-03 | Phase 4 | Pending |

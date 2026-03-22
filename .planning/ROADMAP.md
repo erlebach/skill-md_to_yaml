@@ -74,7 +74,7 @@ Plans:
   3. A JPEG/PNG image slide embeds or references the image and renders with its alt text visible to screen readers
   4. A Mermaid diagram slide compiles to inline SVG with ADA title/desc/role attributes
   5. A table slide renders with `<caption>`, `<th scope>`, and correct header associations
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 03-01-PLAN.md — Renderer modules + schema updates + unit tests
@@ -102,5 +102,5 @@ Phases execute in numeric order: 1 -> 01.1 -> 2 -> 3 -> 4
 | 1. DSL Schema | 2/2 | Complete | 2026-03-22 |
 | 01.1. Real-World DSL Validation | 3/3 | Complete    | 2026-03-22 |
 | 2. Compiler Core + ADA | 2/5 | In Progress|  |
-| 3. Rich Content | 1/3 | In Progress|  |
+| 3. Rich Content | 2/3 | In Progress|  |
 | 4. LLM Skill + Validation | 0/TBD | Not started | - |
