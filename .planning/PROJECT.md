@@ -13,11 +13,11 @@ The YAML DSL must be simple enough that an LLM generates it reliably with high l
 ### Validated
 
 - [x] Define the YAML DSL schema (layout types, fields, sections, metadata) — Validated in Phase 01: dsl-schema
+- [x] Validate DSL against 5 real-world decks (92 slides) — no schema changes needed — Validated in Phase 01.1: real-world-dsl-validation
 
 ### Active
 
 - [ ] Analyze ~20 existing HTML decks to derive the definitive set of layout primitives
-- [ ] Define the YAML DSL schema (layout types, fields, sections, metadata)
 - [ ] Build Python compiler: YAML DSL → standalone ADA-compliant HTML
 - [ ] Handle LaTeX equations (compile to KaTeX/MathML in HTML)
 - [ ] Handle Mermaid diagrams (compile to inline SVG)
@@ -63,4 +63,4 @@ The YAML DSL must be simple enough that an LLM generates it reliably with high l
 | No PPTX support | Simplifies architecture significantly; HTML-only covers the use case | — Pending |
 
 ---
-*Last updated: 2026-03-21 after initialization*
+*Last updated: 2026-03-22 after Phase 01.1 completion — DSL validated against 5 real-world decks*
