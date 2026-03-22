@@ -1,0 +1,123 @@
+---
+title: Density-Based Clustering Methods
+author: Research Team
+date: 2026-03-22
+theme: dark
+font: IBM Plex Sans
+---
+
+---
+layout: title
+title: Density-Based Clustering
+subtitle: DBSCAN, OPTICS, and Beyond
+---
+
+---
+layout: hero
+title: Why Density-Based Methods?
+---
+Traditional partitioning methods like K-Means assume spherical clusters. Density-based methods discover clusters of **arbitrary shape** by identifying regions of high point density separated by low-density regions.
+
+---
+layout: content
+title: Core Concepts
+---
+- **Epsilon (ε)**: Radius defining the neighborhood of a point
+- **MinPts**: Minimum number of points required to form a dense region
+- **Core point**: Has ≥ MinPts neighbors within ε-radius
+- **Border point**: Within ε of a core point but fewer than MinPts neighbors
+
+---
+layout: diagram
+title: DBSCAN Point Classification
+alt_text: "Flowchart showing how DBSCAN classifies points as core, border, or noise based on epsilon and MinPts parameters"
+---
+graph TD
+  A[Input Point p] --> B{Count neighbors in ε-radius}
+  B --> C{≥ MinPts?}
+  C -->|Yes| D[Core Point]
+  C -->|No| E{Near a core point?}
+  E -->|Yes| F[Border Point]
+  E -->|No| G[Noise Point]
+
+---
+layout: two-column
+title: DBSCAN vs OPTICS
+proportion: 50/50
+left:
+  type: diagram
+  alt_text: "Diagram placeholder for left column"
+---
+**DBSCAN**: Fixed ε parameter, binary density threshold. Works well when clusters have similar density.
+
+<!-- split -->
+
+**OPTICS**: Variable density detection, produces reachability plot. Handles clusters with varying density levels.
+
+---
+layout: steps
+title: DBSCAN Algorithm Steps
+---
+1. **Initialize**: Mark all points as unvisited
+2. **Select Point**: Pick an unvisited point p
+3. **Expand Cluster**: If p is core, create cluster and add all density-reachable points
+4. **Repeat**: Continue until all points visited
+
+---
+layout: code
+title: DBSCAN Implementation
+language: python
+---
+```python
+from sklearn.cluster import DBSCAN
+import numpy as np
+
+X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
+clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+print(clustering.labels_)  # [-1, 0, 0, 1, 1, -1]
+```
+
+---
+layout: comparison
+title: Method Comparison
+---
+**Advantages**
+- No need to specify number of clusters
+- Finds arbitrarily shaped clusters
+- Robust to outliers (labels them as noise)
+- Deterministic results
+
+<!-- split -->
+
+**Limitations**
+- Sensitive to ε and MinPts parameters
+- Struggles with varying density clusters
+- High dimensionality reduces effectiveness
+- Not suitable for very large datasets without indexing
+
+---
+layout: table
+title: Performance Benchmarks
+caption: "Clustering accuracy on synthetic datasets"
+headers: [Method, Moons, Circles, Blobs, Aniso]
+rows:
+  - [DBSCAN, "98.5%", "99.1%", "95.2%", "97.3%"]
+  - [K-Means, "72.1%", "51.3%", "99.5%", "68.4%"]
+  - [OPTICS, "97.8%", "98.7%", "94.1%", "96.9%"]
+---
+
+---
+layout: quote
+title: Key Insight
+attribution: "Ester et al., KDD 1996"
+---
+A cluster is defined as a maximal set of density-connected points.
+
+---
+layout: summary
+title: Key Takeaways
+---
+- Density-based clustering discovers arbitrary-shape clusters without specifying k
+- DBSCAN is the foundational algorithm; OPTICS extends it for varying densities
+- Parameter selection (ε, MinPts) is critical — use k-distance graphs for guidance
+- Best suited for spatial data and datasets with noise
