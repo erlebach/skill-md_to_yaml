@@ -56,7 +56,7 @@ The YAML DSL must be simple enough that an LLM generates it reliably with high l
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| YAML as DSL format | Easy to parse, familiar syntax, minimal nesting, LLM-friendly | — Pending |
+| Hybrid YAML+Markdown DSL | YAML frontmatter per slide (layout, metadata, ADA fields) + Markdown content body. Schema validation on structure, natural authoring for content. Reduces LLM drift vs pure YAML discriminated unions. | ✓ Good |
 | ~15 layout primitives | Balance expressiveness vs. LLM cognitive load; derive from existing deck analysis | — Pending |
 | Python + Jinja2 for compiler | Deterministic, maintainable, handles MathML/SVG/Mermaid processing | — Pending |
 | KaTeX over MathJax | Already used in existing decks, faster rendering | — Pending |
