@@ -1,0 +1,94 @@
+---
+title: Test Deck
+author: Test Author
+date: 2026-01-15
+theme: dark
+---
+---
+layout: title
+title: Welcome to the Test Deck
+subtitle: A comprehensive example
+author: Test Author
+---
+---
+layout: hero
+title: Section One
+description: Introduction to concepts
+---
+---
+layout: content
+title: Key Points
+---
+Here are the main points:
+
+- First point
+- Second point
+---
+layout: divider
+title: Part Two
+---
+---
+layout: figure
+title: Architecture Diagram
+src: architecture.png
+alt_text: System architecture showing three microservices connected via message queue
+---
+---
+layout: diagram
+title: Data Flow
+alt_text: Sequence diagram showing request flow from client to server
+---
+```mermaid
+sequenceDiagram
+    Client->>Server: Request
+    Server->>DB: Query
+    DB->>Server: Result
+```
+---
+layout: two-column
+title: Side by Side
+right:
+  type: figure
+  src: photo.png
+  alt_text: Example photograph
+---
+The left column has free text explaining the image on the right.
+---
+layout: quote
+title: Inspiration
+attribution: Grace Hopper
+---
+The most dangerous phrase in the language is "We've always done it this way."
+---
+layout: comparison
+title: Before and After
+---
+Old approach was manual
+
+<!-- split -->
+
+New approach is automated
+---
+layout: code
+title: Hello World
+language: python
+---
+```python
+def hello():
+    print("Hello, World!")
+```
+---
+layout: steps
+title: Getting Started
+---
+1. Install dependencies
+2. Configure settings
+3. Run the application
+---
+layout: summary
+title: Key Takeaways
+notes: Remember to emphasize point 2
+---
+- Point one recap
+- Point two recap
+- Point three recap

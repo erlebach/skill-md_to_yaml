@@ -1,0 +1,43 @@
+---
+title: Two Column Tests
+---
+---
+layout: two-column
+title: Text and Image
+right:
+  type: figure
+  src: photo.png
+  alt_text: A photo
+---
+Left side is free text.
+---
+layout: two-column
+title: Both Text
+---
+Left text content
+
+<!-- split -->
+
+Right text content
+---
+layout: two-column
+title: Both Structured
+left:
+  type: figure
+  src: left.png
+  alt_text: Left image
+right:
+  type: diagram
+  alt_text: Right diagram
+  source: "graph TD; A-->B"
+---
+---
+layout: two-column
+title: Narrow Wide
+proportion: 40/60
+left:
+  type: figure
+  src: small.png
+  alt_text: Small image
+---
+Wide text column on the right side.
