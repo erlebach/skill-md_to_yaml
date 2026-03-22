@@ -1,0 +1,32 @@
+---
+title: Table Test Deck
+theme: dark
+---
+---
+layout: title
+title: Table Test Deck
+subtitle: Accessible HTML tables
+---
+---
+layout: table
+title: Algorithm Comparison
+caption: Big-O Complexity
+headers:
+  - Algorithm
+  - Time
+  - Space
+rows:
+  - [BFS, "O(V+E)", O(V)]
+  - [DFS, "O(V+E)", O(V)]
+  - [Dijkstra, "O(E log V)", O(V)]
+row_headers: true
+---
+---
+layout: table
+title: Simple Table
+headers:
+  - Name
+  - Score
+rows:
+  - [Alice, "95"]
+  - [Bob, "87"]

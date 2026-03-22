@@ -1,0 +1,25 @@
+---
+title: Math Test Deck
+theme: dark
+---
+---
+layout: title
+title: Math Test Deck
+subtitle: LaTeX rendering via MathML
+---
+---
+layout: content
+title: Display Math
+---
+Here are display math equations:
+
+$$E = mc^2$$
+
+$$\int_0^\infty e^{-x}\,dx = 1$$
+---
+layout: content
+title: Inline Math
+---
+The variable $\alpha$ relates to $\beta$ via $\alpha = 2\beta$.
+
+We can also write $x^2 + y^2 = r^2$ inline with text.

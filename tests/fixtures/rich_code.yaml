@@ -1,0 +1,39 @@
+---
+title: Code Test Deck
+theme: dark
+---
+---
+layout: title
+title: Code Test Deck
+subtitle: Syntax highlighting with Pygments
+---
+---
+layout: code
+title: Python Example
+language: python
+---
+```python
+def fibonacci(n):
+    """Return the nth Fibonacci number."""
+    if n <= 1:
+        return n
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+```
+---
+layout: code
+title: With Line Numbers
+language: javascript
+line_numbers: true
+---
+```javascript
+function factorial(n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+const result = factorial(5);
+console.log(`5! = ${result}`);
+```
