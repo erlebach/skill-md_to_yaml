@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-22T15:38:11.866Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-22T16:18:24.422Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 13
+  completed_plans: 11
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** YAML DSL simple enough for reliable LLM generation + Python compiler producing ADA-compliant HTML matching current /ada-slides-general quality
-**Current focus:** Phase 02 — compiler-core-ada
+**Current focus:** Phase 03 — rich-content
 
 ## Current Position
 
-Phase: 02 (compiler-core-ada) — EXECUTING
-Plan: 1 of 5
+Phase: 03 (rich-content) — EXECUTING
+Plan: 1 of 3
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Plan: 1 of 5
 | Phase 01.1-real-world-dsl-validation P03 | 25min | 2 tasks | 2 files |
 | Phase 02-compiler-core-ada P00 | 5 | 1 tasks | 3 files |
 | Phase 02 P02 | 8 | 2 tasks | 13 files |
+| Phase 03-rich-content P01 | 25 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ Recent decisions affecting current work:
 - [Phase 01.1-real-world-dsl-validation]: Summary slide used for Deck 2 wrap-up table (not divider) since summary accepts body content
 - [Phase 01.1-real-world-dsl-validation P03]: img-row multi-image slides mapped to content (images supplement text); figure only when single raster image IS the slide
 - [Phase 01.1-real-world-dsl-validation P03]: No schema changes required across all 5 real-world decks — 12 layout types sufficient
+- [Phase 03-rich-content]: Math extraction runs before Markdown rendering to prevent dollar-sign delimiter mangling
+- [Phase 03-rich-content]: bleach allowlist strips script/onclick from SVG; text node content preserved (harmless)
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T15:38:11.863Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-rich-content/03-CONTEXT.md
+Last session: 2026-03-22T16:18:14.994Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None
