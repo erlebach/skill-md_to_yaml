@@ -1,0 +1,3 @@
+<h2 id="slide-{{ loop.index }}-heading">{{ slide.title | e }}</h2>
+<pre><code class="language-{{ slide.language | e }}">{% if slide.body %}{{ slide.body | e }}{% endif %}</code></pre>
+{% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}

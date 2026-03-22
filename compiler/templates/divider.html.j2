@@ -1,0 +1,4 @@
+<div class="divider-slide">
+  <h2 id="slide-{{ loop.index }}-heading">{{ slide.title | e }}</h2>
+</div>
+{% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}

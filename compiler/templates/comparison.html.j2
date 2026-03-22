@@ -1,0 +1,9 @@
+<h2 id="slide-{{ loop.index }}-heading">{{ slide.title | e }}</h2>
+{% if slide.body %}
+{% set parts = slide.body.split('<!-- split -->', 1) %}
+<div class="two-col two-col-50-50">
+  <div class="col-left slide-body">{{ parts[0] | safe }}</div>
+  <div class="col-right slide-body">{% if parts | length > 1 %}{{ parts[1] | safe }}{% endif %}</div>
+</div>
+{% endif %}
+{% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}

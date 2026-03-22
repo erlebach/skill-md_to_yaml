@@ -1,0 +1,6 @@
+<h2 id="slide-{{ loop.index }}-heading">{{ slide.title | e }}</h2>
+<div class="figure-container">
+  <img src="{{ slide.src | e }}" alt="{{ slide.alt_text | e }}">
+</div>
+{% if slide.body %}<div class="slide-body">{{ slide.body | safe }}</div>{% endif %}
+{% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}

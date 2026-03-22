@@ -1,0 +1,4 @@
+<h1 id="slide-{{ loop.index }}-heading">{{ slide.title | e }}</h1>
+{% if slide.subtitle %}<p class="subtitle">{{ slide.subtitle | e }}</p>{% endif %}
+{% if slide.author %}<p class="author">{{ slide.author | e }}</p>{% endif %}
+{% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}
