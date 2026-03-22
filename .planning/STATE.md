@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 01.1 context gathered
-last_updated: "2026-03-22T11:42:28.524Z"
+stopped_at: "Completed 01.1-01-PLAN.md"
+last_updated: "2026-03-22T13:30:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 5
+  completed_plans: 3
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** YAML DSL simple enough for reliable LLM generation + Python compiler producing ADA-compliant HTML matching current /ada-slides-general quality
-**Current focus:** Phase 01 — dsl-schema
+**Current focus:** Phase 01.1 — real-world-dsl-validation
 
 ## Current Position
 
-Phase: 01 (dsl-schema) — COMPLETE
-Plan: 2 of 2 (all plans complete)
+Phase: 01.1 (real-world-dsl-validation) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Plan: 2 of 2 (all plans complete)
 *Updated after each plan completion*
 | Phase 01-dsl-schema P01 | 151min | 2 tasks | 8 files |
 | Phase 01-dsl-schema P02 | 3min | 3 tasks | 9 files |
+| Phase 01.1-real-world-dsl-validation P01 | 12min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 01-dsl-schema]: proportion field added to TwoColumnSlide (50/50, 40/60, 60/40) for Phase 2 CSS grid support
 - [Phase 01-dsl-schema P02]: Parser uses _looks_like_frontmatter() heuristic to distinguish body from next slide frontmatter
 - [Phase 01-dsl-schema P02]: body: in YAML frontmatter raises ValueError; splitting <!-- split --> is compiler's job
+- [Phase 01.1 P01]: DiagramSlide used for all SVG circuit diagrams; raw SVG excluded per Pitfall 3
+- [Phase 01.1 P01]: ComparisonSlide used for Pros/Cons two-column tables with <!-- split --> marker
+- [Phase 01.1 P01]: KaTeX math preserved as $$ ... $$ in Markdown bodies; formula-block HTML → content layout
 
 ### Pending Todos
 
@@ -81,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T11:42:28.521Z
-Stopped at: Phase 01.1 context gathered
-Resume file: .planning/phases/01.1-real-world-dsl-validation/01.1-CONTEXT.md
+Last session: 2026-03-22T13:30:00.000Z
+Stopped at: Completed 01.1-01-PLAN.md
+Resume file: .planning/phases/01.1-real-world-dsl-validation/01.1-02-PLAN.md
