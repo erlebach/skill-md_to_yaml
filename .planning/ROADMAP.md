@@ -10,7 +10,7 @@ Build a two-stage pipeline: a YAML DSL schema that an LLM can generate reliably,
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: DSL Schema** - Define the YAML+Markdown DSL with ~15 layout primitives, Pydantic v2 models, and JSON Schema output
+- [x] **Phase 1: DSL Schema** - Define the YAML+Markdown DSL with ~15 layout primitives, Pydantic v2 models, and JSON Schema output
 - [ ] **Phase 2: Compiler Core + ADA** - Build the Python/Jinja2 compiler pipeline with full ADA compliance enforcement
 - [ ] **Phase 3: Rich Content** - Add math, code, SVG, images, Mermaid, tables, and Markdown rendering
 - [ ] **Phase 4: LLM Skill + Validation** - Create the `/md_to_yaml` Claude Code skill and validate end-to-end on real decks
@@ -27,11 +27,11 @@ Build a two-stage pipeline: a YAML DSL schema that an LLM can generate reliably,
   3. JSON Schema is generated from Pydantic models and validates the same test fixtures
   4. Deck-level metadata (title, author, date, theme) is representable and validated
   5. The layout primitive list is documented with one example slide per type
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans executed — COMPLETE
 
 Plans:
-- [ ] 01-01-PLAN.md — Pydantic v2 models (12 layouts + deck metadata) + JSON Schema export
-- [ ] 01-02-PLAN.md — Hybrid file parser + test fixtures + integration tests
+- [x] 01-01-PLAN.md — Pydantic v2 models (12 layouts + deck metadata) + JSON Schema export
+- [x] 01-02-PLAN.md — Hybrid file parser + test fixtures + integration tests
 
 ### Phase 2: Compiler Core + ADA
 **Goal**: A working end-to-end pipeline that compiles YAML to a standalone ADA-compliant HTML deck with keyboard navigation, ARIA markup, and design-rule enforcement
@@ -76,7 +76,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. DSL Schema | 1/2 | In Progress|  |
+| 1. DSL Schema | 2/2 | Complete | 2026-03-22 |
 | 2. Compiler Core + ADA | 0/TBD | Not started | - |
 | 3. Rich Content | 0/TBD | Not started | - |
 | 4. LLM Skill + Validation | 0/TBD | Not started | - |

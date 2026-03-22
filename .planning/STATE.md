@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-dsl-schema-01-PLAN.md
-last_updated: "2026-03-22T04:00:31.137Z"
+stopped_at: Completed 01-dsl-schema-02-PLAN.md
+last_updated: "2026-03-22T04:05:22Z"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: 01 (dsl-schema) — EXECUTING
-Plan: 1 of 2
+Phase: 01 (dsl-schema) — COMPLETE
+Plan: 2 of 2 (all plans complete)
 
 ## Performance Metrics
 
@@ -46,7 +46,8 @@ Plan: 1 of 2
 - Trend: —
 
 *Updated after each plan completion*
-| Phase 01-dsl-schema P01 | 151 | 2 tasks | 8 files |
+| Phase 01-dsl-schema P01 | 151min | 2 tasks | 8 files |
+| Phase 01-dsl-schema P02 | 3min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,8 @@ Recent decisions affecting current work:
 - [Phase 01-dsl-schema]: Used _date alias for datetime.date to avoid Python 3.14 Pydantic FieldInfo name collision
 - [Phase 01-dsl-schema]: SummarySlide defined as distinct layout type to allow visually distinct Phase 2 template
 - [Phase 01-dsl-schema]: proportion field added to TwoColumnSlide (50/50, 40/60, 60/40) for Phase 2 CSS grid support
+- [Phase 01-dsl-schema P02]: Parser uses _looks_like_frontmatter() heuristic to distinguish body from next slide frontmatter
+- [Phase 01-dsl-schema P02]: body: in YAML frontmatter raises ValueError; splitting <!-- split --> is compiler's job
 
 ### Pending Todos
 
@@ -70,10 +73,10 @@ None yet.
 ### Blockers/Concerns
 
 - mmdc Python package (Mermaid renderer) is new (Jan 2026) — verify stability before Phase 3 commits to it; client-side script fallback available
-- Exact layout primitive list (~15) requires analysis of existing HTML decks in n8n_to_python/output_html_files/ — must happen in Phase 1
+- Exact layout primitive list (~15) requires analysis of existing HTML decks in n8n_to_python/output_html_files/ — RESOLVED: 12 layout types confirmed and implemented in Phase 1
 
 ## Session Continuity
 
-Last session: 2026-03-22T04:00:24.478Z
-Stopped at: Completed 01-dsl-schema-01-PLAN.md
+Last session: 2026-03-22T04:05:22Z
+Stopped at: Completed 01-dsl-schema-02-PLAN.md
 Resume file: None
