@@ -27,7 +27,11 @@ Build a two-stage pipeline: a YAML DSL schema that an LLM can generate reliably,
   3. JSON Schema is generated from Pydantic models and validates the same test fixtures
   4. Deck-level metadata (title, author, date, theme) is representable and validated
   5. The layout primitive list is documented with one example slide per type
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Pydantic v2 models (12 layouts + deck metadata) + JSON Schema export
+- [ ] 01-02-PLAN.md — Hybrid file parser + test fixtures + integration tests
 
 ### Phase 2: Compiler Core + ADA
 **Goal**: A working end-to-end pipeline that compiles YAML to a standalone ADA-compliant HTML deck with keyboard navigation, ARIA markup, and design-rule enforcement
@@ -72,7 +76,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. DSL Schema | 0/TBD | Not started | - |
+| 1. DSL Schema | 0/2 | Planning complete | - |
 | 2. Compiler Core + ADA | 0/TBD | Not started | - |
 | 3. Rich Content | 0/TBD | Not started | - |
 | 4. LLM Skill + Validation | 0/TBD | Not started | - |
