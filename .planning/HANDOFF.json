@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-03-22T23:41:03.403Z",
+  "phase": "04",
+  "phase_name": "llm-skill-validation",
+  "phase_dir": ".planning/phases/04-llm-skill-validation",
+  "plan": 3,
+  "task": 2,
+  "total_tasks": 2,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "Generate and validate YAML for 3 real PDFs", "status": "done", "commit": "19f0958"}
+  ],
+  "remaining_tasks": [
+    {"id": 2, "name": "Human spot-check compiled HTML decks", "status": "awaiting_human", "progress": "3 HTML decks compiled, awaiting visual review"}
+  ],
+  "blockers": [],
+  "human_actions_pending": [
+    {
+      "action": "Open and review 3 compiled HTML decks for visual quality, keyboard nav, math rendering, Mermaid diagrams",
+      "context": "E2E validation checkpoint — decks passed schema validation but need human spot-check",
+      "blocking": true
+    }
+  ],
+  "decisions": [],
+  "uncommitted_files": [],
+  "next_action": "Open the 3 HTML files in tests/e2e_validation/, review visual quality, then type 'approved' or describe issues. Resume with /gsd:resume-work.",
+  "context_notes": "Phase 04 Wave 1 (plans 01+02) complete. Wave 2 plan 04-03 task 1 done (YAML generation+validation for 3 PDFs). Paused at checkpoint: human must review compiled HTML before plan can complete. Plans 04-01 and 04-02 fully committed. SKILL.md lives at ~/.claude/skills/md_to_yaml/ (outside repo).",
+  "wave1_status": {
+    "04-01": "complete — SKILL.md + layout_rules_llm.md",
+    "04-02": "complete — 8/8 tests passing"
+  }
+}
