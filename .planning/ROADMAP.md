@@ -90,7 +90,12 @@ Plans:
   2. The skill's output uses a variety of layout types (no 3+ consecutive identical layouts)
   3. Three existing decks from `n8n_to_python/output_html_files/` are reconstructed through the pipeline and produce ADA-compliant HTML
   4. LLM-generated YAML that uses common field-name variants (e.g., `body` instead of `content`) is coerced or caught at parse time with a clear error
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Create SKILL.md + deduplicated layout_rules_llm.md
+- [ ] 04-02-PLAN.md — Test infrastructure for skill output validation
+- [ ] 04-03-PLAN.md — E2E validation on 3 real PDFs + human spot-check
 
 ## Progress
 
@@ -101,6 +106,6 @@ Phases execute in numeric order: 1 -> 01.1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. DSL Schema | 2/2 | Complete | 2026-03-22 |
 | 01.1. Real-World DSL Validation | 3/3 | Complete    | 2026-03-22 |
-| 2. Compiler Core + ADA | 2/5 | In Progress|  |
-| 3. Rich Content | 2/3 | In Progress|  |
-| 4. LLM Skill + Validation | 0/TBD | Not started | - |
+| 2. Compiler Core + ADA | 3/3 | Complete | 2026-03-22 |
+| 3. Rich Content | 3/3 | Complete | 2026-03-22 |
+| 4. LLM Skill + Validation | 0/3 | Not started | - |
