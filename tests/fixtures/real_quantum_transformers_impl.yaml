@@ -1,0 +1,185 @@
+---
+title: "Quantum Transformers: Architecture and Implementation"
+author: null
+date: 2026-03-19
+theme: dark
+---
+---
+layout: title
+title: "Quantum Transformers: Architecture and Implementation"
+subtitle: "Bridging quantum computing and attention-based neural networks for next-generation sequence modeling."
+---
+---
+layout: diagram
+title: The Classical Transformer
+alt_text: "Classical Transformer encoder layer: Input Embedding flows up through Positional Encoding, Multi-Head Self-Attention with Add and Norm residual, Feed-Forward Network with Add and Norm residual, to Output. Two dashed side arrows show skip connections bypassing the attention and feed-forward sub-layers."
+---
+The Transformer architecture (Vaswani et al., 2017) replaced recurrence with self-attention, enabling parallel processing of entire sequences.
+
+**Core equation:**
+
+$$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+---
+layout: diagram
+title: The Quantum Transformer
+alt_text: "Quantum Transformer hybrid architecture: Classical Input flows right through Quantum Encoding, Quantum Self-Attention PQC, Quantum Feed-Forward PQC, Measurement, to Classical Output. A dashed feedback loop labeled 'Classical optimizer updates circuit parameters' connects the output back to the quantum circuits."
+---
+A Quantum Transformer replaces classical sub-layers with parameterized quantum circuits (PQCs). Input data is encoded into quantum states, processed through quantum attention and feed-forward circuits, then measured to produce classical outputs.
+
+Key design choices:
+
+- **Encoding strategy:** angle encoding (one qubit per feature) vs. amplitude encoding (logarithmic qubits)
+- **Circuit ansatz:** hardware-efficient vs. problem-inspired (Hamiltonian-based)
+- **Measurement:** Pauli-Z expectations or full tomography for output extraction
+---
+layout: two-column
+title: Quantum Self-Attention
+proportion: 60/40
+---
+Quantum self-attention computes attention weights by exploiting quantum superposition and entanglement. Instead of explicit Q, K, V matrix multiplications, the quantum circuit encodes input tokens into qubit registers and uses parameterized entangling gates.
+
+**Circuit stages:**
+
+1. **Encoding:** R_y(x_i) embeds each token feature as a rotation angle
+2. **Entangling:** CNOT gates create inter-token correlations (analogous to Q*K^T)
+3. **Parameterized:** trainable R_y, R_z gates learn attention weights
+4. **Re-entangle:** second CNOT layer enriches expressivity
+5. **Measure:** Pauli-Z expectation values yield attention-weighted outputs
+
+<!-- split -->
+
+**PennyLane implementation:**
+
+```python
+import pennylane as qml
+
+n_qubits = 4
+dev = qml.device("default.qubit", wires=n_qubits)
+
+@qml.qnode(dev)
+def quantum_self_attention(inputs, params):
+    for i in range(n_qubits):
+        qml.RY(inputs[i], wires=i)
+    for i in range(0, n_qubits - 1, 2):
+        qml.CNOT(wires=[i, i + 1])
+    for i in range(n_qubits):
+        qml.RY(params[i, 0], wires=i)
+        qml.RZ(params[i, 1], wires=i)
+    for i in range(1, n_qubits - 1, 2):
+        qml.CNOT(wires=[i, i + 1])
+    return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
+```
+---
+layout: code
+title: Quantum Feed-Forward Network
+language: python
+---
+```python
+@qml.qnode(dev)
+def quantum_ffn(inputs, params, n_layers=3):
+    """Quantum feed-forward network with repeated layers."""
+    # Encode inputs
+    for i in range(n_qubits):
+        qml.RY(inputs[i], wires=i)
+
+    # Repeated parameterized layers
+    for layer in range(n_layers):
+        for i in range(n_qubits):
+            qml.RY(params[layer, i, 0], wires=i)
+            qml.RZ(params[layer, i, 1], wires=i)
+        # Entangling: linear chain
+        for i in range(n_qubits - 1):
+            qml.CNOT(wires=[i, i + 1])
+
+    return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
+```
+---
+layout: code
+title: Residual Connections in Quantum Transformers
+language: python
+---
+```python
+import torch
+import torch.nn as nn
+
+class QuantumResidualBlock(nn.Module):
+    def __init__(self, dim, quantum_layer, norm_eps=1e-5):
+        super().__init__()
+        self.quantum_layer = quantum_layer
+        self.norm = nn.LayerNorm(dim, eps=norm_eps)
+
+    def forward(self, x):
+        # Quantum sub-layer output (measured, classical tensor)
+        q_out = self.quantum_layer(x)
+        # Residual addition + layer normalization
+        return self.norm(x + q_out)
+```
+
+Residual connections must operate on classical tensors (post-measurement), not quantum states.
+---
+layout: two-column
+title: Layer Normalization
+proportion: 50/50
+---
+**Post-norm (original):**
+
+`output = LayerNorm(x + SubLayer(x))`
+
+Normalizes after the addition. Can cause training instability with deep quantum circuits.
+
+**Pre-norm (recommended):**
+
+`output = x + SubLayer(LayerNorm(x))`
+
+Normalizes before the quantum circuit, ensuring inputs to the PQC are well-conditioned.
+
+| Property | Post-norm | Pre-norm |
+|---|---|---|
+| Gradient stability | Can degrade | Stable |
+| Quantum input | Unnormalized | Normalized |
+| Convergence | Slower | Faster |
+
+<!-- split -->
+
+```python
+class PreNormQuantumBlock(nn.Module):
+    """Pre-norm: normalize before quantum circuit."""
+    def __init__(self, dim, quantum_layer):
+        super().__init__()
+        self.norm = nn.LayerNorm(dim)
+        self.quantum_layer = quantum_layer
+
+    def forward(self, x):
+        return x + self.quantum_layer(self.norm(x))
+
+
+class PostNormQuantumBlock(nn.Module):
+    """Post-norm: normalize after residual addition."""
+    def __init__(self, dim, quantum_layer):
+        super().__init__()
+        self.norm = nn.LayerNorm(dim)
+        self.quantum_layer = quantum_layer
+
+    def forward(self, x):
+        return self.norm(x + self.quantum_layer(x))
+```
+---
+layout: content
+title: Challenges and Open Problems
+---
+Quantum transformers face significant theoretical and engineering challenges:
+
+- **Barren plateaus:** Gradients vanish exponentially with qubit count in deep PQCs. Mitigation: local cost functions, shallow circuits, layer-wise training.
+- **Qubit limitations:** Current NISQ devices offer 50-1000 noisy qubits. Encoding even modest sequence lengths requires careful compression.
+- **Noise and decoherence:** Gate errors (0.1-1%) and T1/T2 decoherence times limit circuit depth.
+- **Measurement overhead:** Each expectation value requires O(1/epsilon^2) shots for precision epsilon.
+- **Classical-quantum bottleneck:** Data transfer between classical preprocessing and quantum circuits introduces latency.
+- **Lack of proven advantage:** No quantum transformer has demonstrated provable speedup over classical transformers on practical NLP tasks.
+
+| Challenge | Approach | Status |
+|---|---|---|
+| Barren plateaus | Identity-block init, local cost functions | Promising |
+| Qubit count | Amplitude encoding, patch-based input | Active |
+| Noise | Error mitigation, dynamical decoupling | Hardware-dependent |
+| Measurement | Classical shadows, grouped Pauli | 10-100x reduction |
+| Speed | Tensor network simulation, GPU simulators | Dev/testing |
