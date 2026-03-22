@@ -5,6 +5,7 @@ Runs before compilation to catch errors and emit warnings early ("fail fast").
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 from schema.models import Deck, DeckMetadata
 from compiler.contrast import contrast_ratio
@@ -98,6 +99,19 @@ def _check_bullet_limits(slides: list) -> list[str]:
     return warnings
 
 
+def _check_image_paths(slides: list) -> list[str]:
+    """Warn when a figure slide references a non-existent image file."""
+    warnings: list[str] = []
+    for i, slide in enumerate(slides, start=1):
+        if slide.layout == 'figure':
+            src = getattr(slide, 'src', None)
+            if src and not Path(src).exists():
+                warnings.append(
+                    f"WARNING: Image file not found: {src} (slide {i})"
+                )
+    return warnings
+
+
 def validate_deck(deck: Deck) -> tuple[list[str], list[str]]:
     """Run all pre-render validators and return (errors, warnings).
 
@@ -105,5 +119,9 @@ def validate_deck(deck: Deck) -> tuple[list[str], list[str]]:
     """
     slides = deck.slides
     errors = _check_alt_text(slides) + _check_contrast(deck.metadata)
-    warnings = _check_layout_variety(slides) + _check_bullet_limits(slides)
+    warnings = (
+        _check_layout_variety(slides)
+        + _check_bullet_limits(slides)
+        + _check_image_paths(slides)
+    )
     return errors, warnings
