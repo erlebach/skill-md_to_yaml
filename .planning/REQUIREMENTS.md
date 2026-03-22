@@ -76,42 +76,42 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DSL-01 | — | Pending |
-| DSL-02 | — | Pending |
-| DSL-03 | — | Pending |
-| DSL-04 | — | Pending |
-| DSL-05 | — | Pending |
-| DSL-06 | — | Pending |
-| COMP-01 | — | Pending |
-| COMP-02 | — | Pending |
-| COMP-03 | — | Pending |
-| COMP-04 | — | Pending |
-| COMP-05 | — | Pending |
-| COMP-06 | — | Pending |
-| ADA-01 | — | Pending |
-| ADA-02 | — | Pending |
-| ADA-03 | — | Pending |
-| ADA-04 | — | Pending |
-| ADA-05 | — | Pending |
-| ADA-06 | — | Pending |
-| ADA-07 | — | Pending |
-| ADA-08 | — | Pending |
-| RICH-01 | — | Pending |
-| RICH-02 | — | Pending |
-| RICH-03 | — | Pending |
-| RICH-04 | — | Pending |
-| RICH-05 | — | Pending |
-| RICH-06 | — | Pending |
-| RICH-07 | — | Pending |
-| LLM-01 | — | Pending |
-| LLM-02 | — | Pending |
-| LLM-03 | — | Pending |
+| DSL-01 | Phase 1 | Pending |
+| DSL-02 | Phase 1 | Pending |
+| DSL-03 | Phase 1 | Pending |
+| DSL-04 | Phase 1 | Pending |
+| DSL-05 | Phase 1 | Pending |
+| DSL-06 | Phase 1 | Pending |
+| COMP-01 | Phase 2 | Pending |
+| COMP-02 | Phase 2 | Pending |
+| COMP-03 | Phase 2 | Pending |
+| COMP-04 | Phase 2 | Pending |
+| COMP-05 | Phase 2 | Pending |
+| COMP-06 | Phase 2 | Pending |
+| ADA-01 | Phase 2 | Pending |
+| ADA-02 | Phase 2 | Pending |
+| ADA-03 | Phase 2 | Pending |
+| ADA-04 | Phase 2 | Pending |
+| ADA-05 | Phase 2 | Pending |
+| ADA-06 | Phase 2 | Pending |
+| ADA-07 | Phase 2 | Pending |
+| ADA-08 | Phase 2 | Pending |
+| RICH-01 | Phase 3 | Pending |
+| RICH-02 | Phase 3 | Pending |
+| RICH-03 | Phase 3 | Pending |
+| RICH-04 | Phase 3 | Pending |
+| RICH-05 | Phase 3 | Pending |
+| RICH-06 | Phase 3 | Pending |
+| RICH-07 | Phase 3 | Pending |
+| LLM-01 | Phase 4 | Pending |
+| LLM-02 | Phase 4 | Pending |
+| LLM-03 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 30 total
-- Mapped to phases: 0
-- Unmapped: 30 ⚠️
+- Mapped to phases: 30
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after initial definition*
+*Last updated: 2026-03-21 after roadmap creation*
