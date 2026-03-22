@@ -1,0 +1,253 @@
+---
+title: "Data Mining Cluster Analysis: Prototype-Based Methods (Chapter 8 Tutorial)"
+author: null
+date: 2026-03-20
+theme: dark
+---
+---
+layout: title
+title: "Data Mining Cluster Analysis"
+subtitle: "Prototype-based methods — Chapter 8 concepts"
+---
+Based on *Introduction to Data Mining* (Tan, Steinbach, Karpatne, Kumar). This tutorial walks
+the same arc as the source deck: fuzzy clustering, mixture models and EM, then
+self-organizing maps.
+---
+layout: content
+title: "What You Will Practice Recognizing"
+---
+- Hard versus soft membership; how weights generalize k-means.
+- Fuzzy *c*-means: objective, exponent *p*, update loop.
+- Mixture models, EM, dense versus sparse Gaussian assumptions.
+- Self-organizing maps: grid topology, neighborhood updates, trade-offs.
+---
+layout: content
+title: "Hard (Crisp) versus Soft (Fuzzy) Clustering"
+---
+- **Hard:** each point belongs to exactly one cluster.
+- **Soft:** points split membership across clusters using weights.
+- Start from the same idea as k-means: minimize weighted squared error to centroids.
+---
+layout: content
+title: "Weighted SSE Template"
+---
+Alternate between two steps to minimize weighted SSE:
+
+$$\text{SSE} = \sum_{j=1}^{k} \sum_{i=1}^{m} w_{ij} \cdot \text{dist}(x_i, c_j)^2 \qquad \text{subject to} \sum_{j=1}^{k} w_{ij} = 1$$
+
+- Fix centroids → assign weights; fix weights → recompute centroids.
+- Hard clustering sets each $w_{ij}$ to 0 or 1.
+---
+layout: figure
+title: "Estimating Soft Weights (Example Plot)"
+src: clustering-ch8-tutorial-opus46-2026-03-20_2008-assets/_page_1_Figure_15.jpeg
+alt_text: "Curve of weighted squared error versus membership weight for one point between two centroids. A smooth U-shaped curve plots SSE on the vertical axis against the weight assigned to the first centroid on the horizontal axis, showing a unique minimum in the interior of the interval."
+---
+SSE as a function of the weight on cluster 1 (lecture figure).
+---
+layout: figure
+title: "Hard Minimum at the Boundary"
+src: clustering-ch8-tutorial-opus46-2026-03-20_2008-assets/_page_1_Figure_17.jpeg
+alt_text: "Same SSE curve with minimum at an endpoint corresponding to all-or-nothing membership. The plotted curve reaches its lowest point at the left endpoint where the weight on cluster one is one, matching crisp k-means style assignment."
+---
+With linear weights (*p* = 1), the minimum lies at a vertex: pure assignment.
+For the lecture's numeric demo, SSE hits 2.25 when $w_{x1}=1$, $w_{x2}=0$.
+---
+layout: content
+title: "Fuzzy c-Means Objective"
+---
+Introduce a fuzziness exponent **p ≥ 1** to control overlap:
+
+$$J = \sum_{i=1}^{m} \sum_{j=1}^{k} w_{ij}^p \cdot \text{dist}(x_i, c_j)^2 \qquad \sum_{j=1}^{k} w_{ij} = 1$$
+
+- Exponent *p* > 1 controls fuzziness (not a superscript on distance).
+- Weights stay in [0,1] and sum to 1 per point.
+- Reference: Bezdek (1981), *Pattern recognition with fuzzy objective function algorithms*.
+---
+layout: content
+title: "Why Squaring Weights Changes the Minimum"
+notes: "Slide shows three lecture plots side by side (img-row): (1) squared-error expression for fuzzy weights, (2) interior minimum for fuzzy exponent, (3) minimum SSE location for fuzzy weights. Mapped to content because three images accompany explanatory text."
+---
+Lecture numeric check: minimum SSE ≈ 1.654 at $w_{x1} \approx 0.74$, $w_{x2} \approx 0.36$ when $p=2$.
+
+Three lecture plots compare weight curves for the fuzzy objective, illustrating that squaring
+the membership weights moves the minimum to an interior point rather than a boundary.
+---
+layout: figure
+title: "Fuzzy c-Means Update Loop"
+src: clustering-ch8-tutorial-opus46-2026-03-20_2008-assets/_page_3_Picture_3.jpeg
+alt_text: "Slide excerpt showing fuzzy c-means objective and bullet list of initialization and repeat steps. Restates the weighted fuzzy objective with exponent p on memberships, then lists initialization of random weights respecting the simplex constraint, centroid recomputation as a weighted average, and a closed-form weight update using inverse distances."
+---
+Objective plus the repeat block from the lecture slide.
+---
+layout: figure
+title: "Visual Summary of the Updates"
+src: clustering-ch8-tutorial-opus46-2026-03-20_2008-assets/_page_3_Figure_12.jpeg
+alt_text: "Diagram illustrating fuzzy clustering assignments and centroid motion. Shows data points, cluster centroids, and arrows or shading indicating partial membership and how centroids shift when fuzzy weights change, reinforcing the alternating minimization view."
+---
+Lecture diagram tying weights to centroid movement.
+---
+layout: content
+title: "Example Application: Image Segmentation"
+---
+- Variants of fuzzy *c*-means segment pixels/voxels by similarity in feature space.
+- Common in MRI/fMRI pipelines where tissue classes overlap smoothly.
+- Representative reading: Gong et al., IEEE TIP 2013 (local information + kernel fuzzy *c*-means).
+---
+layout: content
+title: "Segmentation Comparison Panel"
+notes: "Four MRI images in img-row (original, FCM, EM, BCFCM). Mapped to content because the images accompany a comparison narrative rather than serving as the sole slide content."
+---
+Left to right: original MRI, fuzzy *c*-means segmentation, EM-based segmentation, and
+BCFCM (bias-corrected fuzzy c-means, Ahmed et al., IEEE TMI 2002).
+
+Each segmentation method separates tissue types differently — comparing outputs trains
+recognition of algorithm trade-offs.
+---
+layout: content
+title: "Clustering with Mixture Models"
+---
+- Treat data as samples from a **mixture** of distributions (often Gaussians).
+- Clusters appear when you estimate each component's parameters (means, covariances, mixing weights).
+- EM implements this estimation; k-means is a limiting case for spherical, equal-variance assignments.
+- Posterior membership probabilities play the same role as fuzzy weights.
+---
+layout: figure
+title: "Probabilistic Clustering Intuition"
+src: clustering-ch8-tutorial-opus46-2026-03-20_2008-assets/_page_5_Figure_2.jpeg
+alt_text: "Histogram of one-dimensional data with two overlaid bell-shaped component densities. Histogram bars show frequency with two pronounced modes; curves overlaid suggest each mode is modeled by a Gaussian, yielding per-point probabilities of belonging to each component."
+---
+Assign each point to the component with highest posterior probability once parameters are known.
+---
+layout: steps
+title: "EM Algorithm — Narrated Loop"
+---
+1. Initialize mixture parameters Θ.
+2. **Repeat:** compute each point's probability under every component; update parameters to maximize expected complete-data likelihood.
+3. **Stop** when parameters stabilize (matches assignment/update rhythm of k-means).
+
+- Random starts risk local minima; Gaussian mixtures often warm-start from k-means.
+- Full covariances capture elongated clusters, not just spheres.
+---
+layout: content
+title: "Updating Centroids with Responsibilities"
+---
+Centroid update uses posterior probabilities as weights:
+
+$$c_j = \frac{\sum_{i=1}^{m} x_i \, p(C_j \mid x_i)}{\sum_{i=1}^{m} p(C_j \mid x_i)}$$
+
+- Matches fuzzy averaging, but weights are **probabilities** from Bayes' rule, not raised to *p*.
+- Mixing proportions $p(C_j)$ estimated by averaging posteriors across points.
+---
+layout: content
+title: "Algorithm 9.2 in the Textbook"
+---
+- **Expectation:** compute $p(\text{component } j \mid x_i, \Theta)$ for every point.
+- **Maximization:** refresh Θ to increase expected log-likelihood.
+- Iterate until parameters change less than a tolerance (same spirit as k-means convergence checks).
+---
+layout: figure
+title: "Lecture Figures for Gaussian EM"
+src: clustering-ch8-tutorial-opus46-2026-03-20_2008-assets/_page_7_Figure_0.jpeg
+alt_text: "First lecture figure illustrating Gaussian mixture fitting or EM steps. Visual from the source slide deck showing data with elliptical contours or component means evolving across iterations of expectation-maximization."
+---
+First EM / mixture illustration from the PDF export.
+---
+layout: figure
+title: "Second EM Illustration"
+src: clustering-ch8-tutorial-opus46-2026-03-20_2008-assets/_page_7_Figure_2.jpeg
+alt_text: "Second lecture figure showing mixture components or log-likelihood landscape. Continues the mixture-model story, typically showing responsibilities, contour plots, or centroid and covariance movement between EM iterations."
+---
+Companion figure highlighting parameter updates.
+---
+layout: diagram
+title: "Dense versus Sparse Gaussian Clustering"
+alt_text: "Two-panel diagram contrasting Gaussian mixture covariance parameterizations. Left panel shows a rotated ellipse labeled Dense (full covariance matrix, O(k d squared) parameters, flexible ellipses capturing feature correlations). Right panel shows an axis-aligned thinner ellipse labeled Sparse (diagonal covariance, O(k d) parameters, trading flexibility for speed)."
+---
+Dense models pair each cluster with a full covariance matrix; sparse models share structure
+(diagonal/spherical) to cut parameters. EM with full covariances needs far more parameters
+than k-means, which only tracks means.
+---
+layout: comparison
+title: "Pros and Cons of EM for Clustering"
+---
+**Helpful**
+
+- Soft assignments with principled probabilistic story.
+- Extends to elliptical clusters when covariances are estimated.
+- Compact model you can sample or score new points against.
+
+<!-- split -->
+
+**Watch outs**
+
+- Convergence can be slow; only local optima are guaranteed.
+- Needs distributional assumptions (e.g., Gaussian components).
+- Full covariance cost grows as $O(d^2)$ per component.
+---
+layout: content
+title: "Alternatives When EM Is the Wrong Tool"
+---
+- Method-of-moments / spectral estimators — see the ICML 2014 moments workshop bibliography.
+- MCMC and other Bayesian inference approaches when you need uncertainty beyond a point estimate.
+- Hybrid pipelines: use k-means or fuzzy methods for initialization or speed, then refine selectively.
+---
+layout: content
+title: "Self-Organizing Maps (SOM)"
+---
+- Still specify *k* prototypes, but arrange them on a grid so neighbors matter.
+- Present points one at a time (online flavor); find the best-matching unit.
+- Update the winner **and** nearby prototypes using a neighborhood kernel that shrinks over time.
+- Reference: Kohonen's *Self-Organizing Maps* (Springer series in information sciences).
+---
+layout: content
+title: "Grid Topology Examples"
+notes: "Three lecture images showing rectangular SOM grid, alternative grid layout, and grid with highlighted neighborhood. Mapped to content because text explains topology purpose alongside the images."
+---
+SOM grid topologies enforce a 2D (or 3D) manifold for visualization.
+
+Topology enforces a 2D (or 3D) manifold for visualization — useful for exploratory
+interpretation even when data live in higher dimensions.
+---
+layout: content
+title: "Online Update Snapshots"
+notes: "Three sequential lecture images showing: (1) closest centroid selection, (2) centroid shift after point arrival, (3) neighbor centroids pulled toward update. Mapped to content because text narrates the sequence."
+---
+Sequence showing centroid movement in SOM online updates:
+farther prototypes move less; learning rate schedules damp updates until the map stabilizes.
+---
+layout: content
+title: "SOM as Dimensionality Reduction"
+---
+- 2D grids yield interpretable heatmaps of where each prototype lives.
+- Neighborhood smoothing acts like a structural prior on how clusters relate.
+- Pair with UMAP/t-SNE only if you need a separate nonlinear view — SOM already embeds topology.
+---
+layout: figure
+title: "Worked Examples in the Lecture PDF"
+src: clustering-ch8-tutorial-opus46-2026-03-20_2008-assets/_page_10_Figure_0.jpeg
+alt_text: "SOM visualization or component plane example from the lecture deck. Image from the textbook slide pack demonstrating how trained SOM nodes organize data, typically via component planes or hit histograms."
+---
+First SOM example figure exported from the slides.
+---
+layout: figure
+title: "Second SOM Example Figure"
+src: clustering-ch8-tutorial-opus46-2026-03-20_2008-assets/_page_10_Figure_2.jpeg
+alt_text: "Additional SOM visualization such as U-matrix or trajectory plot. Second exported figure reinforces how SOMs display distances or densities across the lattice, helping analysts interpret cluster boundaries."
+---
+Companion visualization from the same slide page.
+---
+layout: content
+title: "Issues Called Out in the Lecture"
+---
+- Training cost is high for large grids and long schedules.
+- No global convergence certificate — monitor stability empirically.
+- Grid size, neighborhood widths, and learning rates are partly manual design choices.
+- Unlike k-means or EM, there is no single closed-form objective to monitor universally.
+---
+layout: summary
+title: "Tutorial Wrap-Up"
+---
+- You traced soft weights → fuzzy *c*-means → mixture EM → SOM neighborhoods.
+- Next drill: implement fuzzy *c*-means on a toy 2D dataset and compare surfaces for *p* = 1.1 versus 2.
+- Audit checklist: verify responsibilities sum to one, watch log-likelihood monotonicity for EM, and log quantization error for SOMs.
