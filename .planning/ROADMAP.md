@@ -56,7 +56,13 @@ Plans:
   4. Keyboard navigation works: arrow keys advance/retreat slides, Home/End go to first/last
   5. Compiler exits with an error message if alt_text is missing on any image/figure/diagram slide
   6. Compiler emits a warning when 3+ consecutive slides use the same layout type
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Compiler package scaffold + validators + contrast + CLI entry point
+- [ ] 02-02-PLAN.md — Base Jinja2 template (CSS themes, ARIA, keyboard JS) + 12 layout templates
+- [ ] 02-03-PLAN.md — Compiler engine (validate-then-render) + integration tests
+- [ ] 02-04-PLAN.md — Real-fixture integration tests + visual spot-check
 
 ### Phase 3: Rich Content
 **Goal**: The compiler handles all content types found in real decks — math equations, code blocks, images, SVG diagrams, Mermaid diagrams, tables, and inline Markdown
@@ -89,7 +95,7 @@ Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. DSL Schema | 2/2 | Complete | 2026-03-22 |
-| 01.1. Real-World DSL Validation | 2/3 | Complete    | 2026-03-22 |
-| 2. Compiler Core + ADA | 0/TBD | Not started | - |
+| 01.1. Real-World DSL Validation | 3/3 | Complete    | 2026-03-22 |
+| 2. Compiler Core + ADA | 0/4 | Not started | - |
 | 3. Rich Content | 0/TBD | Not started | - |
 | 4. LLM Skill + Validation | 0/TBD | Not started | - |
