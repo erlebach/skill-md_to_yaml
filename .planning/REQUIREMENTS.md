@@ -7,7 +7,7 @@
 
 ### DSL Schema
 
-- [ ] **DSL-01**: Hybrid YAML+Markdown format: YAML frontmatter per slide (layout type, metadata, ADA fields) + Markdown content body
+- [x] **DSL-01**: Hybrid YAML+Markdown format: YAML frontmatter per slide (layout type, metadata, ADA fields) + Markdown content body
 - [x] **DSL-02**: ~15 layout primitives derived from analysis of existing HTML decks
 - [x] **DSL-03**: Each layout type has a Pydantic model with required/optional fields and validation
 - [x] **DSL-04**: Schema enforces structural consistency across layout types (isomorphic where possible to reduce LLM drift)
@@ -76,7 +76,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DSL-01 | Phase 1 | Pending |
+| DSL-01 | Phase 1 | Complete |
 | DSL-02 | Phase 1 | Complete |
 | DSL-03 | Phase 1 | Complete |
 | DSL-04 | Phase 1 | Complete |

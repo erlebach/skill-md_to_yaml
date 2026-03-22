@@ -38,7 +38,7 @@ Plans:
 **Goal:** Validate the Phase 1 DSL schema against 5 real-world HTML presentation decks by converting them to YAML DSL format, fixing any schema/parser issues discovered, and closing DSL-01
 **Requirements**: DSL-01
 **Depends on:** Phase 1
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 01.1-01-PLAN.md — Test infrastructure + convert Decks 1 and 3 (quantum-transformers, quixer-implementation)
@@ -89,7 +89,7 @@ Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. DSL Schema | 2/2 | Complete | 2026-03-22 |
-| 01.1. Real-World DSL Validation | 0/3 | Planning | - |
+| 01.1. Real-World DSL Validation | 2/3 | In Progress|  |
 | 2. Compiler Core + ADA | 0/TBD | Not started | - |
 | 3. Rich Content | 0/TBD | Not started | - |
 | 4. LLM Skill + Validation | 0/TBD | Not started | - |
