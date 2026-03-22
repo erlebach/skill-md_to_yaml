@@ -1,0 +1,837 @@
+{
+  "$defs": {
+    "CodeSlide": {
+      "additionalProperties": false,
+      "description": "Code block slide: title + fenced code in Markdown body. Language for syntax highlighting.",
+      "properties": {
+        "layout": {
+          "const": "code",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "language": {
+          "default": "text",
+          "title": "Language",
+          "type": "string"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "CodeSlide",
+      "type": "object"
+    },
+    "ColumnContent": {
+      "additionalProperties": false,
+      "description": "Structured content for a two-column slide column.",
+      "properties": {
+        "type": {
+          "enum": [
+            "figure",
+            "diagram"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "src": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Src"
+        },
+        "alt_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Alt Text"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "ColumnContent",
+      "type": "object"
+    },
+    "ComparisonSlide": {
+      "additionalProperties": false,
+      "description": "Side-by-side comparison: title + Markdown body with <!-- split --> marker.",
+      "properties": {
+        "layout": {
+          "const": "comparison",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "ComparisonSlide",
+      "type": "object"
+    },
+    "ContentSlide": {
+      "additionalProperties": false,
+      "description": "Generic content slide: title + Markdown body.",
+      "properties": {
+        "layout": {
+          "const": "content",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "ContentSlide",
+      "type": "object"
+    },
+    "DeckMetadata": {
+      "additionalProperties": false,
+      "description": "Deck-level metadata from the first frontmatter block.",
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "author": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Author"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Date"
+        },
+        "theme": {
+          "default": "dark",
+          "enum": [
+            "dark",
+            "light"
+          ],
+          "title": "Theme",
+          "type": "string"
+        },
+        "accent_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accent Color"
+        },
+        "font": {
+          "default": "IBM Plex Sans",
+          "title": "Font",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "DeckMetadata",
+      "type": "object"
+    },
+    "DiagramSlide": {
+      "additionalProperties": false,
+      "description": "SVG/Mermaid diagram slide. alt_text is required for ADA compliance.",
+      "properties": {
+        "layout": {
+          "const": "diagram",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "alt_text": {
+          "title": "Alt Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "layout",
+        "title",
+        "alt_text"
+      ],
+      "title": "DiagramSlide",
+      "type": "object"
+    },
+    "DividerSlide": {
+      "additionalProperties": false,
+      "description": "Visual section break: title only (rendered as full-bleed divider).",
+      "properties": {
+        "layout": {
+          "const": "divider",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "DividerSlide",
+      "type": "object"
+    },
+    "FigureSlide": {
+      "additionalProperties": false,
+      "description": "Raster image slide (JPEG/PNG). alt_text is required for ADA compliance.",
+      "properties": {
+        "layout": {
+          "const": "figure",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "src": {
+          "title": "Src",
+          "type": "string"
+        },
+        "alt_text": {
+          "title": "Alt Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "layout",
+        "title",
+        "src",
+        "alt_text"
+      ],
+      "title": "FigureSlide",
+      "type": "object"
+    },
+    "HeroSlide": {
+      "additionalProperties": false,
+      "description": "Section opener within a deck: section title + optional description.",
+      "properties": {
+        "layout": {
+          "const": "hero",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "HeroSlide",
+      "type": "object"
+    },
+    "QuoteSlide": {
+      "additionalProperties": false,
+      "description": "Pull-quote slide: title (the quote) + optional attribution.",
+      "properties": {
+        "layout": {
+          "const": "quote",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "attribution": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attribution"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "QuoteSlide",
+      "type": "object"
+    },
+    "StepsSlide": {
+      "additionalProperties": false,
+      "description": "Numbered steps slide: title + ordered list in Markdown body.",
+      "properties": {
+        "layout": {
+          "const": "steps",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "StepsSlide",
+      "type": "object"
+    },
+    "SummarySlide": {
+      "additionalProperties": false,
+      "description": "Summary/recap slide: visually distinct from content (e.g., checkmark bullets).",
+      "properties": {
+        "layout": {
+          "const": "summary",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "SummarySlide",
+      "type": "object"
+    },
+    "TitleSlide": {
+      "additionalProperties": false,
+      "description": "Deck opener: big title + optional subtitle + optional author.",
+      "properties": {
+        "layout": {
+          "const": "title",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
+        "author": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Author"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "TitleSlide",
+      "type": "object"
+    },
+    "TwoColumnSlide": {
+      "additionalProperties": false,
+      "description": "Two-column layout. Structured columns go in left/right; free text goes in body.",
+      "properties": {
+        "layout": {
+          "const": "two-column",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "left": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ColumnContent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "right": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ColumnContent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "proportion": {
+          "default": "50/50",
+          "enum": [
+            "50/50",
+            "40/60",
+            "60/40"
+          ],
+          "title": "Proportion",
+          "type": "string"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "TwoColumnSlide",
+      "type": "object"
+    }
+  },
+  "description": "Top-level deck container: metadata + ordered list of slides.",
+  "properties": {
+    "metadata": {
+      "$ref": "#/$defs/DeckMetadata"
+    },
+    "slides": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "code": "#/$defs/CodeSlide",
+            "comparison": "#/$defs/ComparisonSlide",
+            "content": "#/$defs/ContentSlide",
+            "diagram": "#/$defs/DiagramSlide",
+            "divider": "#/$defs/DividerSlide",
+            "figure": "#/$defs/FigureSlide",
+            "hero": "#/$defs/HeroSlide",
+            "quote": "#/$defs/QuoteSlide",
+            "steps": "#/$defs/StepsSlide",
+            "summary": "#/$defs/SummarySlide",
+            "title": "#/$defs/TitleSlide",
+            "two-column": "#/$defs/TwoColumnSlide"
+          },
+          "propertyName": "layout"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/TitleSlide"
+          },
+          {
+            "$ref": "#/$defs/HeroSlide"
+          },
+          {
+            "$ref": "#/$defs/ContentSlide"
+          },
+          {
+            "$ref": "#/$defs/DividerSlide"
+          },
+          {
+            "$ref": "#/$defs/FigureSlide"
+          },
+          {
+            "$ref": "#/$defs/DiagramSlide"
+          },
+          {
+            "$ref": "#/$defs/TwoColumnSlide"
+          },
+          {
+            "$ref": "#/$defs/QuoteSlide"
+          },
+          {
+            "$ref": "#/$defs/ComparisonSlide"
+          },
+          {
+            "$ref": "#/$defs/CodeSlide"
+          },
+          {
+            "$ref": "#/$defs/StepsSlide"
+          },
+          {
+            "$ref": "#/$defs/SummarySlide"
+          }
+        ]
+      },
+      "title": "Slides",
+      "type": "array"
+    }
+  },
+  "required": [
+    "metadata",
+    "slides"
+  ],
+  "title": "Deck",
+  "type": "object"
+}
