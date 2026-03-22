@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-03-22T19:08:41.981Z",
+  "phase": "03",
+  "phase_name": "rich-content",
+  "phase_dir": ".planning/phases/03-rich-content",
+  "plan": 3,
+  "task": 2,
+  "total_tasks": 2,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "Rich content renderer modules + schema updates + unit tests", "status": "done", "commit": "ea7c218"},
+    {"id": 2, "name": "Engine wiring + Jinja2 templates + CLI flag + validators", "status": "done", "commit": "f234079"},
+    {"id": 3, "name": "Rich content test fixtures + integration tests (plan 03-03 task 1)", "status": "done", "commit": "48e27a7"},
+    {"id": 4, "name": "Visual spot-check of compiled HTML (plan 03-03 task 2)", "status": "in_progress", "progress": "ARIA compliance iteration — fixed 8+ accessibility issues, iterating on Mermaid rendering and figure display"}
+  ],
+  "remaining_tasks": [
+    {"id": 4, "name": "Complete ARIA compliance verification and commit 03-03 SUMMARY", "status": "in_progress"}
+  ],
+  "blockers": [],
+  "human_actions_pending": [
+    {"action": "Re-check ARIA compliance in Siteimprove after latest fixes", "context": "Fixed duplicate alt text on figures, Mermaid now client-side rendered, code overflow scrollable", "blocking": true}
+  ],
+  "decisions": [
+    {"decision": "Switched Mermaid from mmdc subprocess to client-side JS rendering", "rationale": "mmdc/puppeteer produced SVGs without text labels; client-side Mermaid JS renders correctly in browser", "phase": "03"},
+    {"decision": "Light theme Pygments style changed from friendly to tango", "rationale": "friendly had 2.76:1 contrast ratio on light bg, tango has 5.48:1 (passes AA)", "phase": "03"},
+    {"decision": "Figure img alt set to empty string, figcaption provides description", "rationale": "Prevents duplicate alt text display in Chrome when image fails to load", "phase": "03"},
+    {"decision": "Line number pre replaced with div for accessibility", "rationale": "Pygments linenos pre flagged as improper preformatted text by Siteimprove", "phase": "03"},
+    {"decision": "Divider slides get visually-hidden paragraph after heading", "rationale": "Fixes 'content missing after heading' accessibility warning", "phase": "03"}
+  ],
+  "uncommitted_files": [
+    "compiler/engine.py",
+    "compiler/renderers/code.py",
+    "compiler/renderers/image.py",
+    "compiler/renderers/mermaid.py",
+    "compiler/templates/base.html.j2",
+    "compiler/templates/code.html.j2",
+    "compiler/templates/diagram.html.j2",
+    "compiler/templates/divider.html.j2",
+    "compiler/templates/figure.html.j2",
+    "compiler/templates/table.html.j2",
+    "tests/test_rich_content.py"
+  ],
+  "next_action": "Recompile aria_compliance_v3.yaml, have user run final Siteimprove check, then commit all ADA fixes and complete plan 03-03 SUMMARY",
+  "context_notes": "Phase 03 plans 01 and 02 fully committed. Plan 03 task 1 committed (fixtures + integration tests). Task 2 is the human spot-check — we've been iterating on ARIA/ADA compliance fixes found by Siteimprove. Major fixes: pre/code semantics, ARIA landmarks, keyboard accessibility for scrollable elements, Pygments contrast, Mermaid client-side rendering, figure alt text dedup. All 146 tests pass. Test fixtures created: aria_compliance.yaml, aria_compliance_v2.yaml, aria_compliance_v3.yaml (most comprehensive)."
+}
