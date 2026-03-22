@@ -1,0 +1,137 @@
+---
+title: "Quixer: Quantum Self-Attention Algorithm"
+author: null
+date: 2026-03-19
+theme: dark
+---
+---
+layout: title
+title: "Quixer: Quantum Self-Attention Algorithm"
+subtitle: "A holistic quantum approach to transformer attention using LCU and QSVT primitives — from intuition to circuit implementation."
+---
+---
+layout: steps
+title: "Intuition: What Quixer Does"
+---
+Classical self-attention computes pairwise token similarities and produces weighted sums of value vectors. Quixer replaces this with quantum primitives that mix information across the entire sequence holistically.
+
+**The core idea in three steps:**
+
+1. **Encode tokens as quantum gates.** Each word in the vocabulary becomes a unitary matrix — a quantum operation rather than a static vector. This embeds meaning into the structure of quantum transformations.
+2. **Mix all tokens simultaneously.** Using a Linear Combination of Unitaries (LCU), Quixer creates a superposition of all token gates at once. Trainable complex coefficients control each token's contribution — analogous to attention weights.
+3. **Apply non-linear transformations.** Quantum Singular Value Transformation (QSVT) applies polynomial functions to the mixed state's singular values, enabling the model to capture multi-token interactions in a single quantum operation.
+---
+layout: diagram
+title: Architecture Overview
+alt_text: "Quixer four-stage pipeline left-to-right: Classical Tokens flow into Unitary Embedding (blue box), then LCU Mixing (green box), then QSVT Non-linearity (orange box), and finally Measurement and Readout (blue box). Arrows connect each stage sequentially. Classical tokens enter at top of first stage; Classical vector to FFN exits at bottom of last stage."
+---
+The Quixer pipeline transforms a classical token sequence through four stages: embedding, mixing, non-linear transformation, and measurement.
+---
+layout: steps
+title: "Mathematics: Unitary Token Embedding"
+---
+Classical transformers embed tokens as dense vectors in real-valued space. Quixer maps each token to a unitary quantum gate, embedding meaning into the structure of quantum operations.
+
+**Embedding procedure:**
+
+1. Start with a classical embedding vector for token `w`, producing angles via a learned mapping.
+2. Use these angles to parameterize a unitary circuit, producing gate `U_w`.
+3. Each vocabulary token gets a unique unitary matrix representation.
+
+$$w \rightarrow \text{angles}(\theta) \rightarrow U_w(\theta) \in U(2^n)$$
+
+Each token `w` is mapped to rotation angles theta, which parameterize a unitary gate `U_w` in the unitary group of dimension 2 to the n. Because unitaries preserve norm and are invertible, the embedding inherently maintains quantum coherence.
+---
+layout: diagram
+title: "Mathematics: Linear Combination of Unitaries"
+alt_text: "LCU quantum circuit with two horizontal wires. Top wire (Ancilla, initialized to |0>) has gate B (blue, Prepare alpha), then control dots connecting to controlled-U gates on the bottom wire, then gate B-dagger (orange, Unprepare), then measurement M. Bottom wire (System, initialized to |psi>) has green boxes U_w1, U_w2, etc. as controlled operations. Post-selection on ancilla zero state yields mixed operator A applied to psi."
+---
+In classical attention, the output is a weighted sum of value vectors. Quixer achieves analogous mixing using the LCU primitive:
+
+$$A = \sum_j \alpha_j \cdot U_{w_j}$$
+
+Key properties:
+
+- The coefficients `alpha_j` are **complex-valued** and trainable — encoding both magnitude and phase (interference patterns).
+- The result `A` is generally **not unitary** — it is a general linear operator, essential for expressivity.
+- LCU is implemented using ancilla qubits that prepare a superposition state encoding the coefficients.
+---
+layout: content
+title: "Mathematics: QSVT Non-linearity"
+---
+Classical transformers use softmax and layer normalization for non-linearity. Quixer uses Quantum Singular Value Transformation (QSVT) to apply arbitrary polynomial functions to the singular values of the mixed operator.
+
+Given the mixed operator `A` with SVD `A = W Sigma V†`, QSVT applies a polynomial `P` to each singular value:
+
+$$\text{QSVT}(A, P) = W \cdot P(\Sigma) \cdot V^\dagger$$
+
+**Why this matters for attention:**
+
+- **Degree-2 polynomial:** captures pairwise interactions between all token pairs (skip-bigrams) in a single quantum step.
+- **Degree-k polynomial:** captures k-token interactions, enabling higher-order reasoning without additional circuit depth proportional to k.
+- The polynomial coefficients are determined by **phase angles** — trainable parameters of the model.
+
+> QSVT requires fault-tolerant quantum hardware. On NISQ devices, the circuit depth for useful polynomial degrees may exceed coherence times.
+---
+layout: diagram
+title: "Circuit: Parameterized Quantum Circuit Unit"
+alt_text: "PQC unit circuit on 3 qubits (q0, q1, q2). Each qubit has three rotation gates Rz, Ry, Rz (blue boxes) forming the rotation layer. Then CNOT gates entangle qubits in a ring topology: q0 controls q1, q1 controls q2, q2 controls q0. A dashed orange vertical line indicates this combined rotation+entanglement layer is repeated L times. Output produces |Q>, |K>, or |V> states."
+---
+Each unitary transformation in Quixer is implemented as a PQC — alternating layers of single-qubit rotations and entangling gates.
+
+For `n` qubits and `L` layers, the total parameter count is `3 x n x L` per PQC unit.
+---
+layout: diagram
+title: "Circuit: The Swap Test"
+alt_text: "Three-wire quantum circuit for the Swap Test. Top wire: ancilla |0> with Hadamard gate H, then control dot on CSWAP (Fredkin) gate connecting to middle and bottom wires, then second Hadamard H, then measurement M. Middle wire: Query state |Q_i>. Bottom wire: Key state |K_j>. SWAP targets shown as X marks on Query and Key wires. Result: P(0) = 1/2 + 1/2|<Q|K>|^2."
+---
+The Swap Test computes token similarity by measuring the overlap between two quantum states:
+
+$$P(0) = \frac{1}{2} + \frac{1}{2}\left|\langle Q_i | K_j \rangle\right|^2$$
+
+The probability of measuring the ancilla as zero gives the attention logit — the quantum analogue of the dot-product attention score.
+---
+layout: diagram
+title: Full Algorithmic Flow
+alt_text: "Vertical flow diagram with six stages connected by downward arrows. Classical token sequence (grey box) flows into Angle Encoding producing unitary gates U_w (blue), then LCU computing mixed operator A = sum alpha_j U_w_j (green), then QSVT applying polynomial P to singular values Sigma (orange), then Measurement extracting expectation values (grey), then Classical FFN producing output (blue). Stages 1 through 4 enclosed in dashed blue box labeled Quantum Processor."
+---
+The complete Quixer execution combines all primitives into a hybrid quantum-classical pipeline that processes a token sequence end to end.
+---
+layout: comparison
+title: Pros and Cons
+---
+**Advantages:**
+
+- **Holistic mixing:** all tokens interact simultaneously via LCU superposition
+- **Higher-order interactions:** QSVT enables skip-k-grams in a single quantum step
+- **Complex-valued weights:** trainable complex coefficients leverage quantum interference
+- **Exponential state space:** n qubits span a 2^n-dimensional Hilbert space
+- **Theoretical speedup:** inner-product via Swap Test reduces per-pair complexity from O(d) to O(1)
+
+<!-- split -->
+
+**Disadvantages:**
+
+- **Hardware requirements:** QSVT demands fault-tolerant quantum computers not yet available at scale
+- **Post-selection overhead:** LCU requires post-selecting on ancilla measurements, which succeeds probabilistically
+- **Measurement bottleneck:** extracting classical information requires many measurement shots
+- **Training complexity:** hybrid quantum-classical optimization is slow; barren plateaus may arise
+- **Limited empirical validation:** Quixer demonstrated only on small-scale simulations
+---
+layout: summary
+title: Conclusions
+---
+Quixer demonstrates a principled approach to quantum self-attention that goes beyond simply porting classical operations to quantum hardware.
+
+**Key takeaways:**
+
+- **Quantum-native design:** LCU handles mixing, QSVT handles non-linearity, PQCs handle parameterized transformations
+- **Composable primitives:** each component can be improved independently
+- **Scalability path:** on fault-tolerant hardware, QSVT provides a polynomial-degree knob for controlling interaction complexity
+- **Near-term alternatives exist:** PQC-based approaches with Swap Tests provide a simpler path for NISQ devices
+
+| Approach | Hardware era | Attention mechanism | Complexity |
+|---|---|---|---|
+| PQC + Swap Test | NISQ (now) | Explicit pairwise scores | O(N^2) circuit runs |
+| Quixer (LCU + QSVT) | Fault-tolerant (future) | Holistic mixing + polynomial | O(N) with degree-k |
+| QCSAM (Complex LCU) | Fault-tolerant (future) | Complex-valued similarity | O(N^2) richer metrics |
