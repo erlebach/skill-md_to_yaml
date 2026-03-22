@@ -1,0 +1,300 @@
+---
+title: "A Survey of Quantum Transformers: Architectures, Challenges and Outlooks"
+author: "Zhang, Zhao, Zhou, Feng, Niyato, Zheng, Chen"
+date: 2026-03-22
+theme: dark
+font: IBM Plex Sans
+---
+
+---
+layout: title
+title: "A Survey of Quantum Transformers"
+subtitle: "Architectures, Challenges and Outlooks — Zhang et al., Nov 2025"
+---
+
+---
+layout: hero
+title: "The Central Question"
+---
+Classical Transformers scale quadratically with sequence length. Can quantum computing break this bottleneck — or merely redistribute the computational cost?
+
+---
+layout: content
+title: "Why Quantum Transformers? The Motivation"
+---
+- Classical Transformer self-attention: complexity grows as $$O(N^2)$$ with sequence length N
+- **Quantum Machine Learning (QML)** leverages superposition, entanglement, and interference
+- Core goal: reduce quadratic scaling while maintaining or improving expressiveness
+- Since 2022: rapid expansion of research into Quantum Transformer architectures
+- Applications span NLP, computer vision, high-energy physics, chemistry, finance, fluid dynamics
+
+---
+layout: two-column
+title: "Two Main Research Paradigms"
+proportion: 50/50
+left:
+  type: diagram
+  alt_text: "Strategic roadmap diagram showing two paradigms: near-term PQC-based path targeting quantum enhanced representation on NISQ hardware, and long-term QLA-based path targeting exponential speedup on fault-tolerant quantum computers"
+  source: |
+    graph LR
+      A[Classical Transformer O(N^2) bottleneck] --> B[PQC-based paradigm]
+      A --> C[QLA-based paradigm]
+      B --> D[NISQ hardware]
+      D --> E[Quantum Enhanced Representation]
+      C --> F[Fault-tolerant quantum computers]
+      F --> G[Theoretical Exponential Speedup]
+      style B fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+      style C fill:#f0883e,stroke:#f0883e,color:#0d1117
+      style E fill:#3fb950,stroke:#3fb950,color:#0d1117
+      style G fill:#3fb950,stroke:#3fb950,color:#0d1117
+---
+**PQC-based (near-term):**
+- Parameterized Quantum Circuits on NISQ devices
+- Replaces classical weight layers with PQCs
+- Validated on small-scale benchmarks
+
+**QLA-based (long-term):**
+- Quantum Linear Algebra techniques (QSVT, block encoding)
+- Theoretical exponential speedup
+- Requires fault-tolerant quantum computers
+
+---
+layout: content
+title: "Classical Transformer: Quick Recap"
+---
+- **Self-Attention**: each token attends to all others; captures long-range dependencies
+- **QKV Mapping**: input projected to Queries (Q), Keys (K), Values (V) via learned matrices
+- **Attention matrix**: $$\mathbf{A} = \text{softmax}\left(\frac{\mathbf{QK}^T}{\sqrt{d_k}}\right)$$; output: $$\mathbf{Y} = \mathbf{A}\mathbf{V}$$
+- **Multi-head attention**: h independent attention heads concatenated and projected
+- **Feed-Forward Network**: $$\text{FFN}(\mathbf{Z}) = \max(0, \mathbf{ZW}_1 + \mathbf{b}_1)\mathbf{W}_2 + \mathbf{b}_2$$
+- **Residual + LayerNorm**: $$\mathbf{Z} = \text{LayerNorm}(\mathbf{X}_\text{in} + f(\mathbf{X}_\text{in}))$$
+
+---
+layout: divider
+title: "QML Fundamentals"
+---
+
+---
+layout: content
+title: "Quantum States and Data Encoding"
+---
+- A quantum state of n qubits: $$|\psi\rangle = \sum_{i=0}^{2^n-1} \alpha_i |i\rangle$$; amplitudes satisfy $$\sum_i |\alpha_i|^2 = 1$$
+- **Qubit Encoding (QE)**: classical scalar x encoded via rotation gate $$R_y(x/2)|0\rangle$$
+- **Amplitude Encoding (AE)**: vector $$\mathbf{x} = (x_0, \ldots, x_{2^n-1})$$ embedded directly in quantum amplitudes — exponentially space-efficient
+- **Data Encoding is critical**: determines how classical information enters quantum circuits
+- Trade-off: expressive encodings (AE) require complex circuit constructions
+
+---
+layout: two-column
+title: "Parameterized Quantum Circuits (PQCs)"
+proportion: 60/40
+left:
+  type: diagram
+  alt_text: "PQC structure showing input quantum state passing through alternating rotation gates Rx, Ry and entangling CNOT gates across four qubit lines, with trainable parameters theta controlling rotation angles"
+  source: |
+    graph LR
+      A[Input state psi_0] --> B["Layer 1: Rx Ry rotations"]
+      B --> C[CNOT entangling gates]
+      C --> D["Layer 2: Rx Ry rotations"]
+      D --> E[More CNOT gates]
+      E --> F["Output state psi(theta)"]
+      style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+      style F fill:#3fb950,stroke:#3fb950,color:#0d1117
+---
+- PQCs extend quantum circuits with **trainable parameters** $$\theta$$
+- Unitary: $$U(\theta) = U_L(\theta_L) \cdots U_2(\theta_2) U_1(\theta_1)$$
+- Used in Variational Quantum Algorithms (VQAs): optimize $$C(\theta) = \langle\psi(\theta)|H|\psi(\theta)\rangle$$
+- Classical optimizer updates $$\theta$$; combines quantum expressiveness with classical flexibility
+
+---
+layout: content
+title: "Key Quantum Tools: Kernel, Swap Test, QSVT"
+---
+- **Quantum Kernel**: maps classical data to Hilbert space; $$K(x_i, x_j) = |\langle\psi(x_i)|\psi(x_j)\rangle|^2$$; enables quantum-enhanced similarity computation
+- **Swap Test**: quantum circuit that estimates $$\frac{1 + |\langle\psi|\phi\rangle|^2}{2}$$; measures similarity between two quantum states without full state tomography
+- **Hadamard Test**: estimates $$\text{Re}(\langle\psi|U|\psi\rangle)$$ using ancilla qubit; evaluates expectation values of unitary operators
+- **QSVT** (Quantum Singular Value Transformation): powerful framework for quantum linear algebra; enables exponential speedups for matrix operations in fault-tolerant settings
+
+---
+layout: divider
+title: "PQC-Based Quantum Transformer Architectures"
+---
+
+---
+layout: diagram
+title: "Four PQC Quantization Strategies"
+alt_text: "Taxonomy diagram showing four categories of PQC-based quantum transformers: QKV-only Quantum Mapping, Quantum Pairwise Attention with inner-product or generalized similarity, Quantum Holistic Attention, and Quantum-Assisted Optimization"
+---
+graph TD
+  A[PQC-Based Quantum Transformers] --> B[QKV-only Quantum Mapping]
+  A --> C[Quantum Pairwise Attention]
+  A --> D[Quantum Holistic Attention]
+  A --> E[Quantum-Assisted Optimization]
+  C --> C1[Inner-product similarity]
+  C --> C2[Generalized similarity]
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style B fill:#3fb950,stroke:#3fb950,color:#0d1117
+  style C fill:#f0883e,stroke:#f0883e,color:#0d1117
+  style D fill:#3fb950,stroke:#3fb950,color:#0d1117
+  style E fill:#f0883e,stroke:#f0883e,color:#0d1117
+
+---
+layout: two-column
+title: "QKV-Only Quantum Mapping"
+proportion: 60/40
+left:
+  type: diagram
+  alt_text: "Architecture diagram showing input data x_i encoded into quantum state, passed through PQC to produce quantum Q K V vectors, followed by classical softmax attention computation"
+  source: |
+    graph LR
+      A[Input x_i] --> B[Data Encoding]
+      B --> C[PQC maps to Q K V]
+      C --> D["Classical: softmax(QK^T/sqrt(dk))"]
+      D --> E[Output Y = AV]
+      style C fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+      style D fill:#f0883e,stroke:#f0883e,color:#0d1117
+---
+- Only the **Q/K/V mapping** step is quantized
+- Attention score computation remains **classical**
+- Representative: QSANN (Li et al., 2022) — first quantum self-attention neural network
+- Uses PQC to generate Q, K, V in quantum Hilbert space; measurements yield classical vectors
+- Advantage: compatible with standard Transformer architectures
+- Limitation: does not reduce the $$O(N^2)$$ classical attention bottleneck
+
+---
+layout: content
+title: "Quantum Pairwise Attention"
+---
+- Q, K, V remain as **quantum states** throughout attention computation
+- Pairwise token similarities computed using quantum tools:
+  - **Swap Test**: directly estimates $$|\langle q_i | k_j \rangle|^2$$ — inner-product similarity
+  - **Hadamard Test**: extracts real part of inner products
+  - **Quantum Kernel**: computes generalized similarity $$f(q_i, k_j)$$
+- Deeper quantization than QKV-only — attention itself runs on quantum hardware
+- **Quantum Mixed-State Self-Attention Network (QMSAN)**: uses swap test for pairwise similarities
+- Validated on small NLP classification tasks; shows competitive accuracy
+
+---
+layout: two-column
+title: "Quantum Holistic Attention"
+proportion: 50/50
+left:
+  type: diagram
+  alt_text: "Holistic attention architecture showing all N tokens loaded together into global quantum embedding, then processed by token mixing unitary operation without computing pairwise similarities explicitly"
+  source: |
+    graph TD
+      A["All N tokens x_1 ... x_N"] --> B[Global Quantum Embedding]
+      B --> C[Token Mixing Unitary]
+      C --> D[Output: mixed token representations]
+      style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+      style C fill:#f0883e,stroke:#f0883e,color:#0d1117
+      style D fill:#3fb950,stroke:#3fb950,color:#0d1117
+---
+- Captures **global token dependencies** in a single quantum transformation
+- No explicit pairwise similarity computation (avoids $$O(N^2)$$ classically)
+- Uses holistic quantum transformations: $$\mathcal{U}_\text{mix}(\{x_i\}_{i=1}^N)$$
+- Potentially achieves **sub-quadratic** speedup
+- Still an open research question whether genuine algorithmic advantage is achieved
+- Examples: Kerenidis et al. (2022), Alessandro et al. (2024)
+
+---
+layout: content
+title: "Real Quantum Hardware: Wukong Experiment"
+---
+- He et al. (2024) executed a quantum Transformer on the **72-qubit Wukong** superconducting quantum computer (Chinese Academy of Sciences)
+- Architecture similar to QSANN with improved PQC structure for single-qubit measurement
+- Parallel strategies at attention and batch levels; theoretical training speedup of $$3 \times bs \times n$$
+- Results on MC and RP datasets: MC 100% accuracy, RP 83.87% — slightly outperformed the simulator
+- **First demonstration of quantum self-attention feasibility on real NISQ hardware**
+- Demonstrates noise-adaptive design can overcome NISQ imperfections
+
+---
+layout: table
+title: "PQC-Based Approaches: Representative Works"
+caption: "Selected representative papers across the four quantization strategy categories"
+headers: ["Category", "Key Work", "Year", "Quantum Tool", "Application"]
+rows:
+  - ["QKV-only Mapping", "QSANN (Li et al.)", "2022", "PQC, GPQSA", "NLP"]
+  - ["QKV-only Mapping", "Zhang et al.", "2024", "PQC, APDM", "NLP & CV"]
+  - ["Pairwise (inner-product)", "QMSAN (Chen et al.)", "2024", "PQC, swap test", "NLP"]
+  - ["Pairwise (inner-product)", "Zhao et al.", "2024", "PQC, quantum kernel", "CV"]
+  - ["Holistic Attention", "Kerenidis et al.", "2022", "RBS gate, QOL", "CV"]
+  - ["Quantum-Assisted Opt.", "Evans et al.", "2024", "PQC, QFT", "—"]
+---
+
+---
+layout: divider
+title: "Key Challenges and Open Questions"
+---
+
+---
+layout: comparison
+title: "Technical Challenges in Quantum Transformers"
+---
+**Training Challenges**
+
+- **Barren Plateaus**: gradients vanish exponentially with system size — training becomes intractable for large PQCs
+- **Generalization**: quantum models may overfit on small datasets
+- **Data encoding overhead**: classical-to-quantum encoding costs can negate quantum speedups
+
+<!-- split -->
+
+**Hardware Challenges**
+
+- **NISQ constraints**: high error rates, limited qubit counts, and short coherence times
+- **Scalability**: unclear if advantages persist beyond small benchmarks
+- **Measurement bottleneck**: extracting classical information requires many measurement shots
+
+---
+layout: comparison
+title: "PQC vs. QLA: Where Are We?"
+---
+**PQC-based (Near-term)**
+
+- Demonstrated on real NISQ hardware
+- Quantum Enhanced Representation validated on small benchmarks
+- Open question: genuine sub-quadratic speedup?
+
+<!-- split -->
+
+**QLA-based (Long-term)**
+
+- Theoretical exponential speedup promised
+- Requires fault-tolerant quantum computers
+- Training feasibility and barren plateaus remain fundamental obstacles
+
+---
+layout: two-column
+title: "Future Directions"
+proportion: 50/50
+left:
+  type: diagram
+  alt_text: "Roadmap diagram showing near-term hybrid quantum-classical approaches on the left and long-term theory-driven fault-tolerant designs on the right, with domain applications spanning both"
+  source: |
+    graph TD
+      A[Near-term] --> B[Hybrid quantum-classical]
+      A --> C[Improved encoding schemes]
+      A --> D[Barren plateau mitigation]
+      E[Long-term] --> F[Fault-tolerant architectures]
+      E --> G[Theory-driven QLA designs]
+      H[Both] --> I[Domain applications: physics chemistry]
+      style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+      style E fill:#f0883e,stroke:#f0883e,color:#0d1117
+      style H fill:#3fb950,stroke:#3fb950,color:#0d1117
+---
+- **Scaling into large architectures**: integrate quantum layers into GPT/BERT-scale models
+- **Hybrid designs**: quantum for bottleneck operations; classical elsewhere
+- **Improved encoding**: reduce data encoding overhead; develop domain-aware schemes
+- **Barren plateau mitigation**: layerwise training, geometric initialization
+- **Domain applications**: physics, chemistry — inherently quantum data
+
+---
+layout: summary
+title: "Key Takeaways: Quantum Transformers Survey"
+---
+- **Core motivation**: classical Transformer self-attention is $$O(N^2)$$; quantum approaches aim to reduce this bottleneck
+- **Two paradigms**: PQC-based (near-term, NISQ) and QLA-based (long-term, fault-tolerant)
+- **Four PQC strategies**: QKV-only mapping, quantum pairwise attention, quantum holistic attention, quantum-assisted optimization — ordered by depth of quantization
+- **Demonstrated so far**: quantum enhanced representation on small benchmarks; first real hardware execution on Wukong (72 qubits)
+- **Open questions**: genuine algorithmic speedup, scalability, barren plateaus, and training feasibility remain unresolved
+- **Outlook**: promising for physics/chemistry domains with inherently quantum data; hybrid designs most practical near-term

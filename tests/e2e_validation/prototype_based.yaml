@@ -1,0 +1,269 @@
+---
+title: "Prototype-Based Clustering: Fuzzy C-Means, Mixture Models, and Self-Organizing Maps"
+author: "Tan, Steinbach, Karpatne, Kumar"
+date: 2026-03-22
+theme: dark
+font: IBM Plex Sans
+---
+
+---
+layout: title
+title: "Prototype-Based Clustering"
+subtitle: "Fuzzy C-Means, Mixture Models, and Self-Organizing Maps — Chapter 9"
+---
+
+---
+layout: hero
+title: "Beyond Hard Assignments"
+---
+Every data point belongs to every cluster — the question is only **how much**. Prototype-based soft clustering opens the door to probabilistic and topological views of cluster structure.
+
+---
+layout: comparison
+title: "Hard (Crisp) vs. Soft (Fuzzy) Clustering"
+---
+**Hard (Crisp) Clustering**
+
+- Each point belongs to exactly one cluster
+- Weight $$w_{ij} \in \{0, 1\}$$
+- Classic K-means: assign to nearest centroid
+- Simple and fast; loses boundary information
+
+<!-- split -->
+
+**Soft (Fuzzy) Clustering**
+
+- Each point belongs to all clusters with a degree
+- Weight $$w_{ij} \in [0, 1]$$; sum over clusters = 1
+- Captures ambiguity at cluster boundaries
+- More expensive: all points relate to all clusters
+
+---
+layout: two-column
+title: "Fuzzy C-Means: Objective Function"
+proportion: 60/40
+left:
+  type: diagram
+  alt_text: "Diagram showing SSE formula with fuzzifier p applied to weights, connecting cluster centroids to weighted data points"
+  source: |
+    graph TD
+      A["Initialize weights w_ij randomly (sum to 1)"] --> B["Fix c_j, update w_ij"]
+      B --> C["Fix w_ij, update centroids c_j"]
+      C --> D{Converged?}
+      D -->|No| B
+      D -->|Yes| E[Return soft cluster assignments]
+      style A fill:#39c5cf,stroke:#39c5cf,color:#0d1117
+      style E fill:#3fb950,stroke:#3fb950,color:#0d1117
+---
+**SSE with fuzzifier p (p > 1):**
+
+$$\text{SSE} = \sum_{j=1}^{k} \sum_{i=1}^{m} w_{ij}^p \cdot \text{dist}(\mathbf{x}_i, \mathbf{c}_j)^2$$
+
+Constraint: $$\sum_{j=1}^{k} w_{ij} = 1$$
+
+- $$p = 1$$: no fuzziness (reduces to hard clustering)
+- $$p = 2$$: typical choice; smooth weight gradients
+
+---
+layout: steps
+title: "Fuzzy C-Means: Update Equations"
+---
+1. Initialize weights $$w_{ij}$$ randomly, subject to $$\sum_j w_{ij} = 1$$
+2. Update centroids: $$\mathbf{c}_j = \sum_{i=1}^{m} w_{ij}^p \mathbf{x}_i \,/\, \sum_{i=1}^{m} w_{ij}^p$$
+3. Update weights: $$w_{ij} = \frac{1}{\text{dist}(\mathbf{x}_i, \mathbf{c}_j)^{2/(p-1)}} \Bigg/ \sum_{q=1}^{k} \frac{1}{\text{dist}(\mathbf{x}_i, \mathbf{c}_q)^{2/(p-1)}}$$
+4. Repeat steps 2–3 until convergence (weights stabilize)
+
+---
+layout: content
+title: "Fuzzy C-Means: Practical Example"
+---
+- Point x = 2.5, cluster centers c1 = 1 and c2 = 5, with p = 2:
+  - SSE is minimized when $$w_{x1} = 0.74, \; w_{x2} = 0.36$$
+- Compared to hard clustering ($$w_{x1} = 1, w_{x2} = 0$$), SSE drops from 2.25 to 1.654
+- Visualization: color each point by maximum membership weight (red = strong, blue = weak)
+- Points at cluster boundaries get nearly equal weights — genuine ambiguity is preserved
+
+---
+layout: content
+title: "Fuzzy C-Means: Application to Image Segmentation"
+---
+- Modified fuzzy c-means used in **fMRI image segmentation**
+- Each pixel belongs to multiple tissue types with varying degree
+- Key references: Gong et al. (2013), Ahmed et al. (2002)
+- Fuzzy membership naturally models transition zones between tissue regions
+- Outperforms hard segmentation for blurry boundaries in medical imaging
+- Also used in: document clustering, remote sensing, anomaly detection
+
+---
+layout: divider
+title: "Mixture Model Clustering"
+---
+
+---
+layout: two-column
+title: "Mixture Models: Probabilistic Foundations"
+proportion: 50/50
+left:
+  type: diagram
+  alt_text: "Diagram showing mixture model where data points are generated from a mixture of Gaussian distributions, with the EM algorithm iterating between expectation and maximization steps"
+  source: |
+    graph TD
+      A[Data from mixture of distributions] --> B[Gaussian GMM most common]
+      B --> C[E-step: compute P(C_j | x_i) for all points]
+      C --> D[M-step: update mu sigma pi to maximize likelihood]
+      D --> E{Parameters converged?}
+      E -->|No| C
+      E -->|Yes| F[Clusters are fitted Gaussian components]
+      style A fill:#39c5cf,stroke:#39c5cf,color:#0d1117
+      style F fill:#3fb950,stroke:#3fb950,color:#0d1117
+---
+**Model assumptions:**
+
+- Data points arise from a **mixture of distributions** (typically Gaussian)
+- Parameters estimated via **Expectation-Maximization (EM)**
+- K-means is a special case (hard E-step, spherical covariances)
+- Provides compact cluster descriptions: $$(\mu_j, \Sigma_j, \pi_j)$$
+
+---
+layout: content
+title: "Probabilistic Clustering: Point Assignment"
+---
+- Probability that point $$\mathbf{x}_i$$ belongs to Gaussian component j:
+
+$$\text{prob}(x_i | \Theta) = \frac{1}{\sqrt{2\pi}\sigma} e^{-(x-\mu)^2 / 2\sigma^2}$$
+
+- Posterior via Bayes' rule: $$P(C_j | \mathbf{x}_i) = \frac{p(\mathbf{x}_i | C_j) p(C_j)}{\sum_{l=1}^{k} p(\mathbf{x}_i | C_l) p(C_l)}$$
+- Each point assigned to the **distribution for which it is most probable**
+- Unlike fuzzy c-means, weights are probabilities with full statistical interpretation
+
+---
+layout: steps
+title: "EM Algorithm: Detailed Steps (Algorithm 9.2)"
+---
+1. Select initial model parameters (can be random or K-means initialization)
+2. **E-step**: for each point, compute $$P(C_j | \mathbf{x}_i, \Theta)$$ under all distributions
+3. **M-step**: update parameters $$(\mu_j, \Sigma_j, \pi_j)$$ to maximize expected log-likelihood
+4. Repeat until parameters change by less than threshold
+5. Assign each point to highest-probability cluster (or retain soft assignments)
+
+---
+layout: table
+title: "EM vs. K-Means: Side-by-Side"
+caption: "Structural comparison of EM for Gaussian Mixture Models and classic K-means"
+headers: ["Step", "EM for GMMs", "K-means"]
+rows:
+  - ["Assignment", "Soft: compute P(C_j | x_i) for all j", "Hard: assign to nearest centroid"]
+  - ["Update", "Update mu, sigma, pi using soft weights", "Update mu as mean of assigned points"]
+  - ["Cluster view", "Probability distribution (Gaussian)", "Centroid with no spread or variance"]
+  - ["Assignment type", "Probabilistic (soft)", "Deterministic (hard)"]
+  - ["Underlying model", "Generative mixture model", "No generative model; just distances"]
+---
+
+---
+layout: content
+title: "Problems with EM"
+---
+- **Convergence can be slow** — many iterations may be needed
+- **Local maxima only** — initialization matters; K-means init recommended
+- **Statistical assumptions**: requires data to approximately follow Gaussian distributions
+- **Parameter growth**: Gaussian covariance matrices scale as $$O(d^2)$$ vs. K-means $$O(d)$$
+- **Dense and sparse clusters**: EM may fail when cluster variance ratios are extreme
+- **Alternatives**: Method of Moments, MCMC, Spectral Methods
+
+---
+layout: divider
+title: "Self-Organizing Maps"
+---
+
+---
+layout: two-column
+title: "Self-Organizing Maps: Topology-Preserving Clustering"
+proportion: 50/50
+left:
+  type: diagram
+  alt_text: "3x3 grid of SOM centroids indexed (0,0) through (2,2), showing spatial relationships between centroids that mirror relationships in the data space"
+  source: |
+    graph TD
+      A["(0,0)"] --- B["(0,1)"]
+      B --- C["(0,2)"]
+      A --- D["(1,0)"]
+      D --- E["(1,1)"]
+      E --- F["(1,2)"]
+      B --- E
+      C --- F
+      D --- G["(2,0)"]
+      G --- H["(2,1)"]
+      H --- I["(2,2)"]
+      E --- H
+      F --- I
+      style E fill:#39c5cf,stroke:#39c5cf,color:#0d1117
+---
+**SOM key ideas:**
+
+- Centroid-based like K-means — fixed number of clusters
+- **Spatial relationship of centroids is also specified** (a grid)
+- Points processed one at a time
+- Nearest centroid updated, and **neighboring centroids** updated too
+- Updates weighted by spatial proximity to the closest centroid
+
+---
+layout: steps
+title: "SOM Algorithm: Basic Steps (Algorithm 9.3)"
+---
+1. Initialize centroids as vectors in $$\mathbb{R}^d$$ (d = number of attributes)
+2. Select the next data point (iterate through all points repeatedly)
+3. Determine the closest centroid to the current point
+4. Update that centroid and its spatial neighbors (within a specified neighborhood radius)
+5. Repeat until centroids don't change significantly or a threshold is exceeded
+6. Assign each object to its closest centroid; return centroids and cluster assignments
+
+---
+layout: content
+title: "SOM: Key Properties and Applications"
+---
+- **Distance-weighted updates**: centroids farther from the winner are affected less
+- **Decreasing impact**: update magnitude decreases with each iteration (cooling schedule)
+- **Dimensionality reduction**: a 2D SOM grid visualizes high-dimensional cluster structure
+- **Example (LA Times)**: SOM applied to newspaper documents — Sports, Metro, Entertainment, Financial sections emerge as spatially contiguous regions on the grid
+- Useful for **topology preservation**: similar data points map to nearby grid positions
+
+---
+layout: comparison
+title: "Issues with Self-Organizing Maps"
+---
+**Computational Challenges**
+
+- High computational complexity
+- No guarantee of convergence
+- Choice of grid size and topology is somewhat arbitrary
+- Lacks a specific global objective function being optimized
+
+<!-- split -->
+
+**When SOM Still Wins**
+
+- Excellent for visualization of high-dimensional data on 2D grids
+- Interpretable cluster structure via spatial layout
+- Handles large datasets incrementally
+- Widely used in bioinformatics, document clustering, image quantization
+
+---
+layout: table
+title: "Prototype-Based Methods: Comparison"
+caption: "Key characteristics of fuzzy c-means, mixture models (EM), and self-organizing maps"
+headers: ["Method", "Assignment Type", "Cluster Shape", "Key Parameter", "Main Strength"]
+rows:
+  - ["Fuzzy C-Means", "Soft (weights)", "Spherical/elliptical", "Fuzzifier p", "Handles boundary ambiguity"]
+  - ["Mixture Models (EM)", "Probabilistic (soft)", "Elliptical (Gaussian)", "Number of components k", "Full statistical model"]
+  - ["Self-Organizing Maps", "Hard (nearest centroid)", "Any (topology-based)", "Grid size, neighborhood", "2D visualization of structure"]
+---
+
+---
+layout: summary
+title: "Key Takeaways: Prototype-Based Clustering"
+---
+- **Fuzzy C-Means** generalizes K-means with soft assignments via fuzzifier p; points belong to all clusters with varying weights; minimizes a weighted SSE
+- **Mixture Models (EM)** provide a fully probabilistic framework; K-means is a special case; EM alternates E-step (soft assignments) and M-step (parameter updates)
+- **Self-Organizing Maps** add spatial topology to centroid-based clustering; neighboring centroids co-evolve, enabling topology-preserving 2D visualizations
+- All three methods use **soft or probabilistic assignments** — a key generalization of hard clustering
+- Choice depends on: need for interpretability (SOM), statistical guarantees (EM), or boundary handling (Fuzzy C-Means)

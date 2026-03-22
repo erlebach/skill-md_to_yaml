@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Survey of Quantum Transformers: Architectures, Challenges and Outlooks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root[data-theme="dark"] {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #f0a500;
+      --border: #30363d;
+      --font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    :root[data-theme="light"] {
+      --bg: #ffffff;
+      --bg2: #f6f8fa;
+      --text: #1f2328;
+      --muted: #656d76;
+      --accent: #b06800;
+      --border: #d1d9e0;
+      --font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-family);
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 1000;
+      background: var(--accent);
+      color: var(--bg);
+      padding: 0.5rem 1rem;
+    }
+    .skip-link:focus { left: 0; }
+
+    #slide-counter {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+      z-index: 100;
+    }
+
+    main {
+      scroll-snap-type: y mandatory;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    section[role="group"] {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 1in;
+      scroll-snap-align: start;
+    }
+    /* Title and divider slides: fully centered */
+    section[role="group"].slide-title,
+    section[role="group"].slide-divider {
+      justify-content: center;
+    }
+    /* Content area: fills remaining space after title, centers content vertically */
+    .slide-content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Title slide (h1) — ADA projection scale */
+    h1 {
+      font-size: clamp(48px, 10vw, 96px);
+      font-weight: 700;
+      line-height: 1.0;
+      text-wrap: balance;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .slide-title .subtitle { font-size: clamp(22px, 2.8vw, 34px); text-align: center; color: var(--muted); margin-bottom: 0.5rem; }
+    .slide-title .author { font-size: clamp(20px, 2.2vw, 28px); text-align: center; color: var(--muted); }
+
+    h2 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      text-wrap: balance;
+      margin-bottom: 1rem;
+      color: var(--accent);
+      text-align: center;
+    }
+    h3 {
+      font-size: clamp(22px, 2.8vw, 34px);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    /* Divider h2 keeps its own larger size */
+    .divider-slide h2 { font-size: clamp(48px, 8vw, 80px); }
+
+    .slide-body { font-size: clamp(20px, 2.2vw, 28px); line-height: 1.6; }
+    .slide-body ul,
+    .slide-body ol { padding-left: 2rem; }
+    .slide-body ol { padding-left: 2.5rem; }
+    .slide-body ol li { padding-left: 0.5rem; }
+    .slide-body li { margin-bottom: 0.75em; }
+
+    /* Hero slide description */
+    .hero-description {
+      font-size: clamp(22px, 2.8vw, 34px);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Figure caption */
+    figcaption {
+      font-size: clamp(18px, 1.8vw, 24px);
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    .two-col { display: grid; gap: 2rem; align-items: center; }
+    .two-col-50-50 { grid-template-columns: 1fr 1fr; }
+    .two-col-40-60 { grid-template-columns: 2fr 3fr; }
+    .two-col-60-40 { grid-template-columns: 3fr 2fr; }
+    .two-col img { max-width: 100%; max-height: 60vh; object-fit: contain; display: block; margin: 0 auto; }
+    /* When both columns have figures: center images, add spacing around the grid */
+    .two-col-both { justify-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem; }
+    .two-col-caption-above { margin-bottom: 1.5rem; }
+    .two-col-both img { max-height: 55vh; }
+
+    blockquote {
+      font-size: clamp(28px, 3.5vw, 44px);
+      font-style: italic;
+      border-left: 4px solid var(--accent);
+      padding-left: 1.5rem;
+    }
+    .attribution { color: var(--muted); margin-top: 1rem; }
+
+    pre {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 70vh;
+      font-size: clamp(15px, 1.6vw, 20px);
+      line-height: 1.6;
+    }
+    pre:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    code { font-family: 'IBM Plex Mono', monospace; font-size: clamp(15px, 1.6vw, 20px); }
+
+    .slide-code { overflow: auto; max-height: 75vh; border-radius: 0.5rem; }
+    .slide-codetable { width: 100%; border-collapse: collapse; }
+    .slide-codetable td.linenos { vertical-align: top; padding-right: 0.5em; border-right: 1px solid var(--border); user-select: none; width: 1%; white-space: nowrap; }
+    .slide-codetable td.code { vertical-align: top; padding-left: 1em; width: 99%; }
+    .slide-codetable td.code pre { border: none; padding: 0; margin: 0; max-height: none; }
+
+    .diagram-container { text-align: center; max-height: 75vh; overflow: auto; }
+    .diagram-container svg { max-width: 100%; max-height: 70vh; }
+    pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; }
+
+    .figure-container { text-align: center; }
+    .figure-container img { max-width: 80%; max-height: 60vh; }
+
+    .divider-slide { align-items: center; text-align: center; }
+
+    .steps-list {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+    }
+    .steps-list li {
+      counter-increment: step;
+      margin-bottom: 1rem;
+      padding-left: 2.5rem;
+      position: relative;
+    }
+    .steps-list li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .summary-list { list-style: none; padding: 0; }
+    .summary-list li::before { content: '\2713 '; color: var(--accent); font-weight: 700; }
+
+    .table-scroll-wrapper { overflow-x: auto; max-width: 100%; }
+    .table-scroll-wrapper:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .table-scroll-wrapper table { width: 100%; border-collapse: collapse; }
+    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; }
+    .table-scroll-wrapper caption {
+      font-size: clamp(18px, 1.8vw, 24px);
+      font-weight: bold;
+      caption-side: bottom;
+      margin-top: 0.75em;
+      text-align: left;
+      color: var(--muted);
+    }
+    .code-language-label { position: absolute; top: 0.25em; right: 0.5em; font-size: 0.75em; opacity: 0.6; }
+
+    .slide-notes { display: none; }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <main id="main-content" role="region" aria-roledescription="carousel" aria-label="A Survey of Quantum Transformers: Architectures, Challenges and Outlooks">
+    <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / 21</div>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-1" role="group" class="slide-title" aria-roledescription="slide" aria-label="Slide 1 of 21" aria-labelledby="slide-1-heading">
+      <h1 id="slide-1-heading">A Survey of Quantum Transformers</h1>
+<p class="subtitle">Architectures, Challenges and Outlooks — Zhang et al., Nov 2025</p>
+
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-2" role="group" class="slide-hero" aria-roledescription="slide" aria-label="Slide 2 of 21" aria-labelledby="slide-2-heading">
+      <h2 id="slide-2-heading">The Central Question</h2>
+<div class="slide-content-area">
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-3" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 3 of 21" aria-labelledby="slide-3-heading">
+      <h2 id="slide-3-heading">Why Quantum Transformers? The Motivation</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li>Classical Transformer self-attention: complexity grows as <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>O</mi><mo stretchy="false">&#x00028;</mo><msup><mi>N</mi><mn>2</mn></msup><mo stretchy="false">&#x00029;</mo></mrow></math> with sequence length N</li>
+<li><strong>Quantum Machine Learning (QML)</strong> leverages superposition, entanglement, and interference</li>
+<li>Core goal: reduce quadratic scaling while maintaining or improving expressiveness</li>
+<li>Since 2022: rapid expansion of research into Quantum Transformer architectures</li>
+<li>Applications span NLP, computer vision, high-energy physics, chemistry, finance, fluid dynamics</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-4" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 4 of 21" aria-labelledby="slide-4-heading">
+      <h2 id="slide-4-heading">Two Main Research Paradigms</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Strategic roadmap diagram showing two paradigms: near-term PQC-based path targeting quantum enhanced representation on NISQ hardware, and long-term QLA-based path targeting exponential speedup on fault-tolerant quantum computers">
+          <pre class="mermaid" aria-hidden="true">graph LR
+  A[Classical Transformer O(N^2) bottleneck] --&gt; B[PQC-based paradigm]
+  A --&gt; C[QLA-based paradigm]
+  B --&gt; D[NISQ hardware]
+  D --&gt; E[Quantum Enhanced Representation]
+  C --&gt; F[Fault-tolerant quantum computers]
+  F --&gt; G[Theoretical Exponential Speedup]
+  style B fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style C fill:#f0883e,stroke:#f0883e,color:#0d1117
+  style E fill:#3fb950,stroke:#3fb950,color:#0d1117
+  style G fill:#3fb950,stroke:#3fb950,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><p><strong>PQC-based (near-term):</strong>
+- Parameterized Quantum Circuits on NISQ devices
+- Replaces classical weight layers with PQCs
+- Validated on small-scale benchmarks</p>
+<p><strong>QLA-based (long-term):</strong>
+- Quantum Linear Algebra techniques (QSVT, block encoding)
+- Theoretical exponential speedup
+- Requires fault-tolerant quantum computers</p></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-5" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 5 of 21" aria-labelledby="slide-5-heading">
+      <h2 id="slide-5-heading">Classical Transformer: Quick Recap</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>Self-Attention</strong>: each token attends to all others; captures long-range dependencies</li>
+<li><strong>QKV Mapping</strong>: input projected to Queries (Q), Keys (K), Values (V) via learned matrices</li>
+<li><strong>Attention matrix</strong>: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x1D400;</mi><mo>&#x0003D;</mo><mtext>softmax</mtext><mrow><mo stretchy="true" fence="true" form="prefix">&#x00028;</mo><mfrac><mrow><msup><mrow><mi mathvariant="bold">Q</mi><mi mathvariant="bold">K</mi></mrow><mi>T</mi></msup></mrow><mrow><msqrt><mrow><msub><mi>d</mi><mi>k</mi></msub></mrow></msqrt></mrow></mfrac><mo stretchy="true" fence="true" form="postfix">&#x00029;</mo></mrow></mrow></math>; output: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x1D418;</mi><mo>&#x0003D;</mo><mi>&#x1D400;</mi><mi>&#x1D415;</mi></mrow></math></li>
+<li><strong>Multi-head attention</strong>: h independent attention heads concatenated and projected</li>
+<li><strong>Feed-Forward Network</strong>: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mtext>FFN</mtext><mo stretchy="false">&#x00028;</mo><mi>&#x1D419;</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mo>max</mo><mo stretchy="false">&#x00028;</mo><mn>0</mn><mo>&#x0002C;</mo><msub><mrow><mi mathvariant="bold">Z</mi><mi mathvariant="bold">W</mi></mrow><mn>1</mn></msub><mo>&#x0002B;</mo><msub><mi>&#x1D41B;</mi><mn>1</mn></msub><mo stretchy="false">&#x00029;</mo><msub><mi>&#x1D416;</mi><mn>2</mn></msub><mo>&#x0002B;</mo><msub><mi>&#x1D41B;</mi><mn>2</mn></msub></mrow></math></li>
+<li><strong>Residual + LayerNorm</strong>: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x1D419;</mi><mo>&#x0003D;</mo><mtext>LayerNorm</mtext><mo stretchy="false">&#x00028;</mo><msub><mi>&#x1D417;</mi><mtext>in</mtext></msub><mo>&#x0002B;</mo><mi>f</mi><mo stretchy="false">&#x00028;</mo><msub><mi>&#x1D417;</mi><mtext>in</mtext></msub><mo stretchy="false">&#x00029;</mo><mo stretchy="false">&#x00029;</mo></mrow></math></li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-6" role="group" class="slide-divider" aria-roledescription="slide" aria-label="Slide 6 of 21" aria-labelledby="slide-6-heading">
+      <div class="divider-slide">
+  <h2 id="slide-6-heading">QML Fundamentals</h2>
+  <p class="visually-hidden">Section divider</p>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-7" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 7 of 21" aria-labelledby="slide-7-heading">
+      <h2 id="slide-7-heading">Quantum States and Data Encoding</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li>A quantum state of n qubits: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mo stretchy="false">&#x0007C;</mo><mi>&#x003C8;</mi><mi>&#x027E9;</mi><mo>&#x0003D;</mo><munderover><mo>&#x02211;</mo><mrow><mi>i</mi><mo>&#x0003D;</mo><mn>0</mn></mrow><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>&#x02212;</mo><mn>1</mn></mrow></munderover><msub><mi>&#x003B1;</mi><mi>i</mi></msub><mo stretchy="false">&#x0007C;</mo><mi>i</mi><mi>&#x027E9;</mi></mrow></math>; amplitudes satisfy <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><munder><mo>&#x02211;</mo><mi>i</mi></munder><mo stretchy="false">&#x0007C;</mo><msub><mi>&#x003B1;</mi><mi>i</mi></msub><msup><mo stretchy="false">&#x0007C;</mo><mn>2</mn></msup><mo>&#x0003D;</mo><mn>1</mn></mrow></math></li>
+<li><strong>Qubit Encoding (QE)</strong>: classical scalar x encoded via rotation gate <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>R</mi><mi>y</mi></msub><mo stretchy="false">&#x00028;</mo><mi>x</mi><mo>&#x0002F;</mo><mn>2</mn><mo stretchy="false">&#x00029;</mo><mo stretchy="false">&#x0007C;</mo><mn>0</mn><mi>&#x027E9;</mi></mrow></math></li>
+<li><strong>Amplitude Encoding (AE)</strong>: vector <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x1D431;</mi><mo>&#x0003D;</mo><mo stretchy="false">&#x00028;</mo><msub><mi>x</mi><mn>0</mn></msub><mo>&#x0002C;</mo><mi>&#x02026;</mi><mo>&#x0002C;</mo><msub><mi>x</mi><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>&#x02212;</mo><mn>1</mn></mrow></msub><mo stretchy="false">&#x00029;</mo></mrow></math> embedded directly in quantum amplitudes — exponentially space-efficient</li>
+<li><strong>Data Encoding is critical</strong>: determines how classical information enters quantum circuits</li>
+<li>Trade-off: expressive encodings (AE) require complex circuit constructions</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-8" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 8 of 21" aria-labelledby="slide-8-heading">
+      <h2 id="slide-8-heading">Parameterized Quantum Circuits (PQCs)</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-60-40">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="PQC structure showing input quantum state passing through alternating rotation gates Rx, Ry and entangling CNOT gates across four qubit lines, with trainable parameters theta controlling rotation angles">
+          <pre class="mermaid" aria-hidden="true">graph LR
+  A[Input state psi_0] --&gt; B[&#34;Layer 1: Rx Ry rotations&#34;]
+  B --&gt; C[CNOT entangling gates]
+  C --&gt; D[&#34;Layer 2: Rx Ry rotations&#34;]
+  D --&gt; E[More CNOT gates]
+  E --&gt; F[&#34;Output state psi(theta)&#34;]
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style F fill:#3fb950,stroke:#3fb950,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><ul>
+<li>PQCs extend quantum circuits with <strong>trainable parameters</strong> <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003B8;</mi></mrow></math></li>
+<li>Unitary: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>U</mi><mo stretchy="false">&#x00028;</mo><mi>&#x003B8;</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><msub><mi>U</mi><mi>L</mi></msub><mo stretchy="false">&#x00028;</mo><msub><mi>&#x003B8;</mi><mi>L</mi></msub><mo stretchy="false">&#x00029;</mo><mo>&#x022EF;</mo><msub><mi>U</mi><mn>2</mn></msub><mo stretchy="false">&#x00028;</mo><msub><mi>&#x003B8;</mi><mn>2</mn></msub><mo stretchy="false">&#x00029;</mo><msub><mi>U</mi><mn>1</mn></msub><mo stretchy="false">&#x00028;</mo><msub><mi>&#x003B8;</mi><mn>1</mn></msub><mo stretchy="false">&#x00029;</mo></mrow></math></li>
+<li>Used in Variational Quantum Algorithms (VQAs): optimize <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>C</mi><mo stretchy="false">&#x00028;</mo><mi>&#x003B8;</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mi>&#x027E8;</mi><mi>&#x003C8;</mi><mo stretchy="false">&#x00028;</mo><mi>&#x003B8;</mi><mo stretchy="false">&#x00029;</mo><mo stretchy="false">&#x0007C;</mo><mi>H</mi><mo stretchy="false">&#x0007C;</mo><mi>&#x003C8;</mi><mo stretchy="false">&#x00028;</mo><mi>&#x003B8;</mi><mo stretchy="false">&#x00029;</mo><mi>&#x027E9;</mi></mrow></math></li>
+<li>Classical optimizer updates <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003B8;</mi></mrow></math>; combines quantum expressiveness with classical flexibility</li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-9" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 9 of 21" aria-labelledby="slide-9-heading">
+      <h2 id="slide-9-heading">Key Quantum Tools: Kernel, Swap Test, QSVT</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>Quantum Kernel</strong>: maps classical data to Hilbert space; <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>K</mi><mo stretchy="false">&#x00028;</mo><msub><mi>x</mi><mi>i</mi></msub><mo>&#x0002C;</mo><msub><mi>x</mi><mi>j</mi></msub><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mo stretchy="false">&#x0007C;</mo><mi>&#x027E8;</mi><mi>&#x003C8;</mi><mo stretchy="false">&#x00028;</mo><msub><mi>x</mi><mi>i</mi></msub><mo stretchy="false">&#x00029;</mo><mo stretchy="false">&#x0007C;</mo><mi>&#x003C8;</mi><mo stretchy="false">&#x00028;</mo><msub><mi>x</mi><mi>j</mi></msub><mo stretchy="false">&#x00029;</mo><mi>&#x027E9;</mi><msup><mo stretchy="false">&#x0007C;</mo><mn>2</mn></msup></mrow></math>; enables quantum-enhanced similarity computation</li>
+<li><strong>Swap Test</strong>: quantum circuit that estimates <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mfrac><mrow><mn>1</mn><mo>&#x0002B;</mo><mo stretchy="false">&#x0007C;</mo><mi>&#x027E8;</mi><mi>&#x003C8;</mi><mo stretchy="false">&#x0007C;</mo><mi>&#x003D5;</mi><mi>&#x027E9;</mi><msup><mo stretchy="false">&#x0007C;</mo><mn>2</mn></msup></mrow><mrow><mn>2</mn></mrow></mfrac></mrow></math>; measures similarity between two quantum states without full state tomography</li>
+<li><strong>Hadamard Test</strong>: estimates <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mtext>Re</mtext><mo stretchy="false">&#x00028;</mo><mi>&#x027E8;</mi><mi>&#x003C8;</mi><mo stretchy="false">&#x0007C;</mo><mi>U</mi><mo stretchy="false">&#x0007C;</mo><mi>&#x003C8;</mi><mi>&#x027E9;</mi><mo stretchy="false">&#x00029;</mo></mrow></math> using ancilla qubit; evaluates expectation values of unitary operators</li>
+<li><strong>QSVT</strong> (Quantum Singular Value Transformation): powerful framework for quantum linear algebra; enables exponential speedups for matrix operations in fault-tolerant settings</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-10" role="group" class="slide-divider" aria-roledescription="slide" aria-label="Slide 10 of 21" aria-labelledby="slide-10-heading">
+      <div class="divider-slide">
+  <h2 id="slide-10-heading">PQC-Based Quantum Transformer Architectures</h2>
+  <p class="visually-hidden">Section divider</p>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-11" role="group" class="slide-diagram" aria-roledescription="slide" aria-label="Slide 11 of 21" aria-labelledby="slide-11-heading">
+      <h2 id="slide-11-heading">Four PQC Quantization Strategies</h2>
+<div class="slide-content-area">
+
+  <div class="diagram-container">
+    <div role="img" aria-label="Taxonomy diagram showing four categories of PQC-based quantum transformers: QKV-only Quantum Mapping, Quantum Pairwise Attention with inner-product or generalized similarity, Quantum Holistic Attention, and Quantum-Assisted Optimization"><pre class="mermaid" aria-hidden="true">graph TD
+  A[PQC-Based Quantum Transformers] --&gt; B[QKV-only Quantum Mapping]
+  A --&gt; C[Quantum Pairwise Attention]
+  A --&gt; D[Quantum Holistic Attention]
+  A --&gt; E[Quantum-Assisted Optimization]
+  C --&gt; C1[Inner-product similarity]
+  C --&gt; C2[Generalized similarity]
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style B fill:#3fb950,stroke:#3fb950,color:#0d1117
+  style C fill:#f0883e,stroke:#f0883e,color:#0d1117
+  style D fill:#3fb950,stroke:#3fb950,color:#0d1117
+  style E fill:#f0883e,stroke:#f0883e,color:#0d1117</pre></div>
+  </div>
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-12" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 12 of 21" aria-labelledby="slide-12-heading">
+      <h2 id="slide-12-heading">QKV-Only Quantum Mapping</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-60-40">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Architecture diagram showing input data x_i encoded into quantum state, passed through PQC to produce quantum Q K V vectors, followed by classical softmax attention computation">
+          <pre class="mermaid" aria-hidden="true">graph LR
+  A[Input x_i] --&gt; B[Data Encoding]
+  B --&gt; C[PQC maps to Q K V]
+  C --&gt; D[&#34;Classical: softmax(QK^T/sqrt(dk))&#34;]
+  D --&gt; E[Output Y = AV]
+  style C fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style D fill:#f0883e,stroke:#f0883e,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><ul>
+<li>Only the <strong>Q/K/V mapping</strong> step is quantized</li>
+<li>Attention score computation remains <strong>classical</strong></li>
+<li>Representative: QSANN (Li et al., 2022) — first quantum self-attention neural network</li>
+<li>Uses PQC to generate Q, K, V in quantum Hilbert space; measurements yield classical vectors</li>
+<li>Advantage: compatible with standard Transformer architectures</li>
+<li>Limitation: does not reduce the <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>O</mi><mo stretchy="false">&#x00028;</mo><msup><mi>N</mi><mn>2</mn></msup><mo stretchy="false">&#x00029;</mo></mrow></math> classical attention bottleneck</li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-13" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 13 of 21" aria-labelledby="slide-13-heading">
+      <h2 id="slide-13-heading">Quantum Pairwise Attention</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li>Q, K, V remain as <strong>quantum states</strong> throughout attention computation</li>
+<li>Pairwise token similarities computed using quantum tools:</li>
+<li><strong>Swap Test</strong>: directly estimates <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mo stretchy="false">&#x0007C;</mo><mi>&#x027E8;</mi><msub><mi>q</mi><mi>i</mi></msub><mo stretchy="false">&#x0007C;</mo><msub><mi>k</mi><mi>j</mi></msub><mi>&#x027E9;</mi><msup><mo stretchy="false">&#x0007C;</mo><mn>2</mn></msup></mrow></math> — inner-product similarity</li>
+<li><strong>Hadamard Test</strong>: extracts real part of inner products</li>
+<li><strong>Quantum Kernel</strong>: computes generalized similarity <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>f</mi><mo stretchy="false">&#x00028;</mo><msub><mi>q</mi><mi>i</mi></msub><mo>&#x0002C;</mo><msub><mi>k</mi><mi>j</mi></msub><mo stretchy="false">&#x00029;</mo></mrow></math></li>
+<li>Deeper quantization than QKV-only — attention itself runs on quantum hardware</li>
+<li><strong>Quantum Mixed-State Self-Attention Network (QMSAN)</strong>: uses swap test for pairwise similarities</li>
+<li>Validated on small NLP classification tasks; shows competitive accuracy</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-14" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 14 of 21" aria-labelledby="slide-14-heading">
+      <h2 id="slide-14-heading">Quantum Holistic Attention</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Holistic attention architecture showing all N tokens loaded together into global quantum embedding, then processed by token mixing unitary operation without computing pairwise similarities explicitly">
+          <pre class="mermaid" aria-hidden="true">graph TD
+  A[&#34;All N tokens x_1 ... x_N&#34;] --&gt; B[Global Quantum Embedding]
+  B --&gt; C[Token Mixing Unitary]
+  C --&gt; D[Output: mixed token representations]
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style C fill:#f0883e,stroke:#f0883e,color:#0d1117
+  style D fill:#3fb950,stroke:#3fb950,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><ul>
+<li>Captures <strong>global token dependencies</strong> in a single quantum transformation</li>
+<li>No explicit pairwise similarity computation (avoids <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>O</mi><mo stretchy="false">&#x00028;</mo><msup><mi>N</mi><mn>2</mn></msup><mo stretchy="false">&#x00029;</mo></mrow></math> classically)</li>
+<li>Uses holistic quantum transformations: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>&#x1D4B0;</mi><mtext>mix</mtext></msub><mo stretchy="false">&#x00028;</mo><mo stretchy="false">&#x0007B;</mo><msub><mi>x</mi><mi>i</mi></msub><msubsup><mo stretchy="false">&#x0007D;</mo><mrow><mi>i</mi><mo>&#x0003D;</mo><mn>1</mn></mrow><mi>N</mi></msubsup><mo stretchy="false">&#x00029;</mo></mrow></math></li>
+<li>Potentially achieves <strong>sub-quadratic</strong> speedup</li>
+<li>Still an open research question whether genuine algorithmic advantage is achieved</li>
+<li>Examples: Kerenidis et al. (2022), Alessandro et al. (2024)</li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-15" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 15 of 21" aria-labelledby="slide-15-heading">
+      <h2 id="slide-15-heading">Real Quantum Hardware: Wukong Experiment</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li>He et al. (2024) executed a quantum Transformer on the <strong>72-qubit Wukong</strong> superconducting quantum computer (Chinese Academy of Sciences)</li>
+<li>Architecture similar to QSANN with improved PQC structure for single-qubit measurement</li>
+<li>Parallel strategies at attention and batch levels; theoretical training speedup of <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mn>3</mn><mo>&#x000D7;</mo><mi>b</mi><mi>s</mi><mo>&#x000D7;</mo><mi>n</mi></mrow></math></li>
+<li>Results on MC and RP datasets: MC 100% accuracy, RP 83.87% — slightly outperformed the simulator</li>
+<li><strong>First demonstration of quantum self-attention feasibility on real NISQ hardware</strong></li>
+<li>Demonstrates noise-adaptive design can overcome NISQ imperfections</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-16" role="group" class="slide-table" aria-roledescription="slide" aria-label="Slide 16 of 21" aria-labelledby="slide-16-heading">
+      <h2 id="slide-16-heading">PQC-Based Approaches: Representative Works</h2>
+<div class="slide-content-area">
+<div class="table-scroll-wrapper" tabindex="0" role="region" aria-label="Selected representative papers across the four quantization strategy categories">
+  <table>
+    <caption>Selected representative papers across the four quantization strategy categories</caption>
+    
+    <thead>
+      <tr><th scope="col">Category</th><th scope="col">Key Work</th><th scope="col">Year</th><th scope="col">Quantum Tool</th><th scope="col">Application</th></tr>
+    </thead>
+    
+    <tbody>
+      
+      <tr>
+        
+          
+            <td>QKV-only Mapping</td>
+          
+        
+          
+            <td>QSANN (Li et al.)</td>
+          
+        
+          
+            <td>2022</td>
+          
+        
+          
+            <td>PQC, GPQSA</td>
+          
+        
+          
+            <td>NLP</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>QKV-only Mapping</td>
+          
+        
+          
+            <td>Zhang et al.</td>
+          
+        
+          
+            <td>2024</td>
+          
+        
+          
+            <td>PQC, APDM</td>
+          
+        
+          
+            <td>NLP &amp; CV</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Pairwise (inner-product)</td>
+          
+        
+          
+            <td>QMSAN (Chen et al.)</td>
+          
+        
+          
+            <td>2024</td>
+          
+        
+          
+            <td>PQC, swap test</td>
+          
+        
+          
+            <td>NLP</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Pairwise (inner-product)</td>
+          
+        
+          
+            <td>Zhao et al.</td>
+          
+        
+          
+            <td>2024</td>
+          
+        
+          
+            <td>PQC, quantum kernel</td>
+          
+        
+          
+            <td>CV</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Holistic Attention</td>
+          
+        
+          
+            <td>Kerenidis et al.</td>
+          
+        
+          
+            <td>2022</td>
+          
+        
+          
+            <td>RBS gate, QOL</td>
+          
+        
+          
+            <td>CV</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Quantum-Assisted Opt.</td>
+          
+        
+          
+            <td>Evans et al.</td>
+          
+        
+          
+            <td>2024</td>
+          
+        
+          
+            <td>PQC, QFT</td>
+          
+        
+          
+            <td>—</td>
+          
+        
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-17" role="group" class="slide-divider" aria-roledescription="slide" aria-label="Slide 17 of 21" aria-labelledby="slide-17-heading">
+      <div class="divider-slide">
+  <h2 id="slide-17-heading">Key Challenges and Open Questions</h2>
+  <p class="visually-hidden">Section divider</p>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-18" role="group" class="slide-comparison" aria-roledescription="slide" aria-label="Slide 18 of 21" aria-labelledby="slide-18-heading">
+      <h2 id="slide-18-heading">Technical Challenges in Quantum Transformers</h2>
+<div class="slide-content-area">
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left slide-body"><p><strong>Training Challenges</strong></p>
+<ul>
+<li><strong>Barren Plateaus</strong>: gradients vanish exponentially with system size — training becomes intractable for large PQCs</li>
+<li><strong>Generalization</strong>: quantum models may overfit on small datasets</li>
+<li><strong>Data encoding overhead</strong>: classical-to-quantum encoding costs can negate quantum speedups</li>
+</ul>
+</div>
+  <div class="col-right slide-body">
+
+<p><strong>Hardware Challenges</strong></p>
+<ul>
+<li><strong>NISQ constraints</strong>: high error rates, limited qubit counts, and short coherence times</li>
+<li><strong>Scalability</strong>: unclear if advantages persist beyond small benchmarks</li>
+<li><strong>Measurement bottleneck</strong>: extracting classical information requires many measurement shots</li>
+</ul></div>
+</div>
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-19" role="group" class="slide-comparison" aria-roledescription="slide" aria-label="Slide 19 of 21" aria-labelledby="slide-19-heading">
+      <h2 id="slide-19-heading">PQC vs. QLA: Where Are We?</h2>
+<div class="slide-content-area">
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left slide-body"><p><strong>PQC-based (Near-term)</strong></p>
+<ul>
+<li>Demonstrated on real NISQ hardware</li>
+<li>Quantum Enhanced Representation validated on small benchmarks</li>
+<li>Open question: genuine sub-quadratic speedup?</li>
+</ul>
+</div>
+  <div class="col-right slide-body">
+
+<p><strong>QLA-based (Long-term)</strong></p>
+<ul>
+<li>Theoretical exponential speedup promised</li>
+<li>Requires fault-tolerant quantum computers</li>
+<li>Training feasibility and barren plateaus remain fundamental obstacles</li>
+</ul></div>
+</div>
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-20" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 20 of 21" aria-labelledby="slide-20-heading">
+      <h2 id="slide-20-heading">Future Directions</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Roadmap diagram showing near-term hybrid quantum-classical approaches on the left and long-term theory-driven fault-tolerant designs on the right, with domain applications spanning both">
+          <pre class="mermaid" aria-hidden="true">graph TD
+  A[Near-term] --&gt; B[Hybrid quantum-classical]
+  A --&gt; C[Improved encoding schemes]
+  A --&gt; D[Barren plateau mitigation]
+  E[Long-term] --&gt; F[Fault-tolerant architectures]
+  E --&gt; G[Theory-driven QLA designs]
+  H[Both] --&gt; I[Domain applications: physics chemistry]
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style E fill:#f0883e,stroke:#f0883e,color:#0d1117
+  style H fill:#3fb950,stroke:#3fb950,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><ul>
+<li><strong>Scaling into large architectures</strong>: integrate quantum layers into GPT/BERT-scale models</li>
+<li><strong>Hybrid designs</strong>: quantum for bottleneck operations; classical elsewhere</li>
+<li><strong>Improved encoding</strong>: reduce data encoding overhead; develop domain-aware schemes</li>
+<li><strong>Barren plateau mitigation</strong>: layerwise training, geometric initialization</li>
+<li><strong>Domain applications</strong>: physics, chemistry — inherently quantum data</li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-21" role="group" class="slide-summary" aria-roledescription="slide" aria-label="Slide 21 of 21" aria-labelledby="slide-21-heading">
+      <h2 id="slide-21-heading">Key Takeaways: Quantum Transformers Survey</h2>
+<div class="slide-content-area">
+<div class="slide-body summary-content"><ul>
+<li><strong>Core motivation</strong>: classical Transformer self-attention is <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>O</mi><mo stretchy="false">&#x00028;</mo><msup><mi>N</mi><mn>2</mn></msup><mo stretchy="false">&#x00029;</mo></mrow></math>; quantum approaches aim to reduce this bottleneck</li>
+<li><strong>Two paradigms</strong>: PQC-based (near-term, NISQ) and QLA-based (long-term, fault-tolerant)</li>
+<li><strong>Four PQC strategies</strong>: QKV-only mapping, quantum pairwise attention, quantum holistic attention, quantum-assisted optimization — ordered by depth of quantization</li>
+<li><strong>Demonstrated so far</strong>: quantum enhanced representation on small benchmarks; first real hardware execution on Wukong (72 qubits)</li>
+<li><strong>Open questions</strong>: genuine algorithmic speedup, scalability, barren plateaus, and training feasibility remain unresolved</li>
+<li><strong>Outlook</strong>: promising for physics/chemistry domains with inherently quantum data; hybrid designs most practical near-term</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+  </main>
+  <script>
+  (function() {
+    var slides = Array.from(document.querySelectorAll('[role="group"]'));
+    var idx = 0;
+    function goTo(n) {
+      idx = Math.max(0, Math.min(n, slides.length - 1));
+      slides[idx].scrollIntoView({behavior: 'instant', block: 'start'});
+      document.getElementById('slide-counter').textContent = (idx + 1) + ' / ' + slides.length;
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault(); goTo(idx + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault(); goTo(idx - 1);
+      } else if (e.key === 'Home') {
+        e.preventDefault(); goTo(0);
+      } else if (e.key === 'End') {
+        e.preventDefault(); goTo(slides.length - 1);
+      }
+    });
+  })();
+  </script>
+  
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+  </script>
+  
+</body>
+</html>

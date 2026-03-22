@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prototype-Based Clustering: Fuzzy C-Means, Mixture Models, and Self-Organizing Maps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root[data-theme="dark"] {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #f0a500;
+      --border: #30363d;
+      --font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    :root[data-theme="light"] {
+      --bg: #ffffff;
+      --bg2: #f6f8fa;
+      --text: #1f2328;
+      --muted: #656d76;
+      --accent: #b06800;
+      --border: #d1d9e0;
+      --font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-family);
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 1000;
+      background: var(--accent);
+      color: var(--bg);
+      padding: 0.5rem 1rem;
+    }
+    .skip-link:focus { left: 0; }
+
+    #slide-counter {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+      z-index: 100;
+    }
+
+    main {
+      scroll-snap-type: y mandatory;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    section[role="group"] {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 1in;
+      scroll-snap-align: start;
+    }
+    /* Title and divider slides: fully centered */
+    section[role="group"].slide-title,
+    section[role="group"].slide-divider {
+      justify-content: center;
+    }
+    /* Content area: fills remaining space after title, centers content vertically */
+    .slide-content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Title slide (h1) — ADA projection scale */
+    h1 {
+      font-size: clamp(48px, 10vw, 96px);
+      font-weight: 700;
+      line-height: 1.0;
+      text-wrap: balance;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .slide-title .subtitle { font-size: clamp(22px, 2.8vw, 34px); text-align: center; color: var(--muted); margin-bottom: 0.5rem; }
+    .slide-title .author { font-size: clamp(20px, 2.2vw, 28px); text-align: center; color: var(--muted); }
+
+    h2 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      text-wrap: balance;
+      margin-bottom: 1rem;
+      color: var(--accent);
+      text-align: center;
+    }
+    h3 {
+      font-size: clamp(22px, 2.8vw, 34px);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    /* Divider h2 keeps its own larger size */
+    .divider-slide h2 { font-size: clamp(48px, 8vw, 80px); }
+
+    .slide-body { font-size: clamp(20px, 2.2vw, 28px); line-height: 1.6; }
+    .slide-body ul,
+    .slide-body ol { padding-left: 2rem; }
+    .slide-body ol { padding-left: 2.5rem; }
+    .slide-body ol li { padding-left: 0.5rem; }
+    .slide-body li { margin-bottom: 0.75em; }
+
+    /* Hero slide description */
+    .hero-description {
+      font-size: clamp(22px, 2.8vw, 34px);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Figure caption */
+    figcaption {
+      font-size: clamp(18px, 1.8vw, 24px);
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    .two-col { display: grid; gap: 2rem; align-items: center; }
+    .two-col-50-50 { grid-template-columns: 1fr 1fr; }
+    .two-col-40-60 { grid-template-columns: 2fr 3fr; }
+    .two-col-60-40 { grid-template-columns: 3fr 2fr; }
+    .two-col img { max-width: 100%; max-height: 60vh; object-fit: contain; display: block; margin: 0 auto; }
+    /* When both columns have figures: center images, add spacing around the grid */
+    .two-col-both { justify-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem; }
+    .two-col-caption-above { margin-bottom: 1.5rem; }
+    .two-col-both img { max-height: 55vh; }
+
+    blockquote {
+      font-size: clamp(28px, 3.5vw, 44px);
+      font-style: italic;
+      border-left: 4px solid var(--accent);
+      padding-left: 1.5rem;
+    }
+    .attribution { color: var(--muted); margin-top: 1rem; }
+
+    pre {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 70vh;
+      font-size: clamp(15px, 1.6vw, 20px);
+      line-height: 1.6;
+    }
+    pre:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    code { font-family: 'IBM Plex Mono', monospace; font-size: clamp(15px, 1.6vw, 20px); }
+
+    .slide-code { overflow: auto; max-height: 75vh; border-radius: 0.5rem; }
+    .slide-codetable { width: 100%; border-collapse: collapse; }
+    .slide-codetable td.linenos { vertical-align: top; padding-right: 0.5em; border-right: 1px solid var(--border); user-select: none; width: 1%; white-space: nowrap; }
+    .slide-codetable td.code { vertical-align: top; padding-left: 1em; width: 99%; }
+    .slide-codetable td.code pre { border: none; padding: 0; margin: 0; max-height: none; }
+
+    .diagram-container { text-align: center; max-height: 75vh; overflow: auto; }
+    .diagram-container svg { max-width: 100%; max-height: 70vh; }
+    pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; }
+
+    .figure-container { text-align: center; }
+    .figure-container img { max-width: 80%; max-height: 60vh; }
+
+    .divider-slide { align-items: center; text-align: center; }
+
+    .steps-list {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+    }
+    .steps-list li {
+      counter-increment: step;
+      margin-bottom: 1rem;
+      padding-left: 2.5rem;
+      position: relative;
+    }
+    .steps-list li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .summary-list { list-style: none; padding: 0; }
+    .summary-list li::before { content: '\2713 '; color: var(--accent); font-weight: 700; }
+
+    .table-scroll-wrapper { overflow-x: auto; max-width: 100%; }
+    .table-scroll-wrapper:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .table-scroll-wrapper table { width: 100%; border-collapse: collapse; }
+    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; }
+    .table-scroll-wrapper caption {
+      font-size: clamp(18px, 1.8vw, 24px);
+      font-weight: bold;
+      caption-side: bottom;
+      margin-top: 0.75em;
+      text-align: left;
+      color: var(--muted);
+    }
+    .code-language-label { position: absolute; top: 0.25em; right: 0.5em; font-size: 0.75em; opacity: 0.6; }
+
+    .slide-notes { display: none; }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <main id="main-content" role="region" aria-roledescription="carousel" aria-label="Prototype-Based Clustering: Fuzzy C-Means, Mixture Models, and Self-Organizing Maps">
+    <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / 20</div>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-1" role="group" class="slide-title" aria-roledescription="slide" aria-label="Slide 1 of 20" aria-labelledby="slide-1-heading">
+      <h1 id="slide-1-heading">Prototype-Based Clustering</h1>
+<p class="subtitle">Fuzzy C-Means, Mixture Models, and Self-Organizing Maps — Chapter 9</p>
+
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-2" role="group" class="slide-hero" aria-roledescription="slide" aria-label="Slide 2 of 20" aria-labelledby="slide-2-heading">
+      <h2 id="slide-2-heading">Beyond Hard Assignments</h2>
+<div class="slide-content-area">
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-3" role="group" class="slide-comparison" aria-roledescription="slide" aria-label="Slide 3 of 20" aria-labelledby="slide-3-heading">
+      <h2 id="slide-3-heading">Hard (Crisp) vs. Soft (Fuzzy) Clustering</h2>
+<div class="slide-content-area">
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left slide-body"><p><strong>Hard (Crisp) Clustering</strong></p>
+<ul>
+<li>Each point belongs to exactly one cluster</li>
+<li>Weight <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>&#x02208;</mo><mo stretchy="false">&#x0007B;</mo><mn>0</mn><mo>&#x0002C;</mo><mn>1</mn><mo stretchy="false">&#x0007D;</mo></mrow></math></li>
+<li>Classic K-means: assign to nearest centroid</li>
+<li>Simple and fast; loses boundary information</li>
+</ul>
+</div>
+  <div class="col-right slide-body">
+
+<p><strong>Soft (Fuzzy) Clustering</strong></p>
+<ul>
+<li>Each point belongs to all clusters with a degree</li>
+<li>Weight <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>&#x02208;</mo><mo stretchy="false">[</mo><mn>0</mn><mo>&#x0002C;</mo><mn>1</mn><mo stretchy="false">]</mo></mrow></math>; sum over clusters = 1</li>
+<li>Captures ambiguity at cluster boundaries</li>
+<li>More expensive: all points relate to all clusters</li>
+</ul></div>
+</div>
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-4" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 4 of 20" aria-labelledby="slide-4-heading">
+      <h2 id="slide-4-heading">Fuzzy C-Means: Objective Function</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-60-40">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Diagram showing SSE formula with fuzzifier p applied to weights, connecting cluster centroids to weighted data points">
+          <pre class="mermaid" aria-hidden="true">graph TD
+  A[&#34;Initialize weights w_ij randomly (sum to 1)&#34;] --&gt; B[&#34;Fix c_j, update w_ij&#34;]
+  B --&gt; C[&#34;Fix w_ij, update centroids c_j&#34;]
+  C --&gt; D{Converged?}
+  D --&gt;|No| B
+  D --&gt;|Yes| E[Return soft cluster assignments]
+  style A fill:#39c5cf,stroke:#39c5cf,color:#0d1117
+  style E fill:#3fb950,stroke:#3fb950,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><p><strong>SSE with fuzzifier p (p &gt; 1):</strong></p>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mtext>SSE</mtext><mo>&#x0003D;</mo><munderover><mo>&#x02211;</mo><mrow><mi>j</mi><mo>&#x0003D;</mo><mn>1</mn></mrow><mrow><mi>k</mi></mrow></munderover><munderover><mo>&#x02211;</mo><mrow><mi>i</mi><mo>&#x0003D;</mo><mn>1</mn></mrow><mrow><mi>m</mi></mrow></munderover><msubsup><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow><mi>p</mi></msubsup><mo>&#x000B7;</mo><mtext>dist</mtext><mo stretchy="false">&#x00028;</mo><msub><mi>&#x1D431;</mi><mi>i</mi></msub><mo>&#x0002C;</mo><msub><mi>&#x1D41C;</mi><mi>j</mi></msub><msup><mo stretchy="false">&#x00029;</mo><mn>2</mn></msup></mrow></math>
+
+<p>Constraint: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><munderover><mo>&#x02211;</mo><mrow><mi>j</mi><mo>&#x0003D;</mo><mn>1</mn></mrow><mrow><mi>k</mi></mrow></munderover><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>&#x0003D;</mo><mn>1</mn></mrow></math></p>
+<ul>
+<li><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>p</mi><mo>&#x0003D;</mo><mn>1</mn></mrow></math>: no fuzziness (reduces to hard clustering)</li>
+<li><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>p</mi><mo>&#x0003D;</mo><mn>2</mn></mrow></math>: typical choice; smooth weight gradients</li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-5" role="group" class="slide-steps" aria-roledescription="slide" aria-label="Slide 5 of 20" aria-labelledby="slide-5-heading">
+      <h2 id="slide-5-heading">Fuzzy C-Means: Update Equations</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ol>
+<li>Initialize weights <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow></math> randomly, subject to <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><munder><mo>&#x02211;</mo><mi>j</mi></munder><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>&#x0003D;</mo><mn>1</mn></mrow></math></li>
+<li>Update centroids: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>&#x1D41C;</mi><mi>j</mi></msub><mo>&#x0003D;</mo><munderover><mo>&#x02211;</mo><mrow><mi>i</mi><mo>&#x0003D;</mo><mn>1</mn></mrow><mrow><mi>m</mi></mrow></munderover><msubsup><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow><mi>p</mi></msubsup><msub><mi>&#x1D431;</mi><mi>i</mi></msub><mspace width="0.167em" /><mo>&#x0002F;</mo><mspace width="0.167em" /><munderover><mo>&#x02211;</mo><mrow><mi>i</mi><mo>&#x0003D;</mo><mn>1</mn></mrow><mrow><mi>m</mi></mrow></munderover><msubsup><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow><mi>p</mi></msubsup></mrow></math></li>
+<li>Update weights: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>&#x0003D;</mo><mfrac><mrow><mn>1</mn></mrow><mrow><mtext>dist</mtext><mo stretchy="false">&#x00028;</mo><msub><mi>&#x1D431;</mi><mi>i</mi></msub><mo>&#x0002C;</mo><msub><mi>&#x1D41C;</mi><mi>j</mi></msub><msup><mo stretchy="false">&#x00029;</mo><mrow><mn>2</mn><mo>&#x0002F;</mo><mo stretchy="false">&#x00028;</mo><mi>p</mi><mo>&#x02212;</mo><mn>1</mn><mo stretchy="false">&#x00029;</mo></mrow></msup></mrow></mfrac><mo minsize="2.470em" maxsize="2.470em">/</mo><munderover><mo>&#x02211;</mo><mrow><mi>q</mi><mo>&#x0003D;</mo><mn>1</mn></mrow><mrow><mi>k</mi></mrow></munderover><mfrac><mrow><mn>1</mn></mrow><mrow><mtext>dist</mtext><mo stretchy="false">&#x00028;</mo><msub><mi>&#x1D431;</mi><mi>i</mi></msub><mo>&#x0002C;</mo><msub><mi>&#x1D41C;</mi><mi>q</mi></msub><msup><mo stretchy="false">&#x00029;</mo><mrow><mn>2</mn><mo>&#x0002F;</mo><mo stretchy="false">&#x00028;</mo><mi>p</mi><mo>&#x02212;</mo><mn>1</mn><mo stretchy="false">&#x00029;</mo></mrow></msup></mrow></mfrac></mrow></math></li>
+<li>Repeat steps 2–3 until convergence (weights stabilize)</li>
+</ol></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-6" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 6 of 20" aria-labelledby="slide-6-heading">
+      <h2 id="slide-6-heading">Fuzzy C-Means: Practical Example</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li>Point x = 2.5, cluster centers c1 = 1 and c2 = 5, with p = 2:</li>
+<li>SSE is minimized when <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>w</mi><mrow><mi>x</mi><mn>1</mn></mrow></msub><mo>&#x0003D;</mo><mn>0.74</mn><mo>&#x0002C;</mo><mspace width="0.278em" /><msub><mi>w</mi><mrow><mi>x</mi><mn>2</mn></mrow></msub><mo>&#x0003D;</mo><mn>0.36</mn></mrow></math></li>
+<li>Compared to hard clustering (<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>w</mi><mrow><mi>x</mi><mn>1</mn></mrow></msub><mo>&#x0003D;</mo><mn>1</mn><mo>&#x0002C;</mo><msub><mi>w</mi><mrow><mi>x</mi><mn>2</mn></mrow></msub><mo>&#x0003D;</mo><mn>0</mn></mrow></math>), SSE drops from 2.25 to 1.654</li>
+<li>Visualization: color each point by maximum membership weight (red = strong, blue = weak)</li>
+<li>Points at cluster boundaries get nearly equal weights — genuine ambiguity is preserved</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-7" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 7 of 20" aria-labelledby="slide-7-heading">
+      <h2 id="slide-7-heading">Fuzzy C-Means: Application to Image Segmentation</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li>Modified fuzzy c-means used in <strong>fMRI image segmentation</strong></li>
+<li>Each pixel belongs to multiple tissue types with varying degree</li>
+<li>Key references: Gong et al. (2013), Ahmed et al. (2002)</li>
+<li>Fuzzy membership naturally models transition zones between tissue regions</li>
+<li>Outperforms hard segmentation for blurry boundaries in medical imaging</li>
+<li>Also used in: document clustering, remote sensing, anomaly detection</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-8" role="group" class="slide-divider" aria-roledescription="slide" aria-label="Slide 8 of 20" aria-labelledby="slide-8-heading">
+      <div class="divider-slide">
+  <h2 id="slide-8-heading">Mixture Model Clustering</h2>
+  <p class="visually-hidden">Section divider</p>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-9" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 9 of 20" aria-labelledby="slide-9-heading">
+      <h2 id="slide-9-heading">Mixture Models: Probabilistic Foundations</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Diagram showing mixture model where data points are generated from a mixture of Gaussian distributions, with the EM algorithm iterating between expectation and maximization steps">
+          <pre class="mermaid" aria-hidden="true">graph TD
+  A[Data from mixture of distributions] --&gt; B[Gaussian GMM most common]
+  B --&gt; C[E-step: compute P(C_j | x_i) for all points]
+  C --&gt; D[M-step: update mu sigma pi to maximize likelihood]
+  D --&gt; E{Parameters converged?}
+  E --&gt;|No| C
+  E --&gt;|Yes| F[Clusters are fitted Gaussian components]
+  style A fill:#39c5cf,stroke:#39c5cf,color:#0d1117
+  style F fill:#3fb950,stroke:#3fb950,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><p><strong>Model assumptions:</strong></p>
+<ul>
+<li>Data points arise from a <strong>mixture of distributions</strong> (typically Gaussian)</li>
+<li>Parameters estimated via <strong>Expectation-Maximization (EM)</strong></li>
+<li>K-means is a special case (hard E-step, spherical covariances)</li>
+<li>Provides compact cluster descriptions: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mo stretchy="false">&#x00028;</mo><msub><mi>&#x003BC;</mi><mi>j</mi></msub><mo>&#x0002C;</mo><msub><mi>&#x003A3;</mi><mi>j</mi></msub><mo>&#x0002C;</mo><msub><mi>&#x003C0;</mi><mi>j</mi></msub><mo stretchy="false">&#x00029;</mo></mrow></math></li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-10" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 10 of 20" aria-labelledby="slide-10-heading">
+      <h2 id="slide-10-heading">Probabilistic Clustering: Point Assignment</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li>Probability that point <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>&#x1D431;</mi><mi>i</mi></msub></mrow></math> belongs to Gaussian component j:</li>
+</ul>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mtext>prob</mtext><mo stretchy="false">&#x00028;</mo><msub><mi>x</mi><mi>i</mi></msub><mo stretchy="false">&#x0007C;</mo><mi>&#x00398;</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mfrac><mrow><mn>1</mn></mrow><mrow><msqrt><mrow><mn>2</mn><mi>&#x003C0;</mi></mrow></msqrt><mi>&#x003C3;</mi></mrow></mfrac><msup><mi>e</mi><mrow><mo>&#x02212;</mo><mo stretchy="false">&#x00028;</mo><mi>x</mi><mo>&#x02212;</mo><mi>&#x003BC;</mi><msup><mo stretchy="false">&#x00029;</mo><mn>2</mn></msup><mo>&#x0002F;</mo><mn>2</mn><msup><mi>&#x003C3;</mi><mn>2</mn></msup></mrow></msup></mrow></math>
+
+<ul>
+<li>Posterior via Bayes' rule: <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>P</mi><mo stretchy="false">&#x00028;</mo><msub><mi>C</mi><mi>j</mi></msub><mo stretchy="false">&#x0007C;</mo><msub><mi>&#x1D431;</mi><mi>i</mi></msub><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mfrac><mrow><mi>p</mi><mo stretchy="false">&#x00028;</mo><msub><mi>&#x1D431;</mi><mi>i</mi></msub><mo stretchy="false">&#x0007C;</mo><msub><mi>C</mi><mi>j</mi></msub><mo stretchy="false">&#x00029;</mo><mi>p</mi><mo stretchy="false">&#x00028;</mo><msub><mi>C</mi><mi>j</mi></msub><mo stretchy="false">&#x00029;</mo></mrow><mrow><msubsup><mo>&#x02211;</mo><mrow><mi>l</mi><mo>&#x0003D;</mo><mn>1</mn></mrow><mrow><mi>k</mi></mrow></msubsup><mi>p</mi><mo stretchy="false">&#x00028;</mo><msub><mi>&#x1D431;</mi><mi>i</mi></msub><mo stretchy="false">&#x0007C;</mo><msub><mi>C</mi><mi>l</mi></msub><mo stretchy="false">&#x00029;</mo><mi>p</mi><mo stretchy="false">&#x00028;</mo><msub><mi>C</mi><mi>l</mi></msub><mo stretchy="false">&#x00029;</mo></mrow></mfrac></mrow></math></li>
+<li>Each point assigned to the <strong>distribution for which it is most probable</strong></li>
+<li>Unlike fuzzy c-means, weights are probabilities with full statistical interpretation</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-11" role="group" class="slide-steps" aria-roledescription="slide" aria-label="Slide 11 of 20" aria-labelledby="slide-11-heading">
+      <h2 id="slide-11-heading">EM Algorithm: Detailed Steps (Algorithm 9.2)</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ol>
+<li>Select initial model parameters (can be random or K-means initialization)</li>
+<li><strong>E-step</strong>: for each point, compute <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>P</mi><mo stretchy="false">&#x00028;</mo><msub><mi>C</mi><mi>j</mi></msub><mo stretchy="false">&#x0007C;</mo><msub><mi>&#x1D431;</mi><mi>i</mi></msub><mo>&#x0002C;</mo><mi>&#x00398;</mi><mo stretchy="false">&#x00029;</mo></mrow></math> under all distributions</li>
+<li><strong>M-step</strong>: update parameters <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mo stretchy="false">&#x00028;</mo><msub><mi>&#x003BC;</mi><mi>j</mi></msub><mo>&#x0002C;</mo><msub><mi>&#x003A3;</mi><mi>j</mi></msub><mo>&#x0002C;</mo><msub><mi>&#x003C0;</mi><mi>j</mi></msub><mo stretchy="false">&#x00029;</mo></mrow></math> to maximize expected log-likelihood</li>
+<li>Repeat until parameters change by less than threshold</li>
+<li>Assign each point to highest-probability cluster (or retain soft assignments)</li>
+</ol></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-12" role="group" class="slide-table" aria-roledescription="slide" aria-label="Slide 12 of 20" aria-labelledby="slide-12-heading">
+      <h2 id="slide-12-heading">EM vs. K-Means: Side-by-Side</h2>
+<div class="slide-content-area">
+<div class="table-scroll-wrapper" tabindex="0" role="region" aria-label="Structural comparison of EM for Gaussian Mixture Models and classic K-means">
+  <table>
+    <caption>Structural comparison of EM for Gaussian Mixture Models and classic K-means</caption>
+    
+    <thead>
+      <tr><th scope="col">Step</th><th scope="col">EM for GMMs</th><th scope="col">K-means</th></tr>
+    </thead>
+    
+    <tbody>
+      
+      <tr>
+        
+          
+            <td>Assignment</td>
+          
+        
+          
+            <td>Soft: compute P(C_j | x_i) for all j</td>
+          
+        
+          
+            <td>Hard: assign to nearest centroid</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Update</td>
+          
+        
+          
+            <td>Update mu, sigma, pi using soft weights</td>
+          
+        
+          
+            <td>Update mu as mean of assigned points</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Cluster view</td>
+          
+        
+          
+            <td>Probability distribution (Gaussian)</td>
+          
+        
+          
+            <td>Centroid with no spread or variance</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Assignment type</td>
+          
+        
+          
+            <td>Probabilistic (soft)</td>
+          
+        
+          
+            <td>Deterministic (hard)</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Underlying model</td>
+          
+        
+          
+            <td>Generative mixture model</td>
+          
+        
+          
+            <td>No generative model; just distances</td>
+          
+        
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-13" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 13 of 20" aria-labelledby="slide-13-heading">
+      <h2 id="slide-13-heading">Problems with EM</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>Convergence can be slow</strong> — many iterations may be needed</li>
+<li><strong>Local maxima only</strong> — initialization matters; K-means init recommended</li>
+<li><strong>Statistical assumptions</strong>: requires data to approximately follow Gaussian distributions</li>
+<li><strong>Parameter growth</strong>: Gaussian covariance matrices scale as <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>O</mi><mo stretchy="false">&#x00028;</mo><msup><mi>d</mi><mn>2</mn></msup><mo stretchy="false">&#x00029;</mo></mrow></math> vs. K-means <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>O</mi><mo stretchy="false">&#x00028;</mo><mi>d</mi><mo stretchy="false">&#x00029;</mo></mrow></math></li>
+<li><strong>Dense and sparse clusters</strong>: EM may fail when cluster variance ratios are extreme</li>
+<li><strong>Alternatives</strong>: Method of Moments, MCMC, Spectral Methods</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-14" role="group" class="slide-divider" aria-roledescription="slide" aria-label="Slide 14 of 20" aria-labelledby="slide-14-heading">
+      <div class="divider-slide">
+  <h2 id="slide-14-heading">Self-Organizing Maps</h2>
+  <p class="visually-hidden">Section divider</p>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-15" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 15 of 20" aria-labelledby="slide-15-heading">
+      <h2 id="slide-15-heading">Self-Organizing Maps: Topology-Preserving Clustering</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="3x3 grid of SOM centroids indexed (0,0) through (2,2), showing spatial relationships between centroids that mirror relationships in the data space">
+          <pre class="mermaid" aria-hidden="true">graph TD
+  A[&#34;(0,0)&#34;] --- B[&#34;(0,1)&#34;]
+  B --- C[&#34;(0,2)&#34;]
+  A --- D[&#34;(1,0)&#34;]
+  D --- E[&#34;(1,1)&#34;]
+  E --- F[&#34;(1,2)&#34;]
+  B --- E
+  C --- F
+  D --- G[&#34;(2,0)&#34;]
+  G --- H[&#34;(2,1)&#34;]
+  H --- I[&#34;(2,2)&#34;]
+  E --- H
+  F --- I
+  style E fill:#39c5cf,stroke:#39c5cf,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><p><strong>SOM key ideas:</strong></p>
+<ul>
+<li>Centroid-based like K-means — fixed number of clusters</li>
+<li><strong>Spatial relationship of centroids is also specified</strong> (a grid)</li>
+<li>Points processed one at a time</li>
+<li>Nearest centroid updated, and <strong>neighboring centroids</strong> updated too</li>
+<li>Updates weighted by spatial proximity to the closest centroid</li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-16" role="group" class="slide-steps" aria-roledescription="slide" aria-label="Slide 16 of 20" aria-labelledby="slide-16-heading">
+      <h2 id="slide-16-heading">SOM Algorithm: Basic Steps (Algorithm 9.3)</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ol>
+<li>Initialize centroids as vectors in <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msup><mi>&#x0211D;</mi><mi>d</mi></msup></mrow></math> (d = number of attributes)</li>
+<li>Select the next data point (iterate through all points repeatedly)</li>
+<li>Determine the closest centroid to the current point</li>
+<li>Update that centroid and its spatial neighbors (within a specified neighborhood radius)</li>
+<li>Repeat until centroids don't change significantly or a threshold is exceeded</li>
+<li>Assign each object to its closest centroid; return centroids and cluster assignments</li>
+</ol></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-17" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 17 of 20" aria-labelledby="slide-17-heading">
+      <h2 id="slide-17-heading">SOM: Key Properties and Applications</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>Distance-weighted updates</strong>: centroids farther from the winner are affected less</li>
+<li><strong>Decreasing impact</strong>: update magnitude decreases with each iteration (cooling schedule)</li>
+<li><strong>Dimensionality reduction</strong>: a 2D SOM grid visualizes high-dimensional cluster structure</li>
+<li><strong>Example (LA Times)</strong>: SOM applied to newspaper documents — Sports, Metro, Entertainment, Financial sections emerge as spatially contiguous regions on the grid</li>
+<li>Useful for <strong>topology preservation</strong>: similar data points map to nearby grid positions</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-18" role="group" class="slide-comparison" aria-roledescription="slide" aria-label="Slide 18 of 20" aria-labelledby="slide-18-heading">
+      <h2 id="slide-18-heading">Issues with Self-Organizing Maps</h2>
+<div class="slide-content-area">
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left slide-body"><p><strong>Computational Challenges</strong></p>
+<ul>
+<li>High computational complexity</li>
+<li>No guarantee of convergence</li>
+<li>Choice of grid size and topology is somewhat arbitrary</li>
+<li>Lacks a specific global objective function being optimized</li>
+</ul>
+</div>
+  <div class="col-right slide-body">
+
+<p><strong>When SOM Still Wins</strong></p>
+<ul>
+<li>Excellent for visualization of high-dimensional data on 2D grids</li>
+<li>Interpretable cluster structure via spatial layout</li>
+<li>Handles large datasets incrementally</li>
+<li>Widely used in bioinformatics, document clustering, image quantization</li>
+</ul></div>
+</div>
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-19" role="group" class="slide-table" aria-roledescription="slide" aria-label="Slide 19 of 20" aria-labelledby="slide-19-heading">
+      <h2 id="slide-19-heading">Prototype-Based Methods: Comparison</h2>
+<div class="slide-content-area">
+<div class="table-scroll-wrapper" tabindex="0" role="region" aria-label="Key characteristics of fuzzy c-means, mixture models (EM), and self-organizing maps">
+  <table>
+    <caption>Key characteristics of fuzzy c-means, mixture models (EM), and self-organizing maps</caption>
+    
+    <thead>
+      <tr><th scope="col">Method</th><th scope="col">Assignment Type</th><th scope="col">Cluster Shape</th><th scope="col">Key Parameter</th><th scope="col">Main Strength</th></tr>
+    </thead>
+    
+    <tbody>
+      
+      <tr>
+        
+          
+            <td>Fuzzy C-Means</td>
+          
+        
+          
+            <td>Soft (weights)</td>
+          
+        
+          
+            <td>Spherical/elliptical</td>
+          
+        
+          
+            <td>Fuzzifier p</td>
+          
+        
+          
+            <td>Handles boundary ambiguity</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Mixture Models (EM)</td>
+          
+        
+          
+            <td>Probabilistic (soft)</td>
+          
+        
+          
+            <td>Elliptical (Gaussian)</td>
+          
+        
+          
+            <td>Number of components k</td>
+          
+        
+          
+            <td>Full statistical model</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Self-Organizing Maps</td>
+          
+        
+          
+            <td>Hard (nearest centroid)</td>
+          
+        
+          
+            <td>Any (topology-based)</td>
+          
+        
+          
+            <td>Grid size, neighborhood</td>
+          
+        
+          
+            <td>2D visualization of structure</td>
+          
+        
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-20" role="group" class="slide-summary" aria-roledescription="slide" aria-label="Slide 20 of 20" aria-labelledby="slide-20-heading">
+      <h2 id="slide-20-heading">Key Takeaways: Prototype-Based Clustering</h2>
+<div class="slide-content-area">
+<div class="slide-body summary-content"><ul>
+<li><strong>Fuzzy C-Means</strong> generalizes K-means with soft assignments via fuzzifier p; points belong to all clusters with varying weights; minimizes a weighted SSE</li>
+<li><strong>Mixture Models (EM)</strong> provide a fully probabilistic framework; K-means is a special case; EM alternates E-step (soft assignments) and M-step (parameter updates)</li>
+<li><strong>Self-Organizing Maps</strong> add spatial topology to centroid-based clustering; neighboring centroids co-evolve, enabling topology-preserving 2D visualizations</li>
+<li>All three methods use <strong>soft or probabilistic assignments</strong> — a key generalization of hard clustering</li>
+<li>Choice depends on: need for interpretability (SOM), statistical guarantees (EM), or boundary handling (Fuzzy C-Means)</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+  </main>
+  <script>
+  (function() {
+    var slides = Array.from(document.querySelectorAll('[role="group"]'));
+    var idx = 0;
+    function goTo(n) {
+      idx = Math.max(0, Math.min(n, slides.length - 1));
+      slides[idx].scrollIntoView({behavior: 'instant', block: 'start'});
+      document.getElementById('slide-counter').textContent = (idx + 1) + ' / ' + slides.length;
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault(); goTo(idx + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault(); goTo(idx - 1);
+      } else if (e.key === 'Home') {
+        e.preventDefault(); goTo(0);
+      } else if (e.key === 'End') {
+        e.preventDefault(); goTo(slides.length - 1);
+      }
+    });
+  })();
+  </script>
+  
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+  </script>
+  
+</body>
+</html>

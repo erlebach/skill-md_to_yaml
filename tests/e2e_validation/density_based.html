@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Density-Based Clustering: Concepts, Algorithms, and Extensions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root[data-theme="dark"] {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #f0a500;
+      --border: #30363d;
+      --font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    :root[data-theme="light"] {
+      --bg: #ffffff;
+      --bg2: #f6f8fa;
+      --text: #1f2328;
+      --muted: #656d76;
+      --accent: #b06800;
+      --border: #d1d9e0;
+      --font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-family);
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 1000;
+      background: var(--accent);
+      color: var(--bg);
+      padding: 0.5rem 1rem;
+    }
+    .skip-link:focus { left: 0; }
+
+    #slide-counter {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+      z-index: 100;
+    }
+
+    main {
+      scroll-snap-type: y mandatory;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    section[role="group"] {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 1in;
+      scroll-snap-align: start;
+    }
+    /* Title and divider slides: fully centered */
+    section[role="group"].slide-title,
+    section[role="group"].slide-divider {
+      justify-content: center;
+    }
+    /* Content area: fills remaining space after title, centers content vertically */
+    .slide-content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Title slide (h1) — ADA projection scale */
+    h1 {
+      font-size: clamp(48px, 10vw, 96px);
+      font-weight: 700;
+      line-height: 1.0;
+      text-wrap: balance;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .slide-title .subtitle { font-size: clamp(22px, 2.8vw, 34px); text-align: center; color: var(--muted); margin-bottom: 0.5rem; }
+    .slide-title .author { font-size: clamp(20px, 2.2vw, 28px); text-align: center; color: var(--muted); }
+
+    h2 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      text-wrap: balance;
+      margin-bottom: 1rem;
+      color: var(--accent);
+      text-align: center;
+    }
+    h3 {
+      font-size: clamp(22px, 2.8vw, 34px);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    /* Divider h2 keeps its own larger size */
+    .divider-slide h2 { font-size: clamp(48px, 8vw, 80px); }
+
+    .slide-body { font-size: clamp(20px, 2.2vw, 28px); line-height: 1.6; }
+    .slide-body ul,
+    .slide-body ol { padding-left: 2rem; }
+    .slide-body ol { padding-left: 2.5rem; }
+    .slide-body ol li { padding-left: 0.5rem; }
+    .slide-body li { margin-bottom: 0.75em; }
+
+    /* Hero slide description */
+    .hero-description {
+      font-size: clamp(22px, 2.8vw, 34px);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Figure caption */
+    figcaption {
+      font-size: clamp(18px, 1.8vw, 24px);
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    .two-col { display: grid; gap: 2rem; align-items: center; }
+    .two-col-50-50 { grid-template-columns: 1fr 1fr; }
+    .two-col-40-60 { grid-template-columns: 2fr 3fr; }
+    .two-col-60-40 { grid-template-columns: 3fr 2fr; }
+    .two-col img { max-width: 100%; max-height: 60vh; object-fit: contain; display: block; margin: 0 auto; }
+    /* When both columns have figures: center images, add spacing around the grid */
+    .two-col-both { justify-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem; }
+    .two-col-caption-above { margin-bottom: 1.5rem; }
+    .two-col-both img { max-height: 55vh; }
+
+    blockquote {
+      font-size: clamp(28px, 3.5vw, 44px);
+      font-style: italic;
+      border-left: 4px solid var(--accent);
+      padding-left: 1.5rem;
+    }
+    .attribution { color: var(--muted); margin-top: 1rem; }
+
+    pre {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 70vh;
+      font-size: clamp(15px, 1.6vw, 20px);
+      line-height: 1.6;
+    }
+    pre:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    code { font-family: 'IBM Plex Mono', monospace; font-size: clamp(15px, 1.6vw, 20px); }
+
+    .slide-code { overflow: auto; max-height: 75vh; border-radius: 0.5rem; }
+    .slide-codetable { width: 100%; border-collapse: collapse; }
+    .slide-codetable td.linenos { vertical-align: top; padding-right: 0.5em; border-right: 1px solid var(--border); user-select: none; width: 1%; white-space: nowrap; }
+    .slide-codetable td.code { vertical-align: top; padding-left: 1em; width: 99%; }
+    .slide-codetable td.code pre { border: none; padding: 0; margin: 0; max-height: none; }
+
+    .diagram-container { text-align: center; max-height: 75vh; overflow: auto; }
+    .diagram-container svg { max-width: 100%; max-height: 70vh; }
+    pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; }
+
+    .figure-container { text-align: center; }
+    .figure-container img { max-width: 80%; max-height: 60vh; }
+
+    .divider-slide { align-items: center; text-align: center; }
+
+    .steps-list {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+    }
+    .steps-list li {
+      counter-increment: step;
+      margin-bottom: 1rem;
+      padding-left: 2.5rem;
+      position: relative;
+    }
+    .steps-list li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .summary-list { list-style: none; padding: 0; }
+    .summary-list li::before { content: '\2713 '; color: var(--accent); font-weight: 700; }
+
+    .table-scroll-wrapper { overflow-x: auto; max-width: 100%; }
+    .table-scroll-wrapper:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .table-scroll-wrapper table { width: 100%; border-collapse: collapse; }
+    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; }
+    .table-scroll-wrapper caption {
+      font-size: clamp(18px, 1.8vw, 24px);
+      font-weight: bold;
+      caption-side: bottom;
+      margin-top: 0.75em;
+      text-align: left;
+      color: var(--muted);
+    }
+    .code-language-label { position: absolute; top: 0.25em; right: 0.5em; font-size: 0.75em; opacity: 0.6; }
+
+    .slide-notes { display: none; }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <main id="main-content" role="region" aria-roledescription="carousel" aria-label="Density-Based Clustering: Concepts, Algorithms, and Extensions">
+    <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / 21</div>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-1" role="group" class="slide-title" aria-roledescription="slide" aria-label="Slide 1 of 21" aria-labelledby="slide-1-heading">
+      <h1 id="slide-1-heading">Density-Based Clustering</h1>
+<p class="subtitle">Concepts, Algorithms, and Extensions — Chapter 9</p>
+
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-2" role="group" class="slide-hero" aria-roledescription="slide" aria-label="Slide 2 of 21" aria-labelledby="slide-2-heading">
+      <h2 id="slide-2-heading">What Makes Density-Based Clustering Unique?</h2>
+<div class="slide-content-area">
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-3" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 3 of 21" aria-labelledby="slide-3-heading">
+      <h2 id="slide-3-heading">Core Idea: Density as the Organizing Principle</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li>A <strong>cluster</strong> is a region of high point density separated from other clusters by regions of low density</li>
+<li>Points in low-density regions are treated as <strong>noise</strong> (not assigned to any cluster)</li>
+<li>No assumption required about cluster shape or count</li>
+<li>Three main density-based approaches: <strong>grid-based</strong>, <strong>kernel-based</strong> (DENCLUE), and <strong>subspace</strong> (CLIQUE)</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-4" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 4 of 21" aria-labelledby="slide-4-heading">
+      <h2 id="slide-4-heading">Grid-Based Clustering: Algorithm Overview</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Flowchart of grid-based clustering showing four steps: define grid cells, assign objects, eliminate low-density cells, form clusters">
+          <pre class="mermaid" aria-hidden="true">graph TD
+  A[Define grid cells] --&gt; B[Assign objects to cells]
+  B --&gt; C[Eliminate cells below threshold tau]
+  C --&gt; D[Form clusters from contiguous dense cells]
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style D fill:#3fb950,stroke:#3fb950,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><p><strong>Algorithm 9.4 steps:</strong></p>
+<ol>
+<li>Partition space into rectangular grid cells</li>
+<li>Assign each data point to a cell; compute cell density</li>
+<li>Remove cells with density below threshold <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003C4;</mi></mrow></math></li>
+<li>Merge adjacent dense cells into clusters</li>
+</ol></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-5" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 5 of 21" aria-labelledby="slide-5-heading">
+      <h2 id="slide-5-heading">Grid-Based Clustering: Strengths and Weaknesses</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>Fast</strong>: complexity depends on grid resolution, not number of points</li>
+<li><strong>Simple</strong>: density is just a count of points per cell</li>
+<li><strong>Limitation</strong>: fixed grid orientation may miss clusters aligned differently</li>
+<li><strong>Limitation</strong>: threshold <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003C4;</mi></mrow></math> and cell size must be chosen carefully</li>
+<li>Works best when clusters are dense and well-separated</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-6" role="group" class="slide-divider" aria-roledescription="slide" aria-label="Slide 6 of 21" aria-labelledby="slide-6-heading">
+      <div class="divider-slide">
+  <h2 id="slide-6-heading">Subspace Clustering</h2>
+  <p class="visually-hidden">Section divider</p>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-7" role="group" class="slide-hero" aria-roledescription="slide" aria-label="Slide 7 of 21" aria-labelledby="slide-7-heading">
+      <h2 id="slide-7-heading">The Curse of High Dimensions</h2>
+<div class="slide-content-area">
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-8" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 8 of 21" aria-labelledby="slide-8-heading">
+      <h2 id="slide-8-heading">Subspace Clustering: Motivation</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li>Traditional clustering considers <strong>all attributes</strong> simultaneously</li>
+<li>Some clusters only appear in subsets of attributes (subspaces)</li>
+<li>Projections of higher-dimensional clusters onto lower dimensions create <strong>shadow clusters</strong> — we want to avoid these</li>
+<li>The goal: find clusters <strong>and</strong> the dimensions in which they exist</li>
+<li>Key challenge: exponential number of possible subspaces to search</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-9" role="group" class="slide-diagram" aria-roledescription="slide" aria-label="Slide 9 of 21" aria-labelledby="slide-9-heading">
+      <h2 id="slide-9-heading">Clusters Visible Only in Subspaces</h2>
+<div class="slide-content-area">
+
+  <div class="diagram-container">
+    <div role="img" aria-label="Three 2D scatter plots showing x-y, x-z, and y-z projections of 3D data, each revealing different cluster structure invisible in the full 3D view"><pre class="mermaid" aria-hidden="true">graph LR
+  A[3D Data Space] --&gt; B[x-y projection: 2 clusters visible]
+  A --&gt; C[x-z projection: 1 cluster visible]
+  A --&gt; D[y-z projection: 1 cluster visible]
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style B fill:#3fb950,stroke:#3fb950,color:#0d1117
+  style C fill:#f0883e,stroke:#f0883e,color:#0d1117
+  style D fill:#3fb950,stroke:#3fb950,color:#0d1117</pre></div>
+  </div>
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-10" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 10 of 21" aria-labelledby="slide-10-heading">
+      <h2 id="slide-10-heading">CLIQUE: A Subspace Clustering Algorithm</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-60-40">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Diagram showing CLIQUE partitioning data space into rectangular units and identifying dense cells that form clusters">
+          <pre class="mermaid" aria-hidden="true">graph TD
+  A[Partition all subspaces into equal-volume units] --&gt; B[Measure density: fraction of points per unit]
+  B --&gt; C{Dense unit? fraction above tau}
+  C --&gt;|Yes| D[Candidate cluster unit]
+  C --&gt;|No| E[Discard]
+  D --&gt; F[Union of adjacent dense units forms cluster]
+  style D fill:#3fb950,stroke:#3fb950,color:#0d1117
+  style E fill:#f0883e,stroke:#f0883e,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><p><strong>Key properties:</strong></p>
+<ul>
+<li>Grid-based algorithm for finding subspace clusters</li>
+<li>A unit is <strong>dense</strong> if fraction of points exceeds threshold <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003C4;</mi></mrow></math></li>
+<li>Clusters are <strong>contiguous</strong> (touching) dense units</li>
+<li>Can find <strong>overlapping</strong> clusters</li>
+<li>Uses <strong>monotone property</strong> to prune search space</li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-11" role="group" class="slide-steps" aria-roledescription="slide" aria-label="Slide 11 of 21" aria-labelledby="slide-11-heading">
+      <h2 id="slide-11-heading">CLIQUE Algorithm: Step-by-Step (Algorithm 9.5)</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ol>
+<li>Find all dense 1-dimensional cells (one per attribute)</li>
+<li>Set <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>k</mi><mo>&#x02190;</mo><mn>2</mn></mrow></math>; begin iterating</li>
+<li>Generate candidate dense k-dimensional cells from dense (k-1)-dimensional cells</li>
+<li>Eliminate units with fewer than <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003BE;</mi></mrow></math> points</li>
+<li>Increment k; repeat until no candidates remain</li>
+<li>Form clusters by taking the union of all adjacent dense cells</li>
+<li>Describe each cluster with attribute range inequalities</li>
+</ol></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-12" role="group" class="slide-comparison" aria-roledescription="slide" aria-label="Slide 12 of 21" aria-labelledby="slide-12-heading">
+      <h2 id="slide-12-heading">CLIQUE: Pros and Cons</h2>
+<div class="slide-content-area">
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left slide-body"><p><strong>Strengths</strong></p>
+<ul>
+<li>Finds clusters in arbitrary subspaces</li>
+<li>Can handle high-dimensional data systematically</li>
+<li>Can find overlapping clusters</li>
+<li>Compact cluster description via inequalities</li>
+</ul>
+</div>
+  <div class="col-right slide-body">
+
+<p><strong>Limitations</strong></p>
+<ul>
+<li>Time complexity exponential in number of dimensions</li>
+<li>May fail when cluster densities differ widely</li>
+<li>Fixed threshold cannot adapt to varying density</li>
+<li>Threshold <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003C4;</mi></mrow></math> and cell size require careful tuning</li>
+</ul></div>
+</div>
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-13" role="group" class="slide-divider" aria-roledescription="slide" aria-label="Slide 13 of 21" aria-labelledby="slide-13-heading">
+      <div class="divider-slide">
+  <h2 id="slide-13-heading">Kernel-Based Density Estimation: DENCLUE</h2>
+  <p class="visually-hidden">Section divider</p>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-14" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 14 of 21" aria-labelledby="slide-14-heading">
+      <h2 id="slide-14-heading">DENCLUE: Kernel Density Estimation</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Gaussian kernel function K(y) shown as a bell-shaped surface centered at origin, illustrating how each data point contributes a smooth density bump">
+          <pre class="mermaid" aria-hidden="true">graph TD
+  A[Each data point x] --&gt; B[&#34;Gaussian kernel K(y) = exp(-dist(x,y)^2 / 2 sigma^2)&#34;]
+  B --&gt; C[Overall density = sum of all kernels]
+  C --&gt; D[Find local maxima: density attractors]
+  D --&gt; E[Assign each point to its attractor]
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style D fill:#f0883e,stroke:#f0883e,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><p><strong>Gaussian kernel formula:</strong></p>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>K</mi><mo stretchy="false">&#x00028;</mo><mi>y</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><msup><mi>e</mi><mrow><mo>&#x02212;</mo><mtext>distance</mtext><mo stretchy="false">&#x00028;</mo><mi>&#x1D431;</mi><mo>&#x0002C;</mo><mi>&#x1D432;</mi><msup><mo stretchy="false">&#x00029;</mo><mn>2</mn></msup><mo>&#x0002F;</mo><mn>2</mn><msup><mi>&#x003C3;</mi><mn>2</mn></msup></mrow></msup></mrow></math>
+
+<ul>
+<li>Each point contributes a smooth density bump</li>
+<li>Total density is the <strong>sum</strong> of all contributions</li>
+<li>Bandwidth <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003C3;</mi></mrow></math> controls smoothness</li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-15" role="group" class="slide-steps" aria-roledescription="slide" aria-label="Slide 15 of 21" aria-labelledby="slide-15-heading">
+      <h2 id="slide-15-heading">DENCLUE Algorithm: Core Steps</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ol>
+<li>Estimate the density function using kernel contributions from all points</li>
+<li>Identify <strong>local maxima</strong> — these become density attractors</li>
+<li>Assign each point to its attractor by following gradient ascent (direction of maximum density increase)</li>
+<li>Discard clusters whose attractor density is below minimum threshold <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003BE;</mi></mrow></math></li>
+<li>Merge clusters connected by paths where density stays above <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003BE;</mi></mrow></math></li>
+</ol></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-16" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 16 of 21" aria-labelledby="slide-16-heading">
+      <h2 id="slide-16-heading">DENCLUE: Key Properties</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>Smooth density estimation</strong> handles arbitrary cluster shapes</li>
+<li><strong>Density attractors</strong> are the cluster centers — found automatically</li>
+<li>Clusters D and E merge if connected by a high-density path</li>
+<li>Points below threshold <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003BE;</mi></mrow></math> are treated as noise</li>
+<li>More mathematically principled than grid-based approaches</li>
+<li>Sensitive to bandwidth parameter <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>&#x003C3;</mi></mrow></math></li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-17" role="group" class="slide-divider" aria-roledescription="slide" aria-label="Slide 17 of 21" aria-labelledby="slide-17-heading">
+      <div class="divider-slide">
+  <h2 id="slide-17-heading">Graph-Based Clustering</h2>
+  <p class="visually-hidden">Section divider</p>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-18" role="group" class="slide-two-column" aria-roledescription="slide" aria-label="Slide 18 of 21" aria-labelledby="slide-18-heading">
+      <h2 id="slide-18-heading">Graph-Based Clustering: General Concepts</h2>
+<div class="slide-content-area">
+
+
+
+
+
+
+<div class="two-col two-col-50-50">
+  <div class="col-left">
+    
+      
+        <div class="diagram-container" role="img" aria-label="Proximity graph where nodes are data points and weighted edges represent proximity between pairs of points">
+          <pre class="mermaid" aria-hidden="true">graph LR
+  A((p1)) ---|0.9| B((p2))
+  B ---|0.7| C((p3))
+  A ---|0.3| D((p4))
+  C ---|0.8| E((p5))
+  D ---|0.1| E
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style E fill:#3fb950,stroke:#3fb950,color:#0d1117
+</pre>
+        </div>
+      
+    
+  </div>
+  <div class="col-right">
+    
+      <div class="slide-body"><ul>
+<li>Each node is a data point</li>
+<li>Each edge weight is the <strong>proximity</strong> between two points</li>
+<li>Clusters are <strong>connected components</strong> in the graph</li>
+<li>Hierarchical algorithms viewed in graph terms:</li>
+<li><strong>MIN (single link)</strong>: merge subgraphs with lowest-weight connecting edge</li>
+<li><strong>Group Average</strong>: merge subgraphs with high average connectivity</li>
+</ul></div>
+    
+  </div>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-19" role="group" class="slide-table" aria-roledescription="slide" aria-label="Slide 19 of 21" aria-labelledby="slide-19-heading">
+      <h2 id="slide-19-heading">Comparing Density-Based Approaches</h2>
+<div class="slide-content-area">
+<div class="table-scroll-wrapper" tabindex="0" role="region" aria-label="Summary of key characteristics of three density-based clustering families">
+  <table>
+    <caption>Summary of key characteristics of three density-based clustering families</caption>
+    
+    <thead>
+      <tr><th scope="col">Method</th><th scope="col">Density Definition</th><th scope="col">Cluster Shape</th><th scope="col">Handles Noise</th><th scope="col">Main Parameter</th></tr>
+    </thead>
+    
+    <tbody>
+      
+      <tr>
+        
+          
+            <td>Grid-based</td>
+          
+        
+          
+            <td>Points per cell</td>
+          
+        
+          
+            <td>Rectangular regions</td>
+          
+        
+          
+            <td>Yes</td>
+          
+        
+          
+            <td>Cell size, threshold tau</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>CLIQUE</td>
+          
+        
+          
+            <td>Fraction per subspace unit</td>
+          
+        
+          
+            <td>Subspace rectangles</td>
+          
+        
+          
+            <td>Yes</td>
+          
+        
+          
+            <td>tau, xi per dimension</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>DENCLUE</td>
+          
+        
+          
+            <td>Kernel sum</td>
+          
+        
+          
+            <td>Arbitrary</td>
+          
+        
+          
+            <td>Yes</td>
+          
+        
+          
+            <td>Bandwidth sigma, min xi</td>
+          
+        
+      </tr>
+      
+      <tr>
+        
+          
+            <td>Graph-based</td>
+          
+        
+          
+            <td>Connectivity</td>
+          
+        
+          
+            <td>Arbitrary</td>
+          
+        
+          
+            <td>Partial</td>
+          
+        
+          
+            <td>Proximity threshold</td>
+          
+        
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-20" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 20 of 21" aria-labelledby="slide-20-heading">
+      <h2 id="slide-20-heading">When to Use Density-Based Clustering</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>Arbitrary cluster shapes</strong>: DBSCAN/DENCLUE outperform k-means on non-convex clusters</li>
+<li><strong>Unknown cluster count</strong>: no need to specify k in advance</li>
+<li><strong>Noise tolerance</strong>: outlier points are explicitly labeled, not forced into clusters</li>
+<li><strong>High-dimensional data</strong>: CLIQUE finds subspace clusters k-means misses</li>
+<li><strong>Caveat</strong>: performance degrades with very high dimensions (curse of dimensionality)</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-21" role="group" class="slide-summary" aria-roledescription="slide" aria-label="Slide 21 of 21" aria-labelledby="slide-21-heading">
+      <h2 id="slide-21-heading">Key Takeaways: Density-Based Clustering</h2>
+<div class="slide-content-area">
+<div class="slide-body summary-content"><ul>
+<li><strong>Core principle</strong>: clusters are dense regions separated by sparse regions</li>
+<li><strong>Grid-based</strong>: fast, simple, rectangular clusters — good for low-dimensional data</li>
+<li><strong>CLIQUE</strong>: extends grid approach to find subspace clusters systematically using monotone pruning</li>
+<li><strong>DENCLUE</strong>: kernel density estimation enables smooth density functions and arbitrary cluster shapes; density attractors replace centroids</li>
+<li><strong>Graph-based</strong>: proximity graphs unify many hierarchical approaches; clusters are connected components</li>
+<li>All methods naturally identify <strong>noise</strong> — a key advantage over k-means</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+  </main>
+  <script>
+  (function() {
+    var slides = Array.from(document.querySelectorAll('[role="group"]'));
+    var idx = 0;
+    function goTo(n) {
+      idx = Math.max(0, Math.min(n, slides.length - 1));
+      slides[idx].scrollIntoView({behavior: 'instant', block: 'start'});
+      document.getElementById('slide-counter').textContent = (idx + 1) + ' / ' + slides.length;
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault(); goTo(idx + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault(); goTo(idx - 1);
+      } else if (e.key === 'Home') {
+        e.preventDefault(); goTo(0);
+      } else if (e.key === 'End') {
+        e.preventDefault(); goTo(slides.length - 1);
+      }
+    });
+  })();
+  </script>
+  
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+  </script>
+  
+</body>
+</html>

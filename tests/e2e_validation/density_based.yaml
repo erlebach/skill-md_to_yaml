@@ -1,0 +1,264 @@
+---
+title: "Density-Based Clustering: Concepts, Algorithms, and Extensions"
+author: "Tan, Steinbach, Karpatne, Kumar"
+date: 2026-03-22
+theme: dark
+font: IBM Plex Sans
+---
+
+---
+layout: title
+title: "Density-Based Clustering"
+subtitle: "Concepts, Algorithms, and Extensions — Chapter 9"
+---
+
+---
+layout: hero
+title: "What Makes Density-Based Clustering Unique?"
+---
+Unlike k-means, density-based methods discover clusters of **arbitrary shape**, naturally handle **noise and outliers**, and require no assumption about the number of clusters.
+
+---
+layout: content
+title: "Core Idea: Density as the Organizing Principle"
+---
+- A **cluster** is a region of high point density separated from other clusters by regions of low density
+- Points in low-density regions are treated as **noise** (not assigned to any cluster)
+- No assumption required about cluster shape or count
+- Three main density-based approaches: **grid-based**, **kernel-based** (DENCLUE), and **subspace** (CLIQUE)
+
+---
+layout: two-column
+title: "Grid-Based Clustering: Algorithm Overview"
+proportion: 50/50
+left:
+  type: diagram
+  alt_text: "Flowchart of grid-based clustering showing four steps: define grid cells, assign objects, eliminate low-density cells, form clusters"
+  source: |
+    graph TD
+      A[Define grid cells] --> B[Assign objects to cells]
+      B --> C[Eliminate cells below threshold tau]
+      C --> D[Form clusters from contiguous dense cells]
+      style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+      style D fill:#3fb950,stroke:#3fb950,color:#0d1117
+---
+**Algorithm 9.4 steps:**
+
+1. Partition space into rectangular grid cells
+2. Assign each data point to a cell; compute cell density
+3. Remove cells with density below threshold $$\tau$$
+4. Merge adjacent dense cells into clusters
+
+---
+layout: content
+title: "Grid-Based Clustering: Strengths and Weaknesses"
+---
+- **Fast**: complexity depends on grid resolution, not number of points
+- **Simple**: density is just a count of points per cell
+- **Limitation**: fixed grid orientation may miss clusters aligned differently
+- **Limitation**: threshold $$\tau$$ and cell size must be chosen carefully
+- Works best when clusters are dense and well-separated
+
+---
+layout: divider
+title: "Subspace Clustering"
+---
+
+---
+layout: hero
+title: "The Curse of High Dimensions"
+---
+When data has many attributes, clusters may only exist in **subspaces** — a subset of the full attribute space. Looking at all dimensions at once can obscure these clusters entirely.
+
+---
+layout: content
+title: "Subspace Clustering: Motivation"
+---
+- Traditional clustering considers **all attributes** simultaneously
+- Some clusters only appear in subsets of attributes (subspaces)
+- Projections of higher-dimensional clusters onto lower dimensions create **shadow clusters** — we want to avoid these
+- The goal: find clusters **and** the dimensions in which they exist
+- Key challenge: exponential number of possible subspaces to search
+
+---
+layout: diagram
+title: "Clusters Visible Only in Subspaces"
+alt_text: "Three 2D scatter plots showing x-y, x-z, and y-z projections of 3D data, each revealing different cluster structure invisible in the full 3D view"
+---
+graph LR
+  A[3D Data Space] --> B[x-y projection: 2 clusters visible]
+  A --> C[x-z projection: 1 cluster visible]
+  A --> D[y-z projection: 1 cluster visible]
+  style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+  style B fill:#3fb950,stroke:#3fb950,color:#0d1117
+  style C fill:#f0883e,stroke:#f0883e,color:#0d1117
+  style D fill:#3fb950,stroke:#3fb950,color:#0d1117
+
+---
+layout: two-column
+title: "CLIQUE: A Subspace Clustering Algorithm"
+proportion: 60/40
+left:
+  type: diagram
+  alt_text: "Diagram showing CLIQUE partitioning data space into rectangular units and identifying dense cells that form clusters"
+  source: |
+    graph TD
+      A[Partition all subspaces into equal-volume units] --> B[Measure density: fraction of points per unit]
+      B --> C{Dense unit? fraction above tau}
+      C -->|Yes| D[Candidate cluster unit]
+      C -->|No| E[Discard]
+      D --> F[Union of adjacent dense units forms cluster]
+      style D fill:#3fb950,stroke:#3fb950,color:#0d1117
+      style E fill:#f0883e,stroke:#f0883e,color:#0d1117
+---
+**Key properties:**
+
+- Grid-based algorithm for finding subspace clusters
+- A unit is **dense** if fraction of points exceeds threshold $$\tau$$
+- Clusters are **contiguous** (touching) dense units
+- Can find **overlapping** clusters
+- Uses **monotone property** to prune search space
+
+---
+layout: steps
+title: "CLIQUE Algorithm: Step-by-Step (Algorithm 9.5)"
+---
+1. Find all dense 1-dimensional cells (one per attribute)
+2. Set $$k \leftarrow 2$$; begin iterating
+3. Generate candidate dense k-dimensional cells from dense (k-1)-dimensional cells
+4. Eliminate units with fewer than $$\xi$$ points
+5. Increment k; repeat until no candidates remain
+6. Form clusters by taking the union of all adjacent dense cells
+7. Describe each cluster with attribute range inequalities
+
+---
+layout: comparison
+title: "CLIQUE: Pros and Cons"
+---
+**Strengths**
+
+- Finds clusters in arbitrary subspaces
+- Can handle high-dimensional data systematically
+- Can find overlapping clusters
+- Compact cluster description via inequalities
+
+<!-- split -->
+
+**Limitations**
+
+- Time complexity exponential in number of dimensions
+- May fail when cluster densities differ widely
+- Fixed threshold cannot adapt to varying density
+- Threshold $$\tau$$ and cell size require careful tuning
+
+---
+layout: divider
+title: "Kernel-Based Density Estimation: DENCLUE"
+---
+
+---
+layout: two-column
+title: "DENCLUE: Kernel Density Estimation"
+proportion: 50/50
+left:
+  type: diagram
+  alt_text: "Gaussian kernel function K(y) shown as a bell-shaped surface centered at origin, illustrating how each data point contributes a smooth density bump"
+  source: |
+    graph TD
+      A[Each data point x] --> B["Gaussian kernel K(y) = exp(-dist(x,y)^2 / 2 sigma^2)"]
+      B --> C[Overall density = sum of all kernels]
+      C --> D[Find local maxima: density attractors]
+      D --> E[Assign each point to its attractor]
+      style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+      style D fill:#f0883e,stroke:#f0883e,color:#0d1117
+---
+**Gaussian kernel formula:**
+
+$$K(y) = e^{-\text{distance}(\mathbf{x}, \mathbf{y})^2 / 2\sigma^2}$$
+
+- Each point contributes a smooth density bump
+- Total density is the **sum** of all contributions
+- Bandwidth $$\sigma$$ controls smoothness
+
+---
+layout: steps
+title: "DENCLUE Algorithm: Core Steps"
+---
+1. Estimate the density function using kernel contributions from all points
+2. Identify **local maxima** — these become density attractors
+3. Assign each point to its attractor by following gradient ascent (direction of maximum density increase)
+4. Discard clusters whose attractor density is below minimum threshold $$\xi$$
+5. Merge clusters connected by paths where density stays above $$\xi$$
+
+---
+layout: content
+title: "DENCLUE: Key Properties"
+---
+- **Smooth density estimation** handles arbitrary cluster shapes
+- **Density attractors** are the cluster centers — found automatically
+- Clusters D and E merge if connected by a high-density path
+- Points below threshold $$\xi$$ are treated as noise
+- More mathematically principled than grid-based approaches
+- Sensitive to bandwidth parameter $$\sigma$$
+
+---
+layout: divider
+title: "Graph-Based Clustering"
+---
+
+---
+layout: two-column
+title: "Graph-Based Clustering: General Concepts"
+proportion: 50/50
+left:
+  type: diagram
+  alt_text: "Proximity graph where nodes are data points and weighted edges represent proximity between pairs of points"
+  source: |
+    graph LR
+      A((p1)) ---|0.9| B((p2))
+      B ---|0.7| C((p3))
+      A ---|0.3| D((p4))
+      C ---|0.8| E((p5))
+      D ---|0.1| E
+      style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
+      style E fill:#3fb950,stroke:#3fb950,color:#0d1117
+---
+- Each node is a data point
+- Each edge weight is the **proximity** between two points
+- Clusters are **connected components** in the graph
+- Hierarchical algorithms viewed in graph terms:
+  - **MIN (single link)**: merge subgraphs with lowest-weight connecting edge
+  - **Group Average**: merge subgraphs with high average connectivity
+
+---
+layout: table
+title: "Comparing Density-Based Approaches"
+caption: "Summary of key characteristics of three density-based clustering families"
+headers: ["Method", "Density Definition", "Cluster Shape", "Handles Noise", "Main Parameter"]
+rows:
+  - ["Grid-based", "Points per cell", "Rectangular regions", "Yes", "Cell size, threshold tau"]
+  - ["CLIQUE", "Fraction per subspace unit", "Subspace rectangles", "Yes", "tau, xi per dimension"]
+  - ["DENCLUE", "Kernel sum", "Arbitrary", "Yes", "Bandwidth sigma, min xi"]
+  - ["Graph-based", "Connectivity", "Arbitrary", "Partial", "Proximity threshold"]
+---
+
+---
+layout: content
+title: "When to Use Density-Based Clustering"
+---
+- **Arbitrary cluster shapes**: DBSCAN/DENCLUE outperform k-means on non-convex clusters
+- **Unknown cluster count**: no need to specify k in advance
+- **Noise tolerance**: outlier points are explicitly labeled, not forced into clusters
+- **High-dimensional data**: CLIQUE finds subspace clusters k-means misses
+- **Caveat**: performance degrades with very high dimensions (curse of dimensionality)
+
+---
+layout: summary
+title: "Key Takeaways: Density-Based Clustering"
+---
+- **Core principle**: clusters are dense regions separated by sparse regions
+- **Grid-based**: fast, simple, rectangular clusters — good for low-dimensional data
+- **CLIQUE**: extends grid approach to find subspace clusters systematically using monotone pruning
+- **DENCLUE**: kernel density estimation enables smooth density functions and arbitrary cluster shapes; density attractors replace centroids
+- **Graph-based**: proximity graphs unify many hierarchical approaches; clusters are connected components
+- All methods naturally identify **noise** — a key advantage over k-means
