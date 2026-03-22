@@ -1,6 +1,7 @@
 """Integration tests for the compiler engine (COMP-01 through COMP-06, ADA-02 through ADA-05)."""
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -157,3 +158,44 @@ title: Fail
         capture_output=True, text=True,
     )
     assert result.returncode == 1
+
+
+# ---------------------------------------------------------------------------
+# Real-world fixture tests
+# ---------------------------------------------------------------------------
+
+REAL_FIXTURES = sorted(Path('tests/fixtures').glob('real_*.yaml'))
+
+
+def test_real_fixtures_exist():
+    """All 5 real-world YAML fixtures are present."""
+    assert len(REAL_FIXTURES) == 5
+
+
+@pytest.mark.parametrize("fixture", REAL_FIXTURES, ids=lambda p: p.stem)
+def test_real_fixture_compiles(fixture, tmp_path):
+    """Real-world fixture compiles to valid HTML with ARIA structure."""
+    from schema.parser import parse_deck_file
+    deck = parse_deck_file(str(fixture))
+    out = tmp_path / f"{fixture.stem}.html"
+    compile_deck(deck, str(out))
+    assert out.exists()
+    content = out.read_text()
+    assert '<!DOCTYPE html>' in content
+    assert 'aria-roledescription="carousel"' in content
+    assert 'class="skip-link"' in content
+    # Each slide renders a <section role="group"> — count section tags with role
+    import re
+    assert len(re.findall(r'<section[^>]*role="group"', content)) == len(deck.slides)
+
+
+def test_real_fixture_deterministic(tmp_path):
+    """First real fixture produces identical output on repeated compilation."""
+    from schema.parser import parse_deck_file
+    fixture = REAL_FIXTURES[0]
+    deck = parse_deck_file(str(fixture))
+    out1 = tmp_path / 'a.html'
+    out2 = tmp_path / 'b.html'
+    compile_deck(deck, str(out1))
+    compile_deck(deck, str(out2))
+    assert out1.read_text() == out2.read_text()
