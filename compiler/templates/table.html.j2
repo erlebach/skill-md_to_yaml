@@ -1,0 +1,25 @@
+<h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
+<div class="table-scroll-wrapper">
+  <table>
+    {% if slide.caption %}<caption>{{ slide.caption | e }}</caption>{% endif %}
+    {% if slide.headers %}
+    <thead>
+      <tr>{% for h in slide.headers %}<th scope="col">{{ h | e }}</th>{% endfor %}</tr>
+    </thead>
+    {% endif %}
+    <tbody>
+      {% for row in slide.rows %}
+      <tr>
+        {% for cell in row %}
+          {% if loop.first and slide.row_headers %}
+            <th scope="row">{{ cell | e }}</th>
+          {% else %}
+            <td>{{ cell | e }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}

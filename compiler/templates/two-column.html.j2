@@ -1,5 +1,5 @@
-<h2 id="slide-{{ loop.index }}-heading">{{ slide.title | e }}</h2>
-{% if slide.body %}<div class="slide-body">{{ slide.body | safe }}</div>{% endif %}
+<h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
+{% if rendered_body %}<div class="slide-body">{{ rendered_body | safe }}</div>{% elif slide.body %}<div class="slide-body">{{ slide.body | e }}</div>{% endif %}
 <div class="two-col two-col-{{ slide.proportion | replace('/', '-') }}">
   <div class="col-left">
     {% if slide.left %}

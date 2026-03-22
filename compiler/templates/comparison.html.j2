@@ -1,4 +1,4 @@
-<h2 id="slide-{{ loop.index }}-heading">{{ slide.title | e }}</h2>
+<h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
 {% if slide.body %}
 {% set parts = slide.body.split('<!-- split -->', 1) %}
 <div class="two-col two-col-50-50">
