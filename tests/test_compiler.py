@@ -1,65 +1,159 @@
-"""
-Wave 0 test stubs for Phase 2 compiler tests (COMP-01 through COMP-06, ADA-02 through ADA-05).
-All functions are xfail stubs — implementation in Plan 03.
-"""
+"""Integration tests for the compiler engine (COMP-01 through COMP-06, ADA-02 through ADA-05)."""
+import subprocess
+import sys
+
 import pytest
 
-
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_compile_produces_html():
-    """COMP-01: Compiler produces valid HTML output from a deck YAML."""
-    assert False
-
-
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_all_layout_types_render():
-    """COMP-02: All 12 layout types render without error."""
-    assert False
+from schema.models import (
+    Deck, DeckMetadata, TitleSlide, ContentSlide, HeroSlide, DividerSlide,
+    FigureSlide, DiagramSlide, TwoColumnSlide, QuoteSlide, ComparisonSlide,
+    CodeSlide, StepsSlide, SummarySlide, ColumnContent,
+)
+from compiler import compile_deck
 
 
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_deterministic_output():
-    """COMP-03: Compiler output is deterministic (same input → same output)."""
-    assert False
+def _minimal_deck(**meta_overrides):
+    meta_kwargs = dict(title='Test Deck', theme='dark')
+    meta_kwargs.update(meta_overrides)
+    return Deck(
+        metadata=DeckMetadata(**meta_kwargs),
+        slides=[
+            TitleSlide(layout='title', title='Hello', subtitle='World'),
+            ContentSlide(layout='content', title='Slide 2', body='Some text'),
+        ],
+    )
 
 
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_cli_invocation():
-    """COMP-04: CLI can be invoked and produces output file."""
-    assert False
+def test_compile_produces_html(tmp_path):
+    """compile_deck() writes a valid HTML file. [COMP-01]"""
+    out = tmp_path / 'out.html'
+    compile_deck(_minimal_deck(), str(out))
+    assert out.exists()
+    content = out.read_text()
+    assert '<!DOCTYPE html>' in content
+    assert '</html>' in content
 
 
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_css_vars_embedded():
-    """COMP-05: CSS custom properties (theme vars) are embedded in output HTML."""
-    assert False
+def test_all_layout_types_render(tmp_path):
+    """Every layout type renders a <section> with correct heading ID. [COMP-02]"""
+    slides = [
+        TitleSlide(layout='title', title='T'),
+        HeroSlide(layout='hero', title='H'),
+        ContentSlide(layout='content', title='C', body='text'),
+        DividerSlide(layout='divider', title='D'),
+        FigureSlide(layout='figure', title='F', src='img.png', alt_text='An image'),
+        DiagramSlide(layout='diagram', title='Dg', alt_text='A diagram'),
+        TwoColumnSlide(layout='two-column', title='TC'),
+        QuoteSlide(layout='quote', title='Q'),
+        ComparisonSlide(layout='comparison', title='Cmp', body='A <!-- split --> B'),
+        CodeSlide(layout='code', title='Cd', body='print("hi")', language='python'),
+        StepsSlide(layout='steps', title='St', body='1. Step one'),
+        SummarySlide(layout='summary', title='S', body='- Done'),
+    ]
+    deck = Deck(metadata=DeckMetadata(title='All Layouts', theme='dark'), slides=slides)
+    out = tmp_path / 'all.html'
+    compile_deck(deck, str(out))
+    content = out.read_text()
+    for i in range(1, 13):
+        assert f'id="slide-{i}-heading"' in content
 
 
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_keyboard_js_embedded():
-    """COMP-06 / ADA-05: Keyboard navigation JavaScript is embedded in output HTML."""
-    assert False
+def test_deterministic_output(tmp_path):
+    """Same input produces byte-identical output. [COMP-03]"""
+    deck = _minimal_deck()
+    out1 = tmp_path / 'a.html'
+    out2 = tmp_path / 'b.html'
+    compile_deck(deck, str(out1))
+    compile_deck(deck, str(out2))
+    assert out1.read_text() == out2.read_text()
 
 
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_aria_carousel_markup():
-    """ADA-02: Slide container has role=region or appropriate ARIA carousel markup."""
-    assert False
+def test_cli_invocation(tmp_path):
+    """CLI entry point compiles YAML to HTML. [COMP-04]"""
+    yaml_content = """\
+---
+title: CLI Test
+theme: dark
+---
+layout: title
+title: Hello
+---
+"""
+    input_yaml = tmp_path / 'input.yaml'
+    input_yaml.write_text(yaml_content)
+    output_html = tmp_path / 'output.html'
+    result = subprocess.run(
+        [sys.executable, '-m', 'compiler', str(input_yaml), str(output_html)],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, f"stderr: {result.stderr}"
+    assert output_html.exists()
 
 
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_skip_link_present():
-    """ADA-03: Skip-to-content link is present in output HTML."""
-    assert False
+def test_css_vars_embedded(tmp_path):
+    """CSS custom properties are embedded in output. [COMP-05]"""
+    out = tmp_path / 'out.html'
+    compile_deck(_minimal_deck(), str(out))
+    content = out.read_text()
+    assert '--bg' in content
+    assert '--accent' in content
+    assert '--text' in content
 
 
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_aria_labelledby():
-    """ADA-04: Slides have aria-labelledby linking to their heading."""
-    assert False
+def test_keyboard_js_embedded(tmp_path):
+    """Keyboard navigation JS is embedded. [COMP-06]"""
+    out = tmp_path / 'out.html'
+    compile_deck(_minimal_deck(), str(out))
+    content = out.read_text()
+    for key in ('ArrowRight', 'ArrowLeft', 'Home', 'End'):
+        assert key in content
 
 
-@pytest.mark.xfail(reason="stub — implementation in Plan 03")
-def test_cli_error_exit_code():
-    """Error path: CLI exits with non-zero code on invalid input."""
-    assert False
+def test_aria_carousel_markup(tmp_path):
+    """ARIA carousel role is present. [ADA-02]"""
+    out = tmp_path / 'out.html'
+    compile_deck(_minimal_deck(), str(out))
+    content = out.read_text()
+    assert 'aria-roledescription="carousel"' in content
+
+
+def test_skip_link_present(tmp_path):
+    """Skip link for keyboard users exists. [ADA-03]"""
+    out = tmp_path / 'out.html'
+    compile_deck(_minimal_deck(), str(out))
+    content = out.read_text()
+    assert 'skip-link' in content
+    assert '#main-content' in content
+
+
+def test_aria_labelledby(tmp_path):
+    """Each slide section has aria-labelledby linked to heading. [ADA-04]"""
+    out = tmp_path / 'out.html'
+    compile_deck(_minimal_deck(), str(out))
+    content = out.read_text()
+    assert 'aria-labelledby="slide-1-heading"' in content
+    assert 'id="slide-1-heading"' in content
+    assert 'aria-labelledby="slide-2-heading"' in content
+    assert 'id="slide-2-heading"' in content
+
+
+def test_cli_error_exit_code(tmp_path):
+    """CLI exits 1 when validation errors occur (bad contrast)."""
+    yaml_content = """\
+---
+title: Bad Contrast
+theme: light
+accent_color: "#f0a500"
+---
+layout: title
+title: Fail
+---
+"""
+    input_yaml = tmp_path / 'bad.yaml'
+    input_yaml.write_text(yaml_content)
+    output_html = tmp_path / 'out.html'
+    result = subprocess.run(
+        [sys.executable, '-m', 'compiler', str(input_yaml), str(output_html)],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 1
