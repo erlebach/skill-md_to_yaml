@@ -40,10 +40,10 @@ created: 2026-03-21
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
 | 01-01-01 | 01 | 1 | DSL-01 | unit | `uv run pytest tests/test_models.py -x -q` | ❌ W0 | ⬜ pending |
 | 01-01-02 | 01 | 1 | DSL-02 | unit | `uv run pytest tests/test_models.py -x -q` | ❌ W0 | ⬜ pending |
-| 01-01-03 | 01 | 1 | DSL-03 | unit | `uv run pytest tests/test_validation.py -x -q` | ❌ W0 | ⬜ pending |
-| 01-01-04 | 01 | 1 | DSL-04 | unit | `uv run pytest tests/test_schema_gen.py -x -q` | ❌ W0 | ⬜ pending |
+| 01-01-03 | 01 | 1 | DSL-03 | unit | `uv run pytest tests/test_models.py -x -q` | ❌ W0 | ⬜ pending |
+| 01-01-04 | 01 | 1 | DSL-04 | unit | `uv run pytest tests/test_json_schema.py -x -q` | ❌ W0 | ⬜ pending |
 | 01-01-05 | 01 | 1 | DSL-05 | unit | `uv run pytest tests/test_models.py -x -q` | ❌ W0 | ⬜ pending |
-| 01-01-06 | 01 | 1 | DSL-06 | unit | `uv run pytest tests/test_fixtures.py -x -q` | ❌ W0 | ⬜ pending |
+| 01-01-06 | 01 | 1 | DSL-06 | unit | `uv run pytest tests/test_parser.py -x -q` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,9 +52,8 @@ created: 2026-03-21
 ## Wave 0 Requirements
 
 - [ ] `tests/test_models.py` — stubs for DSL-01, DSL-02, DSL-05
-- [ ] `tests/test_validation.py` — stubs for DSL-03
-- [ ] `tests/test_schema_gen.py` — stubs for DSL-04
-- [ ] `tests/test_fixtures.py` — stubs for DSL-06
+- [ ] `tests/test_json_schema.py` — stubs for DSL-04
+- [ ] `tests/test_parser.py` — stubs for DSL-01, DSL-06
 - [ ] `tests/conftest.py` — shared fixtures
 - [ ] pytest + pydantic install via `uv add --dev pytest`
 
