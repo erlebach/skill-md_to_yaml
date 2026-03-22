@@ -97,6 +97,7 @@ class CodeSlide(SlideBase):
     """Code block slide: title + fenced code in Markdown body. Language for syntax highlighting."""
     layout: Literal['code']
     language: str = 'text'
+    line_numbers: bool = False
 
 
 class StepsSlide(SlideBase):
@@ -109,8 +110,17 @@ class SummarySlide(SlideBase):
     layout: Literal['summary']
 
 
+class TableSlide(SlideBase):
+    """Data table with accessible markup."""
+    layout: Literal['table']
+    caption: str | None = None
+    headers: list[str] = Field(default_factory=list)
+    rows: list[list[str]] = Field(default_factory=list)
+    row_headers: bool = False
+
+
 # ---------------------------------------------------------------------------
-# Discriminated union covering all 12 layout types
+# Discriminated union covering all 13 layout types
 # ---------------------------------------------------------------------------
 
 AnySlide = Annotated[
@@ -127,6 +137,7 @@ AnySlide = Annotated[
         CodeSlide,
         StepsSlide,
         SummarySlide,
+        TableSlide,
     ],
     Field(discriminator='layout'),
 ]
