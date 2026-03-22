@@ -38,12 +38,12 @@ Plans:
 **Goal:** Validate the Phase 1 DSL schema against 5 real-world HTML presentation decks by converting them to YAML DSL format, fixing any schema/parser issues discovered, and closing DSL-01
 **Requirements**: DSL-01
 **Depends on:** Phase 1
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed — COMPLETE
 
 Plans:
-- [ ] 01.1-01-PLAN.md — Test infrastructure + convert Decks 1 and 3 (quantum-transformers, quixer-implementation)
-- [ ] 01.1-02-PLAN.md — Convert Decks 2 and 4 (prototype-clustering, density-clustering)
-- [ ] 01.1-03-PLAN.md — Convert Deck 5 (clustering-ch8) + gap report + DSL-01 closure
+- [x] 01.1-01-PLAN.md — Test infrastructure + convert Decks 1 and 3 (quantum-transformers, quixer-implementation)
+- [x] 01.1-02-PLAN.md — Convert Decks 2 and 4 (prototype-clustering, density-clustering)
+- [x] 01.1-03-PLAN.md — Convert Deck 5 (clustering-ch8) + gap report + DSL-01 closure
 
 ### Phase 2: Compiler Core + ADA
 **Goal**: A working end-to-end pipeline that compiles YAML to a standalone ADA-compliant HTML deck with keyboard navigation, ARIA markup, and design-rule enforcement
