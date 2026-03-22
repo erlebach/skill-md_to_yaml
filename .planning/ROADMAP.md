@@ -33,6 +33,18 @@ Plans:
 - [x] 01-01-PLAN.md — Pydantic v2 models (12 layouts + deck metadata) + JSON Schema export
 - [x] 01-02-PLAN.md — Hybrid file parser + test fixtures + integration tests
 
+### Phase 01.1: Real-World DSL Validation (INSERTED)
+
+**Goal:** Validate the Phase 1 DSL schema against 5 real-world HTML presentation decks by converting them to YAML DSL format, fixing any schema/parser issues discovered, and closing DSL-01
+**Requirements**: DSL-01
+**Depends on:** Phase 1
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01.1-01-PLAN.md — Test infrastructure + convert Decks 1 and 3 (quantum-transformers, quixer-implementation)
+- [ ] 01.1-02-PLAN.md — Convert Decks 2 and 4 (prototype-clustering, density-clustering)
+- [ ] 01.1-03-PLAN.md — Convert Deck 5 (clustering-ch8) + gap report + DSL-01 closure
+
 ### Phase 2: Compiler Core + ADA
 **Goal**: A working end-to-end pipeline that compiles YAML to a standalone ADA-compliant HTML deck with keyboard navigation, ARIA markup, and design-rule enforcement
 **Depends on**: Phase 1
@@ -72,11 +84,12 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. DSL Schema | 2/2 | Complete | 2026-03-22 |
+| 01.1. Real-World DSL Validation | 0/3 | Planning | - |
 | 2. Compiler Core + ADA | 0/TBD | Not started | - |
 | 3. Rich Content | 0/TBD | Not started | - |
 | 4. LLM Skill + Validation | 0/TBD | Not started | - |
