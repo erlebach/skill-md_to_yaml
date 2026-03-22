@@ -111,11 +111,11 @@ def test_invalid_missing_alt(invalid_missing_alt_path):
 
 
 def test_invalid_unknown_field(invalid_unknown_field_path):
-    with pytest.raises(ValidationError) as exc_info:
+    with pytest.raises((ValidationError, ValueError)) as exc_info:
         parse_deck_file(invalid_unknown_field_path)
     error_str = str(exc_info.value)
-    # body is an excluded field; having it in frontmatter triggers extra fields error
-    assert 'body' in error_str or 'extra' in error_str.lower()
+    # body is an excluded field; having it in frontmatter triggers an error
+    assert 'body' in error_str
 
 
 # ---------------------------------------------------------------------------
