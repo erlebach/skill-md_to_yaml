@@ -1,0 +1,302 @@
+---
+title: "Density-Based Clustering: Grid, Subspace and DENCLUE"
+author: null
+date: 2026-03-20
+theme: dark
+---
+---
+layout: title
+title: "Density-Based Clustering"
+subtitle: "Grid-Based Methods · Subspace Clustering · CLIQUE · DENCLUE"
+---
+Based on: Introduction to Data Mining, 2nd Edition — Tan, Steinbach, Karpatne, Kumar
+---
+layout: two-column
+title: "Grid-Based Clustering"
+proportion: 50/50
+---
+**Core Idea**
+
+- Divide the attribute space into a rectangular grid
+- Count points per cell to estimate local density
+- Cells above a density threshold τ are considered dense
+- Contiguous dense cells form a cluster
+
+Processing time depends on the number of grid cells — **not** on the number of data points.
+
+<!-- split -->
+
+**Trade-offs**
+
+**Fast** — grid structure enables efficient density queries and cluster formation
+
+**Resolution-sensitive** — coarse grids miss fine cluster structure; fine grids are expensive and noise-prone
+
+**Axis-aligned only** — cannot detect clusters oriented at an angle to the coordinate axes
+---
+layout: two-column
+title: "Grid-Based Algorithm: Step by Step"
+proportion: 40/60
+---
+**Algorithm 9.4 — Basic Grid-Based Clustering**
+
+1. **Define** a set of grid cells partitioning the attribute space
+2. **Assign** each data object to its cell; compute the density (point count) of each cell
+3. **Eliminate** cells with density below threshold τ
+4. **Form clusters** by grouping contiguous (touching) dense cells
+
+The algorithm is elegantly simple: discretize → count → threshold → connect. Its power lies in its speed; its weakness lies in the fixed threshold and axis-aligned structure.
+
+<!-- split -->
+
+![Grid density map with two clusters]
+
+A seven-by-seven grid where most cells have a count of zero (empty). Two dense regions are highlighted. The left cluster (blue outline) spans columns 2–5, rows 3–6, with cell counts from 3 to 21. The right cluster (green outline) is a two-column by two-row block with counts of 18, 24, 27, and 31.
+---
+layout: two-column
+title: "Subspace Clustering: The Challenge"
+proportion: 50/50
+---
+**Why All-Attribute Clustering Fails**
+
+- High dimensionality dilutes distance measures — points seem equally far apart in all directions
+- Irrelevant attributes add noise that obscures cluster structure
+- Different clusters may be defined by different subsets of attributes
+
+A **subspace** is any subset of the original attribute dimensions. Subspace clustering finds clusters that are meaningful within some — but not necessarily all — of the dimensions.
+
+<!-- split -->
+
+**Goals of Subspace Clustering**
+
+- Identify *which* attributes define each cluster
+- Find clusters in multiple, potentially different subspaces
+- Avoid reporting "shadow" clusters — projections of higher-dimensional clusters that only appear clustered in a lower subspace
+
+The goal is to find the clusters *and* the dimensions in which they exist — not merely projections of higher-dimensional clusters onto a lower-dimensional view.
+---
+layout: two-column
+title: "Clusters in Subspaces"
+proportion: 40/60
+---
+**The Key Insight**
+
+A 3D dataset with attributes x, y, z can contain clusters that are only visible in specific 2D projections:
+
+- One cluster visible in the x–y plane
+- Another visible in the x–z plane
+- A third visible in the y–z plane
+
+The same data point can participate in *different* subspace clusters depending on which projection is examined.
+
+Subspace clusters that appear in a lower-dimensional projection may just be "shadows" — we must verify they are genuine, not artifacts of projection.
+
+<!-- split -->
+
+![3D data cube with clusters in different 2D projection planes]
+
+An isometric cube wireframe representing a 3D data space with x, y, and z axes. Blue circles cluster in the x-y face. Green triangles cluster in the x-z face. Orange squares cluster in the y-z face. Each group is clearly separated from the others by symbol and color, demonstrating that the same 3D dataset contains three distinct clusters, each visible only in a different 2D subspace.
+---
+layout: diagram
+title: "Subspace Projections: A Closer Look"
+alt_text: "Three side-by-side 2D scatter plots showing the same 3D dataset projected onto x-y, x-z, and y-z planes. In the x-y plot: blue circles cluster upper-left, green triangles cluster upper-right, orange squares form a spread-out cluster lower-center — 3 groups. In the x-z plot: blue circles cluster middle-left, green triangles cluster upper-right — 2 groups. In the y-z plot: blue circles and green triangles overlap in the upper-left as a shared subcluster, and orange squares are scattered — 1 tight plus scattered pattern."
+---
+Projecting the same 3D dataset onto each 2D plane reveals a different cluster structure in each view — the number and membership of clusters changes per projection.
+
+Same 3D dataset, three projections: x–y shows 3 groups; x–z shows 2; y–z reveals a shared y-subcluster.
+---
+layout: two-column
+title: "CLIQUE: A Subspace Clustering Algorithm"
+proportion: 50/50
+---
+**How CLIQUE Works**
+
+- Partitions the data space into rectangular cells of equal volume across all possible subspaces
+- Measures the density of each unit as the **fraction** of total data points it contains
+- A cell is **dense** if its fraction of points exceeds the user-specified threshold τ
+- A **cluster** is a maximal set of contiguous (touching) dense units
+
+<!-- split -->
+
+**Key Properties**
+
+**Overlapping clusters** — a point may belong to clusters in multiple subspaces simultaneously
+
+**Automatic subspace discovery** — identifies which dimensions are relevant per cluster without user guidance
+
+**Single global threshold τ** — one density threshold applies to all clusters in all subspaces
+---
+layout: two-column
+title: "CLIQUE: The Monotone Property"
+proportion: 50/50
+---
+**The Monotone Property**
+
+If a set of points *cannot* form a density-based cluster in k dimensions, then the same set of points cannot form a density-based cluster in any superset of those k dimensions.
+
+This is identical in structure to the **Apriori principle** in association rule mining: if an itemset is infrequent, no superset can be frequent. CLIQUE applies the same pruning strategy to subspace search.
+
+<!-- split -->
+
+**Why This Enables Efficient Search**
+
+- Start by finding all dense 1D regions (one per attribute)
+- Generate k-D candidates *only* from (k–1)-D dense cells
+- Prune any candidate whose projection into a lower subspace is not dense
+- Only a small fraction of all possible subspaces need to be examined
+
+The search grows bottom-up from 1D to higher dimensions, pruning aggressively at each level. This makes CLIQUE tractable in practice despite the exponential search space.
+---
+layout: two-column
+title: "CLIQUE: Algorithm Pseudocode"
+proportion: 40/60
+---
+**Steps (Algorithm 9.5)**
+
+1. Find all dense 1D regions for each attribute
+2. Set k ← 2
+3. **Repeat:**
+   - Generate all candidate dense k-D cells from dense (k–1)-D cells
+   - Eliminate cells containing fewer than ξ points
+   - Increment k ← k + 1
+4. **Until** no candidate dense k-D cells remain
+5. Form clusters by taking the union of all adjacent high-density cells
+6. Summarize each cluster with a minimal set of inequalities describing its attribute ranges
+
+<!-- split -->
+
+**Key Parameters**
+
+**τ** (density threshold) — fraction of total points a cell must contain to be considered dense
+
+**ξ** (minimum point count) — absolute minimum points per cell; related to τ × n
+
+**Output:** Each cluster is described as a set of attribute-range inequalities — a compact, human-readable representation of the cluster region.
+---
+layout: two-column
+title: "CLIQUE: Strengths and Limitations"
+proportion: 50/50
+---
+**Strengths**
+
+- Automatically discovers relevant subspaces — no domain knowledge required
+- Finds clusters in multiple, potentially overlapping subspaces
+- Produces interpretable cluster descriptions (attribute-range inequalities)
+- Monotone pruning makes it tractable despite the exponential search space
+
+<!-- split -->
+
+**Limitations**
+
+- **Exponential worst-case complexity** — time grows exponentially with the number of dimensions, especially when many dense units survive at lower levels
+- **Fixed global threshold** — a single τ cannot accommodate clusters with widely differing densities
+- **Parameter sensitivity** — threshold τ and grid interval length are difficult to tune; small changes can dramatically alter results
+- **Axis-aligned only** — cannot detect clusters with boundaries not parallel to coordinate axes
+
+The fixed threshold is CLIQUE's primary weakness. Clusters with different local densities require different thresholds, but CLIQUE uses one global value for all subspaces.
+---
+layout: two-column
+title: "DENCLUE: Kernel Density Estimation"
+proportion: 50/50
+---
+**Core Principle**
+
+- Each data point contributes to the density at every location in space via an **influence function** (kernel)
+- The overall density is the **sum of all kernel contributions** from all data points
+- This creates a smooth landscape with peaks, saddle points, and valleys
+
+Instead of arbitrary grid boundaries, DENCLUE estimates a principled, smooth density surface — avoiding both the resolution problem and the boundary effects of grid-based methods.
+
+<!-- split -->
+
+**Advantages Over Grid-Based Methods**
+
+- No grid resolution parameter — density is continuous
+- Works with arbitrary cluster shapes (not just axis-aligned rectangles)
+- Grounded in kernel density estimation (KDE) — a well-studied statistical framework
+- Handles noise explicitly through a minimum density threshold
+
+The Gaussian kernel is the standard choice — it is smooth, symmetric, and its bandwidth parameter σ has an intuitive interpretation as the "radius of influence" of each point.
+---
+layout: two-column
+title: "DENCLUE: The Gaussian Kernel"
+proportion: 40/60
+---
+**Kernel Function**
+
+$$K(y) = \exp\!\left(-\frac{\text{distance}(\mathbf{x}, \mathbf{y})^2}{2\sigma^2}\right)$$
+
+Maximum influence (value 1) at the data point itself, decaying exponentially with distance. σ (bandwidth) controls how far the influence extends.
+
+When σ is large, each point has broad influence — the density surface is smooth and peaks are wide. When σ is small, influence is concentrated — the surface is spiky and reveals fine structure.
+
+<!-- split -->
+
+**Total Density Function**
+
+The density at any point y is the sum of kernel contributions from all n data points:
+
+$$f(y) = \sum_{i=1}^{n} K(x_i, y)$$
+
+- Local maxima of f(y) are density attractors — cluster centers
+- Saddle points and valleys separate different clusters
+- Global density depends on the bandwidth σ
+---
+layout: two-column
+title: "DENCLUE Algorithm: Three Steps"
+proportion: 50/50
+---
+**Step 1: Estimate the Density Function**
+
+Compute f(y) by summing Gaussian kernels centered at each data point. This produces a continuous density landscape over the entire data space.
+
+**Step 2: Find Density Attractors**
+
+Identify all local maxima of f(y). These peaks are the **density attractors**. Each data point is assigned to its nearest attractor by following the direction of maximum density increase (gradient ascent).
+
+**Step 3: Form and Filter Clusters**
+
+- Discard attractors whose peak density is below the minimum threshold ξ — they are treated as noise
+- Merge attractors whose connecting path maintains density above ξ throughout
+- Each remaining attractor (or merged group) defines one cluster
+
+<!-- split -->
+
+**Gradient Ascent Assignment**
+
+Each data point climbs the density gradient until it reaches a local maximum. The attractor it reaches determines its cluster membership.
+
+If a point's density at its starting location is below ξ, it is classified as **noise** and rejected — no cluster assignment is made.
+
+Two attractors D and E are **merged** into one cluster if there exists a path between them where the density never falls below ξ — they are connected through a high-density region.
+---
+layout: diagram
+title: "DENCLUE: Density Landscape"
+alt_text: "A 1D kernel density plot. The x-axis represents data space and y-axis represents density. Five peaks labeled A, B, C, D, and E from left to right. A horizontal dashed orange line at height xi marks the minimum density threshold. Three vertical dotted gray lines mark local minima (valleys) between peaks. Peaks A, B, and C are separated by valleys that dip below xi — they form three distinct clusters. Peak D is smaller and peak E is the tallest; the density between D and E stays above xi, so they are merged into a single cluster labeled merge(D, E)."
+---
+Clusters emerge from peaks of the density function. The threshold ξ acts as a "water level" — peaks above it form clusters; valleys above it merge adjacent peaks.
+
+- Cluster A (under peak A), Cluster B (under peak B), Cluster C (under peak C)
+- Cluster D+E merged: density between D and E stays above ξ throughout
+---
+layout: content
+title: "When to Use Each Algorithm"
+---
+Each method targets a different set of scenarios. Choose based on data dimensionality, cluster shape, density variation, and interpretability needs.
+
+| Criterion | Grid-Based | CLIQUE | DENCLUE |
+|---|---|---|---|
+| Cluster shape | Axis-aligned rectangles only | Axis-aligned in each subspace | Arbitrary shapes |
+| High-dimensional data | Poor — grid size explodes | Good — subspace pruning | Moderate |
+| Varying cluster density | Poor — one fixed τ | Poor — one fixed τ | Moderate — one ξ, but continuous density |
+| Noise handling | Good — sparse cells discarded | Good — below-threshold cells pruned | Excellent — low-density points rejected as noise |
+| Interpretability | Moderate — grid cells visible | Excellent — attribute-range inequalities | Moderate — density attractors |
+| Best used when... | 2D–3D data, many points, speed is priority | High-dim data, subspace clusters expected | Arbitrary cluster shapes, noise matters, smooth density more natural |
+---
+layout: summary
+title: "Summary: Density-Based Clustering Methods"
+---
+- **Grid-Based:** fast, simple, axis-aligned only; resolution is a key tuning challenge
+- **Subspace Clustering:** addresses curse of dimensionality; clusters exist in different attribute subsets
+- **CLIQUE:** uses Apriori-style monotone pruning to search subspaces efficiently; interpretable output
+- **DENCLUE:** continuous kernel density estimation; handles arbitrary shapes and noise; grounded in statistical KDE theory
