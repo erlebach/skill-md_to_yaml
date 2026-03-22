@@ -63,8 +63,16 @@ def _render(deck: Deck, output_path: str = ".", embed_images: bool = False) -> s
         rendered_mermaid_html = None
 
         if slide.layout == "code" and getattr(slide, "body", None):
+            code_body = slide.body.strip()
+            # Strip markdown code fences if present
+            if code_body.startswith("```"):
+                lines = code_body.split("\n")
+                lines = lines[1:]  # remove opening fence
+                if lines and lines[-1].strip() == "```":
+                    lines = lines[:-1]  # remove closing fence
+                code_body = "\n".join(lines)
             rendered_code = render_code(
-                slide.body,
+                code_body,
                 slide.language,
                 slide.line_numbers,
                 deck.metadata.theme,
@@ -90,15 +98,10 @@ def _render(deck: Deck, output_path: str = ".", embed_images: bool = False) -> s
                 "stateDiagram",
             )
             if slide.body.strip().startswith(mermaid_starters):
-                try:
-                    rendered_mermaid_html = render_mermaid(
-                        slide.body, slide.alt_text, slide_id
-                    )
-                except RuntimeError as e:
-                    print(str(e), file=sys.stderr)
-                    rendered_mermaid_html = (
-                        f'<div class="mermaid-error">Mermaid rendering failed: {e}</div>'
-                    )
+                rendered_mermaid_html = render_mermaid(
+                    slide.body, slide.alt_text, slide_id,
+                    theme=deck.metadata.theme,
+                )
             else:
                 rendered_svg = wrap_svg_ada(slide.body, slide.alt_text, slide_id)
 
@@ -120,9 +123,18 @@ def _render(deck: Deck, output_path: str = ".", embed_images: bool = False) -> s
         else ""
     )
 
+    has_mermaid = any(s["rendered_mermaid"] for s in slides_context) or any(
+        getattr(getattr(s, 'left', None), 'source', None) or
+        getattr(getattr(s, 'right', None), 'source', None)
+        for s in deck.slides
+    )
+    mermaid_theme = 'dark' if deck.metadata.theme == 'dark' else 'default'
+
     return template.render(
         deck=deck,
         slides=slides_context,
         total=len(deck.slides),
         pygments_css=pygments_css,
+        has_mermaid=has_mermaid,
+        mermaid_theme=mermaid_theme,
     )

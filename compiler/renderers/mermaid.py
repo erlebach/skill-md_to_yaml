@@ -1,54 +1,28 @@
-"""Mermaid diagram renderer: mmdc subprocess to SVG with ADA attributes.
+"""Mermaid diagram renderer: client-side rendering via Mermaid JS.
 
-Requires Node.js and @mermaid-js/mermaid-cli installed globally:
-    npm install -g @mermaid-js/mermaid-cli
+Embeds Mermaid source in a <pre class="mermaid"> block for browser-side rendering.
+The base template includes the Mermaid JS library when diagrams are present.
 """
 from __future__ import annotations
 
-import os
-import subprocess
-import tempfile
-
-from compiler.renderers.svg import wrap_svg_ada
+import html
 
 
-def render_mermaid(source: str, alt_text: str, slide_id: str) -> str:
-    """Compile Mermaid source to inline SVG via mmdc subprocess.
+def render_mermaid(source: str, alt_text: str, slide_id: str, theme: str = 'dark') -> str:
+    """Return a Mermaid block for client-side rendering with ADA attributes.
 
     Args:
         source: Mermaid diagram source code.
-        alt_text: Alt text for ADA <title>/<desc> elements.
+        alt_text: Alt text for accessibility.
         slide_id: Unique slide identifier for HTML id attributes.
+        theme: 'dark' or 'light' — stored for Mermaid JS init config.
 
     Returns:
-        ADA-wrapped inline SVG string.
-
-    Raises:
-        RuntimeError: When mmdc is not installed/found on PATH.
+        HTML string with Mermaid source for client-side rendering.
     """
-    with tempfile.NamedTemporaryFile(suffix='.mmd', mode='w', delete=False) as mmd_file:
-        mmd_file.write(source)
-        mmd_path = mmd_file.name
-
-    svg_path = mmd_path + '.svg'
-
-    try:
-        try:
-            subprocess.run(
-                ['mmdc', '-i', mmd_path, '-o', svg_path],
-                check=True,
-                capture_output=True,
-            )
-        except FileNotFoundError:
-            raise RuntimeError(
-                "mmdc not found - install with: npm install -g @mermaid-js/mermaid-cli"
-            )
-
-        with open(svg_path, 'r', encoding='utf-8') as fh:
-            svg_content = fh.read()
-    finally:
-        os.unlink(mmd_path)
-        if os.path.exists(svg_path):
-            os.unlink(svg_path)
-
-    return wrap_svg_ada(svg_content, alt_text, slide_id)
+    escaped = html.escape(source.strip())
+    return (
+        f'<div role="img" aria-label="{html.escape(alt_text)}">'
+        f'<pre class="mermaid" aria-hidden="true">{escaped}</pre>'
+        f'</div>'
+    )

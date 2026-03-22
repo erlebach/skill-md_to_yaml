@@ -116,17 +116,17 @@ def test_no_layout_variety_warning_for_two():
 # ---------------------------------------------------------------------------
 
 def test_bullet_limit_warning():
-    """Six bullet points in body -> WARNING."""
-    body = '\n'.join(f'- Point {i}' for i in range(1, 7))  # 6 bullets
+    """Nine bullet points in body -> WARNING."""
+    body = '\n'.join(f'- Point {i}' for i in range(1, 10))  # 9 bullets
     slide = _content_slide(body=body)
     deck = _deck([slide])
     _, warnings = validate_deck(deck)
     assert any('**WARNING**' in w and 'bullet' in w for w in warnings)
 
 
-def test_bullet_limit_ok_for_five():
-    """Five bullet points -> no warning."""
-    body = '\n'.join(f'- Point {i}' for i in range(1, 6))  # 5 bullets
+def test_bullet_limit_ok_for_eight():
+    """Eight bullet points -> no warning."""
+    body = '\n'.join(f'- Point {i}' for i in range(1, 9))  # 8 bullets
     slide = _content_slide(body=body)
     deck = _deck([slide])
     _, warnings = validate_deck(deck)

@@ -1,0 +1,419 @@
+---
+title: Systems Architecture — Cloud Migration
+author: Platform Engineering
+theme: dark
+accent_color: "#f59e0b"
+font: IBM Plex Sans
+---
+---
+layout: title
+title: Systems Architecture
+subtitle: Cloud migration strategy and execution plan
+author: Platform Engineering
+---
+---
+layout: hero
+title: Part I — Current State Analysis
+description: Architecture audit, dependency mapping, and risk assessment
+---
+---
+layout: content
+title: Migration Drivers
+---
+Three forces are driving the migration:
+
+- **Cost** — on-prem hardware refresh cycle costs $2.4M vs $1.1M/yr cloud
+- **Scale** — peak traffic has grown 8x in 18 months, exceeding datacenter capacity
+- **Velocity** — deployment frequency is bottlenecked by manual infrastructure provisioning
+
+The business case projects **54% TCO reduction** over 3 years.
+---
+layout: diagram
+title: Current Architecture
+alt_text: Monolithic application architecture showing web tier, application server, and shared PostgreSQL database with single point of failure
+---
+graph TD
+    LB[Load Balancer] --> WEB1[Web Server 1]
+    LB --> WEB2[Web Server 2]
+    WEB1 --> APP[Monolith App Server]
+    WEB2 --> APP
+    APP --> DB[(PostgreSQL Primary)]
+    DB --> REPLICA[(Read Replica)]
+    APP --> CACHE[(Redis Cache)]
+    APP --> QUEUE[RabbitMQ]
+    QUEUE --> WORKER[Background Worker]
+    WORKER --> DB
+
+    style DB fill:#dc2626,color:#fff
+    style APP fill:#dc2626,color:#fff
+---
+---
+layout: diagram
+title: Target Microservices Architecture
+alt_text: Distributed microservices architecture with API gateway, event bus, independent databases per service, and Kubernetes orchestration
+---
+graph TD
+    CDN[CloudFront CDN] --> GW[API Gateway]
+    GW --> AUTH[Auth Service]
+    GW --> USER[User Service]
+    GW --> ORDER[Order Service]
+    GW --> NOTIFY[Notification Service]
+
+    AUTH --> DB_AUTH[(Auth DB)]
+    USER --> DB_USER[(User DB)]
+    ORDER --> DB_ORDER[(Order DB)]
+    NOTIFY --> DB_NOTIFY[(Notify DB)]
+
+    ORDER --> BUS[EventBridge]
+    BUS --> NOTIFY
+    BUS --> ANALYTICS[Analytics Pipeline]
+    ANALYTICS --> DW[(Data Warehouse)]
+
+    style GW fill:#f59e0b,color:#000
+    style BUS fill:#f59e0b,color:#000
+---
+---
+layout: table
+title: Service Decomposition Plan
+caption: Microservice extraction priority and complexity
+headers: ["Service", "Priority", "Complexity", "Dependencies", "Est. Weeks"]
+rows:
+  - ["Auth", "P0", "Low", "None", "3"]
+  - ["User Profile", "P0", "Medium", "Auth", "4"]
+  - ["Order Processing", "P1", "High", "Auth, User, Inventory", "8"]
+  - ["Notifications", "P1", "Low", "Auth, User", "3"]
+  - ["Inventory", "P1", "Medium", "None", "5"]
+  - ["Analytics", "P2", "High", "All services", "6"]
+  - ["Search", "P2", "Medium", "User, Inventory", "4"]
+row_headers: true
+---
+---
+layout: divider
+title: Migration Strategy
+---
+---
+layout: steps
+title: Strangler Fig Pattern
+---
+1. Deploy API gateway in front of the monolith as a routing layer
+2. Extract authentication into a standalone service behind the gateway
+3. Gradually route traffic to new services while maintaining monolith fallback
+4. Implement event sourcing for cross-service communication
+5. Migrate database schemas to per-service databases using CDC
+6. Decommission monolith components as each service proves stable
+---
+layout: comparison
+title: Lift-and-Shift vs Re-architecture
+---
+**Lift-and-Shift**
+
+- Timeline: 3 months
+- Risk: Low
+- No code changes required
+- Same scalability limitations
+- Quick win for compliance
+
+<!-- split -->
+
+**Re-architecture**
+
+- Timeline: 12 months
+- Risk: Medium-High
+- Enables auto-scaling per service
+- Independent deployment cycles
+- Long-term cost optimization
+---
+layout: code
+title: Kubernetes Deployment
+language: yaml
+---
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  labels:
+    app: order-service
+    version: v2.1.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    spec:
+      containers:
+        - name: order-service
+          image: registry.internal/order-service:v2.1.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            periodSeconds: 5
+```
+---
+layout: code
+title: Terraform Infrastructure
+language: hcl
+line_numbers: true
+---
+```hcl
+module "eks_cluster" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 19.0"
+
+  cluster_name    = "prod-platform"
+  cluster_version = "1.28"
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
+
+  eks_managed_node_groups = {
+    general = {
+      desired_size = 5
+      min_size     = 3
+      max_size     = 15
+      instance_types = ["m6i.xlarge"]
+    }
+    compute = {
+      desired_size = 2
+      min_size     = 1
+      max_size     = 10
+      instance_types = ["c6i.2xlarge"]
+      taints = {
+        compute = {
+          key    = "workload"
+          value  = "compute"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    }
+  }
+}
+```
+---
+layout: hero
+title: Part II — Observability
+description: Monitoring, tracing, and alerting for distributed systems
+---
+---
+layout: diagram
+title: Observability Stack
+alt_text: Three pillars of observability showing metrics flowing to Prometheus and Grafana, traces to Jaeger, and logs to Loki, all unified in Grafana dashboards
+---
+graph LR
+    SVC[Services] -->|metrics| PROM[Prometheus]
+    SVC -->|traces| JAEGER[Jaeger]
+    SVC -->|logs| LOKI[Loki]
+
+    PROM --> GRAFANA[Grafana Dashboards]
+    JAEGER --> GRAFANA
+    LOKI --> GRAFANA
+
+    GRAFANA --> ALERT[Alert Manager]
+    ALERT --> PAGER[PagerDuty]
+    ALERT --> SLACK[Slack]
+
+    style GRAFANA fill:#f59e0b,color:#000
+---
+---
+layout: code
+title: Distributed Tracing Setup
+language: python
+---
+```python
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+
+provider = TracerProvider()
+jaeger = JaegerExporter(
+    agent_host_name="jaeger-agent.observability.svc",
+    agent_port=6831,
+)
+provider.add_span_processor(BatchSpanProcessor(jaeger))
+trace.set_tracer_provider(provider)
+
+tracer = trace.get_tracer("order-service")
+
+async def process_order(order_id: str):
+    with tracer.start_as_current_span("process_order") as span:
+        span.set_attribute("order.id", order_id)
+        await validate_inventory(order_id)
+        await charge_payment(order_id)
+        await send_confirmation(order_id)
+```
+---
+layout: figure
+title: Production Dashboard
+src: figures/_page_2_Figure_1.jpeg
+alt_text: Grafana dashboard showing request rate, error rate, and p99 latency graphs for the order service over the past 24 hours
+---
+---
+layout: table
+title: SLA Targets by Service
+caption: Availability and latency targets per service tier
+headers: ["Service", "Tier", "Availability", "p50 Latency", "p99 Latency", "Error Budget"]
+rows:
+  - ["API Gateway", "Critical", "99.99%", "<10ms", "<50ms", "4.3 min/mo"]
+  - ["Auth", "Critical", "99.99%", "<15ms", "<75ms", "4.3 min/mo"]
+  - ["Orders", "High", "99.95%", "<25ms", "<100ms", "21.6 min/mo"]
+  - ["Notifications", "Standard", "99.9%", "<50ms", "<200ms", "43.2 min/mo"]
+  - ["Analytics", "Low", "99.5%", "<100ms", "<500ms", "3.6 hr/mo"]
+row_headers: true
+---
+---
+layout: content
+title: Error Budget Policy
+---
+Error budget consumption triggers escalating responses:
+
+- **< 50% consumed** — normal development velocity, deploy at will
+- **50–75% consumed** — increased review rigor, no risky deployments on Fridays
+- **75–90% consumed** — feature freeze, focus on reliability improvements
+- **> 90% consumed** — full incident response mode, rollback recent changes
+
+Monthly burn rate: $B = 1 - \frac{A_{actual}}{A_{target}}$
+
+Where $A_{actual}$ is measured availability and $A_{target}$ is the SLA target.
+---
+layout: diagram
+title: CI/CD Pipeline
+alt_text: Continuous integration and deployment pipeline showing code commit triggering lint, test, build, staging deploy, canary release, and full production rollout stages
+---
+graph LR
+    COMMIT[Git Push] --> LINT[Lint + Format]
+    LINT --> TEST[Unit Tests]
+    TEST --> BUILD[Docker Build]
+    BUILD --> SCAN[Security Scan]
+    SCAN --> STAGE[Deploy Staging]
+    STAGE --> INTEG[Integration Tests]
+    INTEG --> CANARY[Canary 5%]
+    CANARY --> FULL[Full Rollout]
+
+    CANARY -->|metrics bad| ROLLBACK[Auto Rollback]
+
+    style ROLLBACK fill:#dc2626,color:#fff
+    style FULL fill:#16a34a,color:#fff
+---
+---
+layout: code
+title: Canary Release Configuration
+language: yaml
+---
+```yaml
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: order-service
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: order-service
+  progressDeadlineSeconds: 600
+  analysis:
+    interval: 30s
+    threshold: 5
+    maxWeight: 50
+    stepWeight: 10
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 100
+        interval: 1m
+```
+---
+layout: divider
+title: Security and Compliance
+---
+---
+layout: content
+title: Zero Trust Network Model
+---
+Every request is authenticated and authorized regardless of network location:
+
+$$P(\text{access}) = \prod_{i=1}^{n} P(\text{policy}_i \mid \text{context})$$
+
+Identity verification uses mutual TLS with short-lived certificates:
+
+$$\text{cert\_lifetime} = \min(T_{rotation}, T_{max}) = \min(1h, 24h) = 1h$$
+---
+layout: diagram
+title: Security Boundary Model
+alt_text: Zero trust security model showing service mesh with mutual TLS between all services, external traffic through WAF and API gateway, and secrets managed by Vault
+---
+graph TD
+    EXT[External Traffic] --> WAF[Web Application Firewall]
+    WAF --> GW[API Gateway + OAuth2]
+    GW --> MESH{Service Mesh - Istio}
+
+    MESH --> SVC1[Service A]
+    MESH --> SVC2[Service B]
+    MESH --> SVC3[Service C]
+
+    SVC1 <-->|mTLS| SVC2
+    SVC2 <-->|mTLS| SVC3
+
+    VAULT[HashiCorp Vault] -.->|secrets| SVC1
+    VAULT -.->|secrets| SVC2
+    VAULT -.->|secrets| SVC3
+
+    style MESH fill:#f59e0b,color:#000
+    style VAULT fill:#7c3aed,color:#fff
+---
+---
+layout: table
+title: Compliance Requirements
+caption: Regulatory framework mapping to cloud controls
+headers: ["Requirement", "Framework", "Control", "Status", "Evidence"]
+rows:
+  - ["Data encryption at rest", "SOC 2", "CC6.1", "Implemented", "KMS audit logs"]
+  - ["Data encryption in transit", "SOC 2", "CC6.1", "Implemented", "mTLS certificates"]
+  - ["Access logging", "HIPAA", "164.312(b)", "Implemented", "CloudTrail"]
+  - ["Incident response plan", "SOC 2", "CC7.4", "Documented", "Runbook v3.2"]
+  - ["Data retention policy", "GDPR", "Art. 5(1)(e)", "Implemented", "Lifecycle policies"]
+  - ["Vulnerability scanning", "PCI DSS", "11.2", "Automated", "Trivy reports"]
+row_headers: true
+---
+---
+layout: figure
+title: Threat Model Diagram
+src: figures/_page_8_Figure_1.jpeg
+alt_text: STRIDE threat model showing trust boundaries between external users, API gateway, internal services, and database tier with identified threats at each boundary
+---
+---
+layout: quote
+title: "Security is not a product, but a process."
+attribution: Bruce Schneier
+---
+---
+layout: summary
+title: Migration Readiness Assessment
+---
+- Architecture decomposition plan covers 7 services across 3 priority tiers
+- Strangler fig pattern minimizes risk during transition
+- Observability stack provides unified metrics, traces, and logs
+- CI/CD pipeline includes automated canary analysis with rollback
+- Zero trust model with mTLS enforced across service mesh
+- All SOC 2, HIPAA, and GDPR controls mapped and implemented
+---

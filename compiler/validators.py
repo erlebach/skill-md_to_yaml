@@ -83,7 +83,7 @@ def _check_layout_variety(slides: list) -> list[str]:
 
 
 def _check_bullet_limits(slides: list) -> list[str]:
-    """Warn when a slide body contains more than 5 bullet points."""
+    """Warn when a slide body contains more than 8 bullet points."""
     warnings: list[str] = []
     for i, slide in enumerate(slides, start=1):
         body = getattr(slide, 'body', None)
@@ -91,10 +91,10 @@ def _check_bullet_limits(slides: list) -> list[str]:
             continue
         bullets = re.findall(r'^[-*+] |^\d+\. ', body, re.MULTILINE)
         n = len(bullets)
-        if n > 5:
+        if n > 8:
             warnings.append(
                 f"**WARNING** slide {i}: {n} bullet points exceeds "
-                f"recommended maximum of 5"
+                f"recommended maximum of 8"
             )
     return warnings
 

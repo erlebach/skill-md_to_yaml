@@ -160,6 +160,8 @@ class DeckMetadata(BaseModel):
     theme: Literal['dark', 'light'] = 'dark'
     accent_color: str | None = None
     font: str = 'IBM Plex Sans'
+    title_font_size: str = '2.4rem'
+    title_top_margin: str = '0.5rem'
 
     @field_validator('font')
     @classmethod

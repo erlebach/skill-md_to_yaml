@@ -1,0 +1,216 @@
+---
+title: ARIA Compliance Test Deck
+author: QA Team
+theme: dark
+accent_color: "#3b82f6"
+font: Inter
+---
+---
+layout: title
+title: ARIA Compliance Test Deck
+subtitle: Comprehensive accessibility validation
+author: QA Team
+---
+---
+layout: hero
+title: Section 1 — Text Content
+description: Testing content slides, markdown rendering, and landmark structure
+---
+---
+layout: content
+title: Bullet Points
+---
+Key accessibility principles:
+
+- **Perceivable** — information must be presentable in ways users can perceive
+- **Operable** — UI components must be operable by all users
+- **Understandable** — information and UI operation must be understandable
+- **Robust** — content must be robust enough for assistive technologies
+---
+layout: content
+title: Nested Lists and Emphasis
+---
+Approaches to accessible design:
+
+1. Start with **semantic HTML**
+2. Add ARIA only when native semantics are insufficient
+3. Test with real assistive technology
+
+Additional considerations:
+
+- Screen readers interpret *emphasis* differently
+- Links must have **descriptive text**, not "click here"
+- Color alone must not convey meaning
+---
+layout: divider
+title: Rich Content Types
+---
+---
+layout: code
+title: Python Data Processing
+language: python
+line_numbers: true
+---
+```python
+import pandas as pd
+from pathlib import Path
+
+def load_and_clean(path: str) -> pd.DataFrame:
+    """Load CSV, drop nulls, normalize columns."""
+    df = pd.read_csv(Path(path))
+    df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
+    df = df.dropna(subset=["id", "value"])
+    return df.reset_index(drop=True)
+
+if __name__ == "__main__":
+    result = load_and_clean("data/input.csv")
+    print(f"Loaded {len(result)} rows")
+```
+---
+layout: code
+title: SQL Query Example
+language: sql
+---
+```sql
+SELECT
+    department,
+    COUNT(*) AS employee_count,
+    AVG(salary) AS avg_salary
+FROM employees
+WHERE hire_date >= '2024-01-01'
+GROUP BY department
+HAVING COUNT(*) > 5
+ORDER BY avg_salary DESC;
+```
+---
+layout: code
+title: Shell Script
+language: bash
+---
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+for file in *.csv; do
+    echo "Processing: $file"
+    wc -l "$file"
+done
+```
+---
+layout: table
+title: Browser Support Matrix
+caption: Assistive technology compatibility by browser
+headers: ["Browser", "NVDA", "JAWS", "VoiceOver", "TalkBack"]
+rows:
+  - ["Chrome", "Full", "Full", "Partial", "Full"]
+  - ["Firefox", "Full", "Full", "Partial", "N/A"]
+  - ["Safari", "N/A", "N/A", "Full", "N/A"]
+  - ["Edge", "Full", "Full", "Partial", "Full"]
+row_headers: true
+---
+---
+layout: table
+title: WCAG Success Criteria
+caption: Key success criteria for Level A and AA
+headers: ["Criterion", "Level", "Category", "Description"]
+rows:
+  - ["1.1.1", "A", "Perceivable", "Non-text content has text alternative"]
+  - ["1.4.3", "AA", "Perceivable", "Contrast ratio at least 4.5:1"]
+  - ["2.1.1", "A", "Operable", "All functionality via keyboard"]
+  - ["2.4.6", "AA", "Operable", "Headings and labels are descriptive"]
+  - ["3.1.1", "A", "Understandable", "Language of page is programmatically set"]
+  - ["4.1.2", "A", "Robust", "Name, role, value for all UI components"]
+---
+---
+layout: quote
+title: "The power of the Web is in its universality. Access by everyone regardless of disability is an essential aspect."
+attribution: Tim Berners-Lee, W3C Director
+---
+---
+layout: content
+title: Math Equations
+---
+The quadratic formula solves $ax^2 + bx + c = 0$:
+
+$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+
+Euler's identity connects five fundamental constants:
+
+$$e^{i\pi} + 1 = 0$$
+
+The Gaussian integral:
+
+$$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$$
+---
+layout: comparison
+title: Accessible vs Inaccessible
+---
+**Accessible Design**
+
+- Semantic HTML elements
+- Sufficient color contrast
+- Keyboard navigation support
+- Screen reader compatibility
+- Focus indicators visible
+
+<!-- split -->
+
+**Inaccessible Design**
+
+- Divs and spans for everything
+- Low contrast text
+- Mouse-only interactions
+- No ARIA labels
+- Focus outline removed
+---
+layout: steps
+title: Accessibility Audit Process
+---
+1. Run automated scanning tools (axe, Lighthouse, Siteimprove)
+2. Perform manual keyboard navigation testing
+3. Test with at least two screen readers
+4. Verify color contrast ratios with a contrast checker
+5. Review heading hierarchy and landmark structure
+6. Document findings and prioritize fixes
+---
+layout: hero
+title: Section 2 — Data Visualization
+description: Tables, comparisons, and structured data
+---
+---
+layout: content
+title: Mixed Content Slide
+---
+Performance benchmarks for our rendering engine:
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| Parse time | 120ms | 45ms | -62% |
+| Render time | 340ms | 180ms | -47% |
+
+Key formula: $\text{speedup} = \frac{T_{old}}{T_{new}}$
+
+The results demonstrate **significant improvement** across all metrics.
+---
+layout: table
+title: Project Timeline
+caption: Phase delivery schedule
+headers: ["Phase", "Start", "End", "Status"]
+rows:
+  - ["Research", "Jan 2025", "Feb 2025", "Complete"]
+  - ["Design", "Feb 2025", "Mar 2025", "Complete"]
+  - ["Implementation", "Mar 2025", "Jun 2025", "In Progress"]
+  - ["Testing", "Jun 2025", "Jul 2025", "Planned"]
+  - ["Launch", "Aug 2025", "Aug 2025", "Planned"]
+row_headers: true
+---
+---
+layout: summary
+title: Key Takeaways
+---
+- Accessibility is a continuous process, not a one-time fix
+- Automated tools catch roughly 30% of issues
+- Manual testing with assistive technology is essential
+- Semantic HTML reduces the need for ARIA attributes
+- Every team member shares responsibility for accessibility
+---

@@ -36,9 +36,9 @@ def render_image(
             mime = _MIME_MAP.get(ext, 'application/octet-stream')
             with open(resolved, 'rb') as fh:
                 data = base64.b64encode(fh.read()).decode('ascii')
-            return f'<img src="data:{mime};base64,{data}" alt="{alt_text}">'
+            return f'<img src="data:{mime};base64,{data}" alt="">'
         else:
             print(f"WARNING: Image not found: {resolved}", file=sys.stderr)
             # Fall through to path reference
 
-    return f'<img src="{src}" alt="{alt_text}">'
+    return f'<img src="{src}" alt="">'

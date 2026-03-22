@@ -1,13 +1,19 @@
 <h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
-<div class="diagram-container" role="img" aria-label="{{ slide.alt_text | e }}">
-  {% if rendered_mermaid %}
+<div class="slide-content-area">
+{% if rendered_mermaid %}
+  <div class="diagram-container">
     {{ rendered_mermaid | safe }}
-  {% elif rendered_svg %}
-    {{ rendered_svg | safe }}
-  {% elif rendered_body %}
-    {{ rendered_body | safe }}
-  {% elif slide.body %}
-    {{ slide.body | e }}
-  {% endif %}
+  </div>
+{% else %}
+  <div class="diagram-container" role="img" aria-label="{{ slide.alt_text | e }}">
+    {% if rendered_svg %}
+      {{ rendered_svg | safe }}
+    {% elif rendered_body %}
+      {{ rendered_body | safe }}
+    {% elif slide.body %}
+      {{ slide.body | e }}
+    {% endif %}
+  </div>
+{% endif %}
 </div>
 {% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}

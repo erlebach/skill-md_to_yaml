@@ -1,0 +1,167 @@
+---
+title: Layout Test Deck
+author: Test Author
+theme: dark
+font: IBM Plex Sans
+---
+
+---
+layout: title
+title: Layout Test Deck
+subtitle: Navier-Stokes & Two-Column Variations
+author: Test Author
+---
+
+---
+layout: content
+title: Compressible Navier-Stokes Equations
+---
+The compressible Navier-Stokes equations govern viscous, heat-conducting fluid flow:
+
+**Conservation of mass (continuity):**
+
+$$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{u}) = 0$$
+
+**Conservation of momentum:**
+
+$$\frac{\partial (\rho \mathbf{u})}{\partial t} + \nabla \cdot (\rho \mathbf{u} \otimes \mathbf{u}) = -\nabla p + \nabla \cdot \boldsymbol{\tau} + \rho \mathbf{f}$$
+
+where the viscous stress tensor is:
+
+$$\boldsymbol{\tau} = \mu \left( \nabla \mathbf{u} + (\nabla \mathbf{u})^T - \frac{2}{3} (\nabla \cdot \mathbf{u}) \mathbf{I} \right)$$
+
+**Conservation of energy:**
+
+$$\frac{\partial (\rho E)}{\partial t} + \nabla \cdot \left[ (\rho E + p) \mathbf{u} \right] = \nabla \cdot (\boldsymbol{\tau} \cdot \mathbf{u}) + \nabla \cdot (k \nabla T) + \rho \mathbf{f} \cdot \mathbf{u}$$
+
+Closed by the equation of state $p = \rho R T$ and Fourier's law $\mathbf{q} = -k \nabla T$.
+
+---
+layout: divider
+title: Two-Column Image Variations
+---
+
+---
+layout: two-column
+title: "Image Left, Bullets Right"
+proportion: 40/60
+left:
+  type: figure
+  src: figures/_page_2_Figure_1.jpeg
+  alt_text: Roadmap diagram showing the evolution from classical transformers through PQC-based and QLA-based quantum paradigms, spanning near-term NISQ-era to long-term fault-tolerant quantum computing, with open research questions at each stage
+---
+Key paradigm transitions:
+
+- **Classical transformers** face $O(N^2)$ computational bottleneck
+- **PQC-based paradigm** uses parameterized quantum circuits for near-term hardware
+- **QLA-based paradigm** targets fault-tolerant quantum era
+- Quantum pairwise and holistic attention mechanisms replace classical self-attention
+- Open questions remain on scalability and genuine algorithmic speedup
+
+---
+layout: two-column
+title: "Bullets Left, Image Right"
+proportion: 60/40
+right:
+  type: figure
+  src: figures/_page_4_Figure_1.jpeg
+  alt_text: Architecture diagram of a transformer block showing the data flow from inputs through self-attention, add-and-norm layers, feed-forward network, and a second add-and-norm layer to produce feature maps, with a detail panel showing QKV mapping, attention score computation, and weighted value aggregation
+---
+Transformer block components:
+
+- **Self-Attention** computes query-key-value mappings
+- **Add & Norm** layers stabilize gradient flow via residual connections
+- **Feed Forward** network applies non-linear transformations per position
+- Attention scores determine how tokens relate to each other
+- Weighted value aggregation produces context-aware representations
+
+---
+layout: two-column
+title: "Images in Both Columns"
+proportion: 50/50
+left:
+  type: figure
+  src: figures/_page_5_Figure_20.jpeg
+  alt_text: Two-part diagram showing (a) a parameterized quantum circuit with Rx, Ry rotation gates and CNOT entangling gates across four qubits, and (b) a variational quantum-classical hybrid loop where data is encoded via U(x), processed through a PQC U(theta), measured, and parameters are updated by a classical optimizer minimizing cost function C(x, theta)
+right:
+  type: figure
+  src: figures/_page_15_Figure_9.jpeg
+  alt_text: Conceptual illustration of PQC learning showing classical 2D data points (green squares and red circles) being embedded into a quantum Hilbert space represented as a Bloch sphere, where a separating hyperplane is learned, then projected back to classical space producing a linearly separable output
+---
+Variational quantum circuits (left) enable hybrid quantum-classical optimization loops. The PQC learning process (right) embeds classical data into quantum Hilbert space for enhanced separability.
+
+---
+layout: divider
+title: Two-Column Mermaid Variations
+---
+
+---
+layout: two-column
+title: "Mermaid Left, Bullets Right"
+proportion: 40/60
+left:
+  type: diagram
+  alt_text: Flowchart showing the CI/CD pipeline stages from code commit through build, test, and deploy to production
+  source: |
+    graph TD
+      A[Code Commit] --> B[Build]
+      B --> C[Unit Tests]
+      C --> D{Tests Pass?}
+      D -->|Yes| E[Integration Tests]
+      D -->|No| F[Notify Developer]
+      E --> G{All Green?}
+      G -->|Yes| H[Deploy to Staging]
+      G -->|No| F
+      H --> I[Deploy to Production]
+---
+CI/CD pipeline best practices:
+
+- **Automated builds** trigger on every commit to main
+- **Unit tests** run in parallel for fast feedback
+- **Integration tests** validate cross-service contracts
+- Failed tests immediately notify the responsible developer
+- **Staging deployment** mirrors production for final validation
+- Production deploys use blue-green or canary strategies
+
+---
+layout: two-column
+title: "Bullets Left, Mermaid Right"
+proportion: 60/40
+right:
+  type: diagram
+  alt_text: Entity-relationship diagram showing the data model with User, Order, Product, and Review entities and their relationships
+  source: |
+    erDiagram
+      USER ||--o{ ORDER : places
+      USER ||--o{ REVIEW : writes
+      ORDER ||--|{ PRODUCT : contains
+      PRODUCT ||--o{ REVIEW : receives
+      USER {
+        int id
+        string name
+        string email
+      }
+      ORDER {
+        int id
+        date created
+        float total
+      }
+      PRODUCT {
+        int id
+        string name
+        float price
+      }
+      REVIEW {
+        int id
+        int rating
+        string text
+      }
+---
+Data model design decisions:
+
+- **Users** can place multiple orders and write reviews
+- **Orders** contain one or more products (many-to-many)
+- **Reviews** link both to users and products for accountability
+- All entities use integer primary keys for indexing performance
+- Timestamps on orders enable time-series analytics
+- Price stored as float on products; totals computed at order time

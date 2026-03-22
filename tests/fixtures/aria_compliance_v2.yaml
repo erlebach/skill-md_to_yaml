@@ -1,0 +1,350 @@
+---
+title: Machine Learning Pipeline — Design Review
+author: Dr. Sarah Chen
+theme: dark
+accent_color: "#60a5fa"
+font: Fira Sans
+---
+---
+layout: title
+title: Machine Learning Pipeline
+subtitle: From raw data to production inference
+author: Dr. Sarah Chen
+---
+---
+layout: hero
+title: Part I — Data Engineering
+description: Collection, cleaning, feature extraction, and validation
+---
+---
+layout: content
+title: Data Sources Overview
+---
+Our pipeline ingests from three primary sources:
+
+- **Transactional DB** — PostgreSQL with 2.3B rows, updated hourly
+- **Event stream** — Kafka topics producing ~50K events/sec
+- **External APIs** — weather, census, and market data feeds
+
+Each source requires a dedicated connector with retry logic and schema validation.
+---
+layout: steps
+title: ETL Pipeline Stages
+---
+1. Extract raw data from source systems via CDC connectors
+2. Land in object storage as partitioned Parquet files
+3. Apply schema evolution checks against the registry
+4. Run data quality gates (nulls, ranges, distributions)
+5. Transform and join into feature-ready datasets
+---
+layout: code
+title: Feature Engineering
+language: python
+line_numbers: true
+---
+```python
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+
+numeric_features = ["age", "income", "credit_score"]
+categorical_features = ["region", "product_type"]
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", StandardScaler(), numeric_features),
+        ("cat", OneHotEncoder(drop="first"), categorical_features),
+    ]
+)
+
+pipeline = Pipeline([
+    ("preprocess", preprocessor),
+    ("model", None),  # swapped at training time
+])
+```
+---
+layout: code
+title: Data Validation with Great Expectations
+language: python
+---
+```python
+import great_expectations as gx
+
+context = gx.get_context()
+
+suite = context.add_expectation_suite("transactions_suite")
+suite.add_expectation(
+    gx.expectations.ExpectColumnValuesToNotBeNull(column="user_id")
+)
+suite.add_expectation(
+    gx.expectations.ExpectColumnValuesToBeBetween(
+        column="amount", min_value=0, max_value=1_000_000
+    )
+)
+
+results = context.run_validation(suite, batch)
+assert results.success, f"Validation failed: {results.statistics}"
+```
+---
+layout: table
+title: Feature Importance Rankings
+caption: Top features by SHAP value contribution
+headers: ["Rank", "Feature", "Mean |SHAP|", "Type", "Source"]
+rows:
+  - ["1", "credit_score", "0.342", "Numeric", "TransDB"]
+  - ["2", "months_active", "0.287", "Numeric", "TransDB"]
+  - ["3", "region", "0.198", "Categorical", "Census"]
+  - ["4", "avg_transaction", "0.156", "Numeric", "TransDB"]
+  - ["5", "weather_severity", "0.134", "Numeric", "Weather API"]
+  - ["6", "product_type", "0.121", "Categorical", "TransDB"]
+  - ["7", "income_bracket", "0.098", "Numeric", "Census"]
+  - ["8", "seasonal_index", "0.087", "Numeric", "Derived"]
+row_headers: true
+---
+---
+layout: divider
+title: Model Architecture
+---
+---
+layout: content
+title: Loss Function
+---
+We use a modified cross-entropy loss with class weights:
+
+$$\mathcal{L} = -\sum_{i=1}^{N} w_{y_i} \left[ y_i \log(\hat{y}_i) + (1 - y_i) \log(1 - \hat{y}_i) \right]$$
+
+Where the class weight $w_c$ compensates for imbalance:
+
+$$w_c = \frac{N}{K \cdot n_c}$$
+
+With $N$ total samples, $K$ classes, and $n_c$ samples in class $c$.
+---
+layout: comparison
+title: Model Selection — XGBoost vs Neural Net
+---
+**XGBoost**
+
+- Training time: 12 minutes
+- Inference latency: 2ms p99
+- Interpretable via SHAP
+- Handles missing values natively
+- No GPU required
+
+<!-- split -->
+
+**Neural Network**
+
+- Training time: 4 hours (GPU)
+- Inference latency: 8ms p99
+- Black box without explainability layer
+- Requires imputation preprocessing
+- Better on unstructured features
+---
+layout: table
+title: Cross-Validation Results
+caption: 5-fold stratified cross-validation metrics
+headers: ["Model", "AUC-ROC", "Precision", "Recall", "F1", "Latency (p99)"]
+rows:
+  - ["XGBoost", "0.943", "0.891", "0.867", "0.879", "2ms"]
+  - ["LightGBM", "0.938", "0.884", "0.859", "0.871", "1.8ms"]
+  - ["CatBoost", "0.941", "0.888", "0.863", "0.875", "2.2ms"]
+  - ["MLP (3-layer)", "0.936", "0.878", "0.871", "0.874", "5ms"]
+  - ["Transformer", "0.948", "0.895", "0.882", "0.888", "8ms"]
+  - ["Ensemble (top-3)", "0.952", "0.901", "0.889", "0.895", "6ms"]
+row_headers: true
+---
+---
+layout: hero
+title: Part II — Production Deployment
+description: Serving infrastructure, monitoring, and feedback loops
+---
+---
+layout: code
+title: Model Serving Configuration
+language: yaml
+---
+```yaml
+apiVersion: serving.kubeflow.org/v1
+kind: InferenceService
+metadata:
+  name: fraud-detector-v3
+spec:
+  predictor:
+    model:
+      modelFormat: xgboost
+      storageUri: gs://models/fraud-v3
+      resources:
+        requests:
+          cpu: "2"
+          memory: 4Gi
+        limits:
+          cpu: "4"
+          memory: 8Gi
+    minReplicas: 3
+    maxReplicas: 20
+    scaleTarget: 10
+```
+---
+layout: code
+title: Monitoring Alert Rules
+language: python
+---
+```python
+from prometheus_client import Histogram, Counter, Gauge
+
+prediction_latency = Histogram(
+    "model_prediction_seconds",
+    "Prediction latency",
+    buckets=[0.001, 0.005, 0.01, 0.025, 0.05, 0.1],
+)
+
+drift_score = Gauge(
+    "feature_drift_score",
+    "PSI drift score per feature",
+    ["feature_name"],
+)
+
+def monitor_prediction(features, prediction, latency):
+    prediction_latency.observe(latency)
+    for name, value in features.items():
+        drift_score.labels(feature_name=name).set(
+            calculate_psi(reference[name], value)
+        )
+```
+---
+layout: content
+title: Gradient Flow Analysis
+---
+Monitoring gradient norms during fine-tuning:
+
+$$\|\nabla_\theta \mathcal{L}\|_2 = \sqrt{\sum_{i} \left(\frac{\partial \mathcal{L}}{\partial \theta_i}\right)^2}$$
+
+We clip gradients when the norm exceeds threshold $\tau$:
+
+$$\hat{g} = \begin{cases} g & \text{if } \|g\|_2 \leq \tau \\ \tau \cdot \frac{g}{\|g\|_2} & \text{otherwise} \end{cases}$$
+
+Learning rate schedule follows cosine annealing:
+
+$$\eta_t = \eta_{min} + \frac{1}{2}(\eta_{max} - \eta_{min})\left(1 + \cos\left(\frac{t \cdot \pi}{T}\right)\right)$$
+---
+layout: table
+title: SLA Requirements
+caption: Production service level agreements
+headers: ["Metric", "Target", "Current", "Status"]
+rows:
+  - ["Availability", "99.95%", "99.97%", "Met"]
+  - ["p50 Latency", "<5ms", "1.8ms", "Met"]
+  - ["p99 Latency", "<25ms", "12ms", "Met"]
+  - ["Throughput", ">10K rps", "14.2K rps", "Met"]
+  - ["Error Rate", "<0.1%", "0.04%", "Met"]
+  - ["Model Freshness", "<24h", "6h", "Met"]
+  - ["Data Drift Alert", "<1h", "15min", "Met"]
+row_headers: true
+---
+---
+layout: steps
+title: Incident Response Protocol
+---
+1. Automated alert fires when drift score exceeds 0.2 PSI threshold
+2. On-call engineer acknowledges within 15 minutes
+3. Run diagnostic notebook to identify affected features
+4. If data issue: trigger backfill pipeline and notify upstream team
+5. If model degradation: promote shadow model or rollback to previous version
+6. Post-incident review within 48 hours with root cause analysis
+---
+layout: quote
+title: "All models are wrong, but some are useful."
+attribution: George E.P. Box, 1976
+---
+---
+layout: content
+title: A/B Testing Framework
+---
+Statistical significance is computed using a two-proportion z-test:
+
+$$z = \frac{\hat{p}_1 - \hat{p}_2}{\sqrt{\hat{p}(1-\hat{p})\left(\frac{1}{n_1} + \frac{1}{n_2}\right)}}$$
+
+Where $\hat{p}$ is the pooled proportion. We require:
+
+- Minimum detectable effect: **0.5%** absolute lift
+- Statistical power: **80%** ($\beta = 0.2$)
+- Significance level: **5%** ($\alpha = 0.05$)
+---
+layout: comparison
+title: Batch vs Real-Time Inference
+---
+**Batch Inference**
+
+- Scheduled hourly via Airflow DAGs
+- Processes full customer base overnight
+- Results cached in Redis for fast lookup
+- Cost: $0.002 per 1K predictions
+
+<!-- split -->
+
+**Real-Time Inference**
+
+- Sub-10ms latency requirement
+- Kubernetes autoscaling (3–20 pods)
+- Feature store lookup at request time
+- Cost: $0.008 per 1K predictions
+---
+layout: code
+title: Rollback Procedure
+language: bash
+---
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+MODEL_NAME="fraud-detector"
+PREV_VERSION=$(kubectl get inferenceservice "$MODEL_NAME" \
+  -o jsonpath='{.metadata.annotations.previous-version}')
+
+echo "Rolling back $MODEL_NAME to version $PREV_VERSION"
+
+kubectl patch inferenceservice "$MODEL_NAME" \
+  --type=merge \
+  -p "{\"spec\":{\"predictor\":{\"model\":{\"storageUri\":\"gs://models/${MODEL_NAME}-${PREV_VERSION}\"}}}}"
+
+kubectl rollout status deployment "${MODEL_NAME}-predictor" --timeout=120s
+echo "Rollback complete. Verifying health..."
+curl -sf "http://localhost:8080/v1/models/${MODEL_NAME}" | jq .status
+```
+---
+layout: table
+title: Cost Breakdown
+caption: Monthly infrastructure costs by component
+headers: ["Component", "Instance Type", "Count", "Unit Cost", "Monthly Total"]
+rows:
+  - ["Training", "p3.2xlarge", "2", "$3.06/hr", "$4,406"]
+  - ["Serving (GPU)", "g4dn.xlarge", "6", "$0.526/hr", "$2,272"]
+  - ["Feature Store", "r5.2xlarge", "3", "$0.504/hr", "$1,089"]
+  - ["Monitoring", "m5.xlarge", "2", "$0.192/hr", "$276"]
+  - ["Storage (S3)", "—", "12TB", "$0.023/GB", "$276"]
+  - ["Total", "", "", "", "$8,319"]
+row_headers: true
+---
+---
+layout: divider
+title: Future Roadmap
+---
+---
+layout: content
+title: Next Quarter Priorities
+---
+Three workstreams for Q3:
+
+- **Online learning** — incremental model updates from streaming data, reducing retraining cycles from daily to continuous
+- **Federated inference** — edge deployment for latency-sensitive markets, targeting sub-2ms at the 99th percentile
+- **Explainability dashboard** — real-time SHAP visualization for compliance and customer-facing explanations
+---
+layout: summary
+title: Key Takeaways
+---
+- Pipeline processes 2.3B rows with automated quality gates
+- XGBoost ensemble achieves 0.952 AUC-ROC in production
+- All SLA targets met with significant headroom
+- Automated drift detection alerts within 15 minutes
+- Infrastructure cost optimized to $8.3K/month
+---

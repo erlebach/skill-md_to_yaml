@@ -1,13 +1,15 @@
 <h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
+<div class="slide-content-area">
 <div class="figure-container">
   <figure>
     {% if rendered_image %}
       {{ rendered_image | safe }}
     {% else %}
-      <img src="{{ slide.src | e }}" alt="{{ slide.alt_text | e }}">
+      <img src="{{ slide.src | e }}" alt="" aria-describedby="{{ slide_id }}-caption">
     {% endif %}
-    <figcaption>{{ slide.alt_text | e }}</figcaption>
+    <figcaption id="{{ slide_id }}-caption">{{ slide.alt_text | e }}</figcaption>
   </figure>
 </div>
 {% if slide.body %}<div class="slide-body">{{ rendered_body | safe }}</div>{% endif %}
+</div>
 {% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}

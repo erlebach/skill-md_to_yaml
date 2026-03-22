@@ -1,5 +1,6 @@
 <h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
-<div class="table-scroll-wrapper">
+<div class="slide-content-area">
+<div class="table-scroll-wrapper" tabindex="0" role="region" aria-label="{% if slide.caption %}{{ slide.caption | e }}{% else %}Data table{% endif %}">
   <table>
     {% if slide.caption %}<caption>{{ slide.caption | e }}</caption>{% endif %}
     {% if slide.headers %}
@@ -21,5 +22,6 @@
       {% endfor %}
     </tbody>
   </table>
+</div>
 </div>
 {% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}

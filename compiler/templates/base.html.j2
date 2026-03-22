@@ -66,26 +66,84 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding: 3rem 5rem;
+      padding: 1in;
       scroll-snap-align: start;
     }
+    /* Title and divider slides: fully centered */
+    section[role="group"].slide-title,
+    section[role="group"].slide-divider {
+      justify-content: center;
+    }
+    /* Content area: fills remaining space after title, centers content vertically */
+    .slide-content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
-    h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; }
-    h2 { font-size: 2rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent); }
+    /* Title slide (h1) — ADA projection scale */
+    h1 {
+      font-size: clamp(48px, 10vw, 96px);
+      font-weight: 700;
+      line-height: 1.0;
+      text-wrap: balance;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .slide-title .subtitle { font-size: clamp(22px, 2.8vw, 34px); text-align: center; color: var(--muted); margin-bottom: 0.5rem; }
+    .slide-title .author { font-size: clamp(20px, 2.2vw, 28px); text-align: center; color: var(--muted); }
 
-    .slide-body { font-size: 1.25rem; line-height: 1.6; }
+    h2 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      text-wrap: balance;
+      margin-bottom: 1rem;
+      color: var(--accent);
+      text-align: center;
+    }
+    h3 {
+      font-size: clamp(22px, 2.8vw, 34px);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    /* Divider h2 keeps its own larger size */
+    .divider-slide h2 { font-size: clamp(48px, 8vw, 80px); }
+
+    .slide-body { font-size: clamp(20px, 2.2vw, 28px); line-height: 1.6; }
     .slide-body ul,
-    .slide-body ol { padding-left: 1.5rem; }
-    .slide-body li { margin-bottom: 0.5rem; }
+    .slide-body ol { padding-left: 2rem; }
+    .slide-body ol { padding-left: 2.5rem; }
+    .slide-body ol li { padding-left: 0.5rem; }
+    .slide-body li { margin-bottom: 0.75em; }
 
-    .two-col { display: grid; gap: 2rem; }
+    /* Hero slide description */
+    .hero-description {
+      font-size: clamp(22px, 2.8vw, 34px);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Figure caption */
+    figcaption {
+      font-size: clamp(18px, 1.8vw, 24px);
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    .two-col { display: grid; gap: 2rem; align-items: center; }
     .two-col-50-50 { grid-template-columns: 1fr 1fr; }
     .two-col-40-60 { grid-template-columns: 2fr 3fr; }
     .two-col-60-40 { grid-template-columns: 3fr 2fr; }
+    .two-col img { max-width: 100%; max-height: 60vh; object-fit: contain; display: block; margin: 0 auto; }
+    /* When both columns have figures: center images, add spacing around the grid */
+    .two-col-both { justify-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem; }
+    .two-col-caption-above { margin-bottom: 1.5rem; }
+    .two-col-both img { max-height: 55vh; }
 
     blockquote {
-      font-size: 1.75rem;
+      font-size: clamp(28px, 3.5vw, 44px);
       font-style: italic;
       border-left: 4px solid var(--accent);
       padding-left: 1.5rem;
@@ -98,15 +156,28 @@
       border-radius: 0.5rem;
       padding: 1.5rem;
       overflow-x: auto;
-      font-size: 1rem;
+      overflow-y: auto;
+      max-height: 70vh;
+      font-size: clamp(15px, 1.6vw, 20px);
+      line-height: 1.6;
     }
-    code { font-family: 'IBM Plex Mono', monospace; }
+    pre:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    code { font-family: 'IBM Plex Mono', monospace; font-size: clamp(15px, 1.6vw, 20px); }
+
+    .slide-code { overflow: auto; max-height: 75vh; border-radius: 0.5rem; }
+    .slide-codetable { width: 100%; border-collapse: collapse; }
+    .slide-codetable td.linenos { vertical-align: top; padding-right: 0.5em; border-right: 1px solid var(--border); user-select: none; width: 1%; white-space: nowrap; }
+    .slide-codetable td.code { vertical-align: top; padding-left: 1em; width: 99%; }
+    .slide-codetable td.code pre { border: none; padding: 0; margin: 0; max-height: none; }
+
+    .diagram-container { text-align: center; max-height: 75vh; overflow: auto; }
+    .diagram-container svg { max-width: 100%; max-height: 70vh; }
+    pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; }
 
     .figure-container { text-align: center; }
     .figure-container img { max-width: 80%; max-height: 60vh; }
 
-    .divider-slide { justify-content: center; align-items: center; text-align: center; }
-    .divider-slide h2 { font-size: 3rem; color: var(--accent); }
+    .divider-slide { align-items: center; text-align: center; }
 
     .steps-list {
       counter-reset: step;
@@ -131,9 +202,17 @@
     .summary-list li::before { content: '\2713 '; color: var(--accent); font-weight: 700; }
 
     .table-scroll-wrapper { overflow-x: auto; max-width: 100%; }
+    .table-scroll-wrapper:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     .table-scroll-wrapper table { width: 100%; border-collapse: collapse; }
     .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; }
-    .table-scroll-wrapper caption { font-weight: bold; margin-bottom: 0.5em; text-align: left; }
+    .table-scroll-wrapper caption {
+      font-size: clamp(18px, 1.8vw, 24px);
+      font-weight: bold;
+      caption-side: bottom;
+      margin-top: 0.75em;
+      text-align: left;
+      color: var(--muted);
+    }
     .code-language-label { position: absolute; top: 0.25em; right: 0.5em; font-size: 0.75em; opacity: 0.6; }
 
     .slide-notes { display: none; }
@@ -154,8 +233,8 @@
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to content</a>
-  <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / {{ total }}</div>
   <main id="main-content" role="region" aria-roledescription="carousel" aria-label="{{ deck.metadata.title | e }}">
+    <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / {{ total }}</div>
     {% for s in slides %}
     {% set slide = s.slide %}
     {% set slide_id = s.slide_id %}
@@ -164,7 +243,7 @@
     {% set rendered_image = s.rendered_image %}
     {% set rendered_svg = s.rendered_svg %}
     {% set rendered_mermaid = s.rendered_mermaid %}
-    <section id="{{ slide_id }}" role="group" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
+    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}
@@ -191,5 +270,11 @@
     });
   })();
   </script>
+  {% if has_mermaid %}
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: '{{ mermaid_theme }}' });
+  </script>
+  {% endif %}
 </body>
 </html>

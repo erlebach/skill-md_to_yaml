@@ -84,7 +84,7 @@ def test_image_path_ref():
     from compiler.renderers.image import render_image
     result = render_image("fig.png", "Alt text", embed=False)
     assert '<img src="fig.png"' in result
-    assert 'alt="Alt text"' in result
+    assert 'alt=""' in result
 
 
 def test_image_embed():
@@ -153,33 +153,16 @@ def test_svg_dimensions():
 # Mermaid (RICH-06)
 # ---------------------------------------------------------------------------
 
-def test_mermaid_render_mock():
-    """Mock subprocess.run; verify render_mermaid returns SVG with ADA attrs."""
+def test_mermaid_render():
+    """Verify render_mermaid returns client-side mermaid block with ADA attrs."""
     from compiler.renderers import mermaid as mermaid_mod
 
-    fake_svg = '<svg viewBox="0 0 100 100"><g id="graph0"></g></svg>'
-
-    def fake_run(cmd, **kwargs):
-        # Write fake SVG to the output path (second -o argument)
-        out_path = cmd[cmd.index("-o") + 1]
-        with open(out_path, "w") as fh:
-            fh.write(fake_svg)
-        return MagicMock(returncode=0)
-
-    with patch("subprocess.run", side_effect=fake_run):
-        result = mermaid_mod.render_mermaid("graph TD; A-->B", "A diagram", "slide-3")
+    result = mermaid_mod.render_mermaid("graph TD; A-->B", "A diagram", "slide-3")
 
     assert 'role="img"' in result
-    assert "<svg" in result
-
-
-def test_mermaid_no_mmdc():
-    """Missing mmdc raises RuntimeError with install instructions."""
-    from compiler.renderers import mermaid as mermaid_mod
-
-    with patch("subprocess.run", side_effect=FileNotFoundError):
-        with pytest.raises(RuntimeError, match="npm install"):
-            mermaid_mod.render_mermaid("graph TD; A-->B", "A diagram", "slide-4")
+    assert 'class="mermaid"' in result
+    assert "graph TD" in result
+    assert 'aria-label="A diagram"' in result
 
 
 # ---------------------------------------------------------------------------
