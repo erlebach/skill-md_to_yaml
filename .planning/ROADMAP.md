@@ -56,7 +56,7 @@ Plans:
   4. Keyboard navigation works: arrow keys advance/retreat slides, Home/End go to first/last
   5. Compiler exits with an error message if alt_text is missing on any image/figure/diagram slide
   6. Compiler emits a warning when 3+ consecutive slides use the same layout type
-**Plans:** 1/5 plans executed
+**Plans:** 2/5 plans executed
 
 Plans:
 - [ ] 02-01-PLAN.md — Compiler package scaffold + validators + contrast + CLI entry point
@@ -96,6 +96,6 @@ Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. DSL Schema | 2/2 | Complete | 2026-03-22 |
 | 01.1. Real-World DSL Validation | 3/3 | Complete    | 2026-03-22 |
-| 2. Compiler Core + ADA | 1/5 | In Progress|  |
+| 2. Compiler Core + ADA | 2/5 | In Progress|  |
 | 3. Rich Content | 0/TBD | Not started | - |
 | 4. LLM Skill + Validation | 0/TBD | Not started | - |
