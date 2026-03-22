@@ -1,0 +1,325 @@
+---
+title: "Advanced Clustering: Prototype-Based Methods — Tutorial"
+author: null
+date: 2026-03-20
+theme: dark
+---
+---
+layout: title
+title: "Advanced Clustering: Prototype-Based Methods"
+subtitle: "Fuzzy C-Means · Mixture Models · EM Algorithm · Self-Organizing Maps"
+---
+Based on *Introduction to Data Mining, 2nd Edition* — Tan, Steinbach, Karpatne & Kumar
+---
+layout: content
+title: Topics Covered
+---
+- Hard vs. Soft (Fuzzy) Clustering
+- Fuzzy C-Means algorithm
+- Application: image segmentation
+- Mixture Models & probabilistic clustering
+- EM algorithm (E-step, M-step)
+- Dense vs. sparse cluster structure
+- Pros and cons of EM
+- Self-Organizing Maps & examples
+---
+layout: two-column
+title: "Hard vs. Soft Clustering"
+proportion: 50/50
+---
+**Hard (Crisp)**
+
+- Each point belongs to exactly one cluster
+- Membership weight $w_{ij} \in \{0, 1\}$
+- Classic K-means is hard clustering
+
+<!-- split -->
+
+**Soft (Fuzzy)**
+
+- A point may partially belong to multiple clusters
+- Membership weight $w_{ij} \in [0, 1]$
+- Weights sum to 1 across all clusters
+
+**Key insight:** Soft clustering captures ambiguous, overlapping structure that hard clustering discards.
+---
+layout: content
+title: "Generalizing the SSE Objective"
+---
+Soft clustering generalizes K-means by weighting each point's contribution:
+
+$$\text{SSE} = \sum_{j=1}^{k} \sum_{i=1}^{m} w_{ij} \cdot \text{dist}(x_i, c_j)^2 \qquad \text{subject to} \quad \sum_{j=1}^{k} w_{ij} = 1$$
+
+To minimize SSE, alternate between two steps:
+
+- Fix centroids $c_j$ → update weights $w_{ij}$
+- Fix weights $w_{ij}$ → recompute centroids $c_j$
+---
+layout: diagram
+title: "Estimating Weights: Intuition"
+alt_text: "Number line showing point x at 2.5 between centroids c1 at position 1 and c2 at position 5. The distance from x to c1 is 1.5 units; the distance from x to c2 is 2.5 units. Point x is closer to c1."
+---
+Consider a single point **x = 2.5** between two centroids **c₁ = 1** and **c₂ = 5**:
+
+$$\text{SSE}(x) = w_{x1}(2.5 - 1)^2 + w_{x2}(5 - 2.5)^2 = 2.25\,w_{x1} + 6.25\,w_{x2}$$
+
+Minimum at $w_{x1} = 1$, $w_{x2} = 0$ — hard assignment to nearest centroid.
+---
+layout: content
+title: "Fuzzy C-Means: Objective Function"
+---
+Introduce a fuzziness exponent **p ≥ 1** to control overlap:
+
+$$\text{SSE} = \sum_{j=1}^{k} \sum_{i=1}^{m} w_{ij}^{\,p} \cdot \text{dist}(x_i, c_j)^2 \qquad \sum_{j=1}^{k} w_{ij} = 1$$
+
+- **p = 1:** degenerates to hard K-means
+- **p = 2:** typical fuzzy setting (Bezdek 1981)
+- **p → ∞:** all weights equal — maximum fuzziness
+
+$w_{ij}^{\,p}$ penalizes uncertain assignments. Higher *p* spreads membership more evenly.
+---
+layout: content
+title: "Fuzzy C-Means: Update Rules"
+---
+**Centroid update:**
+
+$$c_j = \frac{\displaystyle\sum_{i=1}^{m} w_{ij}^{\,p}\, x_i}{\displaystyle\sum_{i=1}^{m} w_{ij}^{\,p}}$$
+
+**Weight update:**
+
+$$w_{ij} = \frac{\left(\dfrac{1}{\text{dist}(x_i,\, c_j)^2}\right)^{\!\frac{1}{p-1}}}{\displaystyle\sum_{q=1}^{k} \left(\dfrac{1}{\text{dist}(x_i,\, c_q)^2}\right)^{\!\frac{1}{p-1}}}$$
+
+Points far from a centroid receive low weight for that cluster.
+---
+layout: steps
+title: "Fuzzy C-Means: Algorithm"
+---
+1. **Initialize** weights $w_{ij}$ randomly, subject to $\sum_{j=1}^{k} w_{ij} = 1$
+2. **Update centroids** using the weighted average formula
+3. **Update weights** inversely proportional to distance
+4. **Repeat** steps 2–3 until convergence
+---
+layout: figure
+title: "Fuzzy K-Means on Sample Data"
+src: "_page_3_Figure_12.jpeg"
+alt_text: "Scatter plot of three clusters colored by maximum membership weight, ranging from 0.5 (blue/uncertain) to 0.95+ (dark red/certain). Points in cluster centers are dark red; boundary points are teal or yellow."
+---
+Fuzzy K-Means: color indicates maximum membership weight (0.5 = uncertain, 0.95+ = certain)
+---
+layout: content
+title: "Application: Image Segmentation"
+---
+Modified fuzzy c-means has been applied to segment **fMRI brain images**:
+
+- Intensity values in each pixel = feature vector
+- Clusters correspond to tissue types (gray matter, white matter, CSF)
+- Fuzzy membership naturally handles boundary voxels
+- Variant BCFCM adds spatial bias field correction
+
+**Reference:** Ahmed et al. (2002) — "A modified fuzzy c-means algorithm for bias field estimation and segmentation of MRI data." *IEEE Trans. Medical Imaging*, 21(3).
+---
+layout: content
+title: "Clustering with Mixture Models"
+---
+- Model data as arising from a **mixture of probability distributions**
+- Typically Gaussian (normal) distributions — one per cluster
+- Parameters estimated via the **EM algorithm**
+- K-means is a limiting special case of this approach
+
+**Why probabilistic?** Each point receives a probability of belonging to each cluster — providing soft assignments like fuzzy clustering, but grounded in statistical theory.
+---
+layout: figure
+title: "Probabilistic Clustering: The Idea"
+src: "_page_5_Figure_2.jpeg"
+alt_text: "Histogram showing two distinct bell-shaped peaks, one centered near -5 and one near +5, suggesting two Gaussian distributions. The x-axis ranges from approximately -15 to 10 and y-axis from 0 to 500. Each peak rises to roughly 450–500 points at its mode and tapers on both sides, separated by a valley near x = 0."
+---
+Histogram of 1-D data with two visible peaks suggesting two underlying Gaussian distributions.
+
+Each peak corresponds to one cluster. Estimate $\mu$ and $\sigma$ for each Gaussian to fully describe the clusters.
+---
+layout: content
+title: "The Gaussian Probability Model"
+---
+The probability of observing point $x_i$ under Gaussian parameters $\Theta = \{\mu, \sigma\}$:
+
+$$\text{prob}(x_i \mid \Theta) = \frac{1}{\sqrt{2\pi}\,\sigma}\; \exp\!\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)$$
+
+- Each cluster $C_j$ has its own $\mu_j$ and $\sigma_j$
+- Assign a point to the cluster with highest posterior probability
+- Extends naturally to multivariate Gaussians with covariance matrix $\Sigma$
+---
+layout: two-column
+title: "The EM Algorithm: Overview"
+proportion: 50/50
+---
+**Structure:**
+
+1. Initialize parameters (randomly or via K-means)
+2. **E-step:** compute point-to-cluster probabilities
+3. **M-step:** update parameters to maximize likelihood
+4. Repeat until convergence
+
+<!-- split -->
+
+**Parallel with K-Means:**
+
+| K-Means | EM |
+|---|---|
+| Assign to nearest centroid | E-step: compute probabilities |
+| Recompute centroid mean | M-step: update μ, σ, priors |
+| Hard assignment | Soft (probabilistic) assignment |
+---
+layout: content
+title: "E-Step: Expectation"
+---
+For each point $x_i$, compute the posterior probability it belongs to cluster $C_j$ using Bayes' Rule:
+
+$$p(C_j \mid x_i) = \frac{p(x_i \mid C_j)\;\cdot\;p(C_j)}{\displaystyle\sum_{l=1}^{k} p(x_i \mid C_l)\;\cdot\;p(C_l)}$$
+
+- $p(x_i \mid C_j)$ — likelihood under the Gaussian for cluster *j*
+- $p(C_j)$ — prior probability (weight) of cluster *j*
+- These posteriors play the role of the weights $w_{ij}$ in fuzzy c-means
+---
+layout: content
+title: "M-Step: Maximization"
+---
+Given probabilities from E-step, update centroid and cluster prior:
+
+**Centroid update:**
+
+$$c_j = \frac{\displaystyle\sum_{i=1}^{m} x_i \cdot p(C_j \mid x_i)}{\displaystyle\sum_{i=1}^{m} p(C_j \mid x_i)}$$
+
+**Prior update:**
+
+$$p(C_j) = \frac{1}{m} \sum_{i=1}^{m} p(C_j \mid x_i)$$
+---
+layout: figure
+title: "EM / Probabilistic Clustering on Sample Data"
+src: "_page_7_Figure_0.jpeg"
+alt_text: "Scatter plot with three clusters (circles, squares, triangles) colored by maximum cluster posterior probability from 0.5 (uncertain, dark blue) to 0.95+ (certain, dark red). Points near cluster centers are dark red; boundary points between shapes are teal or yellow."
+---
+EM on 2-D sample data: points colored by maximum cluster posterior probability.
+---
+layout: two-column
+title: "Dense vs. Sparse Cluster Structure"
+proportion: 50/50
+---
+**Dense Clusters**
+
+- Points tightly packed around centroid
+- Small covariance matrix $\Sigma$
+- High likelihood peaks sharply
+- Typical in well-separated data
+
+<!-- split -->
+
+**Sparse Clusters**
+
+- Points spread widely around centroid
+- Large covariance — flat likelihood
+- Cluster boundaries diffuse
+- More susceptible to overlap with adjacent clusters
+
+EM with full covariance Gaussians can discover elliptical dense clusters that K-means (spherical assumption) cannot capture.
+---
+layout: comparison
+title: "Pros and Cons of the EM Algorithm"
+---
+**Pros**
+
+- Monotonically increases log-likelihood
+- Soft assignments — principled uncertainty
+- Handles elliptical cluster shapes
+- Compact, interpretable Gaussian parameters
+
+<!-- split -->
+
+**Cons**
+
+- Convergence can be very slow
+- Only guarantees local maximum, not global
+- Strong Gaussian assumptions may not hold
+- Covariance has O(d²) parameters — costly in high dimensions
+---
+layout: content
+title: "Alternatives to EM"
+---
+- **Method of Moments / Spectral Methods** — globally convergent for specific model families; no local-optima problem
+- **Markov Chain Monte Carlo (MCMC)** — fully Bayesian inference over cluster parameters; computationally expensive
+- **Variational Inference** — approximate Bayesian approach, faster than MCMC
+- **K-Means ++** — smarter initialization to reduce local-optima risk
+
+Each alternative trades statistical guarantees for computational cost or modeling flexibility.
+---
+layout: content
+title: "Self-Organizing Maps (SOM)"
+---
+- Centroid-based clustering with a fixed number of clusters (like K-means)
+- Key difference: **spatial relationships between centroids are also specified**
+- Centroids are arranged in a grid (1D, 2D, or higher)
+- When a point is assigned to the closest centroid, *neighboring centroids* are also updated
+
+**Intuition:** Nearby grid positions learn similar patterns, producing a topology-preserving map of the input space.
+
+*Kohonen, T. "Self-Organizing Maps." Springer, 1995.*
+---
+layout: diagram
+title: "SOM: How Updates Work"
+alt_text: "A 5-by-2 grid of SOM centroid nodes. The center node in the top row is labeled W (winner) and highlighted in amber. Its immediate grid neighbors are shown in orange-brown, indicating medium-sized updates. Corner nodes farthest from the winner are dark, indicating little or no update. An arrow from above labeled 'input x' points to the winner node."
+---
+- Update magnitude weighted by grid distance to winner
+- Learning rate and neighborhood radius *decrease over time*
+---
+layout: content
+title: "SOM as Dimensionality Reduction"
+---
+- High-dimensional input data is mapped onto a low-dimensional grid (usually 2D)
+- Nearby grid cells represent similar patterns in the original space
+- The 2D grid can be visualized directly — no further projection needed
+- Useful for exploring cluster structure in high-dimensional data
+
+**SOM vs PCA:** PCA finds a linear projection; SOM finds a non-linear topology-preserving mapping. SOM can "unfold" curved manifolds that PCA cannot.
+---
+layout: figure
+title: "SOM Example: LA Times Documents"
+src: "_page_10_Figure_0.jpeg"
+alt_text: "Hexagonal grid SOM map of LA Times articles. Adjacent hexagons share labels: Sports clusters top-left, Metro clusters center, Financial clusters bottom-right, Entertainment bottom-left, National and Foreign at right edges. Neighboring cells contain topically related articles, demonstrating the topology-preserving property."
+---
+SOM clusters of LA Times document data — neighboring cells contain topically related articles.
+---
+layout: figure
+title: "SOM Example: 2D Point Set"
+src: "_page_10_Figure_2.jpeg"
+alt_text: "Left panel: scatter plot of 2D data with five shape categories (diamonds, circles, hexagons, squares, triangles) with SOM reference vectors marked as X overlaid on each group. Right panel: a 6-by-6 grid table showing the class label assigned to each SOM grid cell, demonstrating that the grid cells correctly capture the spatial layout of the five shape groups."
+---
+SOM reference vectors (X marks) overlaid on 2D data; right shows the class label assigned to each grid cell.
+---
+layout: comparison
+title: "Issues with SOM"
+---
+**Limitations**
+
+- High computational complexity
+- No guarantee of convergence
+- Grid shape and size are arbitrary choices
+- No explicit objective function to optimize
+
+<!-- split -->
+
+**When to Use**
+
+- Exploratory visualization of high-dimensional data
+- When topology of clusters matters
+- Document or image clustering with interpretable grids
+---
+layout: summary
+title: "Summary"
+---
+| Method | Assignment | Key Strength | Key Weakness |
+|---|---|---|---|
+| K-Means | Hard | Fast, simple | Spherical clusters only |
+| Fuzzy C-Means | Soft (weight) | Captures overlap | Fuzziness param *p* to tune |
+| EM (Gaussian) | Probabilistic | Elliptical shapes, uncertainty | Local optima, O(d²) params |
+| SOM | Hard + topology | Topology-preserving map | No objective function |
+
+**Final Checkpoint:** For overlapping clusters in genomics data, which method would you choose first, and why?
