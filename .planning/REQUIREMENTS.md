@@ -16,23 +16,23 @@
 
 ### Compiler Core
 
-- [ ] **COMP-01**: Python compiler reads YAML and produces a single self-contained HTML file
-- [ ] **COMP-02**: Jinja2 templates render each layout type (one template per layout)
-- [ ] **COMP-03**: Output is deterministic — same YAML input produces byte-identical HTML
-- [ ] **COMP-04**: Compiler CLI accepts input YAML path and output HTML path
-- [ ] **COMP-05**: CSS theme (dark background, amber accents) embedded in output HTML
-- [ ] **COMP-06**: JavaScript for keyboard navigation (arrow keys, space, Home/End) embedded in output
+- [x] **COMP-01**: Python compiler reads YAML and produces a single self-contained HTML file
+- [x] **COMP-02**: Jinja2 templates render each layout type (one template per layout)
+- [x] **COMP-03**: Output is deterministic — same YAML input produces byte-identical HTML
+- [x] **COMP-04**: Compiler CLI accepts input YAML path and output HTML path
+- [x] **COMP-05**: CSS theme (dark background, amber accents) embedded in output HTML
+- [x] **COMP-06**: JavaScript for keyboard navigation (arrow keys, space, Home/End) embedded in output
 
 ### ADA Compliance
 
-- [ ] **ADA-01**: Alt text is a required field on all image/figure/SVG layout types — compiler errors if missing
-- [ ] **ADA-02**: ARIA carousel markup on slide container (`aria-roledescription="carousel"`) and each slide (`role="group"`, `aria-label="Slide N of M"`)
-- [ ] **ADA-03**: Skip navigation link rendered at top of every deck (`<a href="#main-content" class="skip-link">`)
-- [ ] **ADA-04**: Every slide has a heading (`<h1>` or `<h2>`) tied to `aria-labelledby`
-- [ ] **ADA-05**: Keyboard navigation follows W3C APG carousel pattern
-- [ ] **ADA-06**: Color contrast validated against WCAG 2.1 AA (4.5:1 normal text, 3:1 large text) at compile time
-- [ ] **ADA-07**: Layout variety enforcement — compiler warns if 3+ consecutive slides use identical layout type
-- [ ] **ADA-08**: Bullet limit validation — compiler warns if any slide has more than 5 bullet points
+- [x] **ADA-01**: Alt text is a required field on all image/figure/SVG layout types — compiler errors if missing
+- [x] **ADA-02**: ARIA carousel markup on slide container (`aria-roledescription="carousel"`) and each slide (`role="group"`, `aria-label="Slide N of M"`)
+- [x] **ADA-03**: Skip navigation link rendered at top of every deck (`<a href="#main-content" class="skip-link">`)
+- [x] **ADA-04**: Every slide has a heading (`<h1>` or `<h2>`) tied to `aria-labelledby`
+- [x] **ADA-05**: Keyboard navigation follows W3C APG carousel pattern
+- [x] **ADA-06**: Color contrast validated against WCAG 2.1 AA (4.5:1 normal text, 3:1 large text) at compile time
+- [x] **ADA-07**: Layout variety enforcement — compiler warns if 3+ consecutive slides use identical layout type
+- [x] **ADA-08**: Bullet limit validation — compiler warns if any slide has more than 5 bullet points
 
 ### Rich Content
 
@@ -82,20 +82,20 @@
 | DSL-04 | Phase 1 | Complete |
 | DSL-05 | Phase 1 | Complete |
 | DSL-06 | Phase 1 | Complete |
-| COMP-01 | Phase 2 | Pending |
-| COMP-02 | Phase 2 | Pending |
-| COMP-03 | Phase 2 | Pending |
-| COMP-04 | Phase 2 | Pending |
-| COMP-05 | Phase 2 | Pending |
-| COMP-06 | Phase 2 | Pending |
-| ADA-01 | Phase 2 | Pending |
-| ADA-02 | Phase 2 | Pending |
-| ADA-03 | Phase 2 | Pending |
-| ADA-04 | Phase 2 | Pending |
-| ADA-05 | Phase 2 | Pending |
-| ADA-06 | Phase 2 | Pending |
-| ADA-07 | Phase 2 | Pending |
-| ADA-08 | Phase 2 | Pending |
+| COMP-01 | Phase 2 | Complete |
+| COMP-02 | Phase 2 | Complete |
+| COMP-03 | Phase 2 | Complete |
+| COMP-04 | Phase 2 | Complete |
+| COMP-05 | Phase 2 | Complete |
+| COMP-06 | Phase 2 | Complete |
+| ADA-01 | Phase 2 | Complete |
+| ADA-02 | Phase 2 | Complete |
+| ADA-03 | Phase 2 | Complete |
+| ADA-04 | Phase 2 | Complete |
+| ADA-05 | Phase 2 | Complete |
+| ADA-06 | Phase 2 | Complete |
+| ADA-07 | Phase 2 | Complete |
+| ADA-08 | Phase 2 | Complete |
 | RICH-01 | Phase 3 | Pending |
 | RICH-02 | Phase 3 | Pending |
 | RICH-03 | Phase 3 | Pending |
