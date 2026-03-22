@@ -47,8 +47,8 @@
 ### LLM Authoring
 
 - [ ] **LLM-01**: `/md_to_yaml` Claude Code skill generates YAML DSL from markdown/JPEG/PDF input
-- [ ] **LLM-02**: Skill enforces design constraints (layout variety, bullet limits, alt text)
-- [ ] **LLM-03**: YAML schema validation available (JSON Schema) to catch errors before compilation
+- [x] **LLM-02**: Skill enforces design constraints (layout variety, bullet limits, alt text)
+- [x] **LLM-03**: YAML schema validation available (JSON Schema) to catch errors before compilation
 
 ## v2 Requirements
 
@@ -104,8 +104,8 @@
 | RICH-06 | Phase 3 | Complete |
 | RICH-07 | Phase 3 | Complete |
 | LLM-01 | Phase 4 | Pending |
-| LLM-02 | Phase 4 | Pending |
-| LLM-03 | Phase 4 | Pending |
+| LLM-02 | Phase 4 | Complete |
+| LLM-03 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 30 total
