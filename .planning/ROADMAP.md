@@ -74,7 +74,12 @@ Plans:
   3. A JPEG/PNG image slide embeds or references the image and renders with its alt text visible to screen readers
   4. A Mermaid diagram slide compiles to inline SVG with ADA title/desc/role attributes
   5. A table slide renders with `<caption>`, `<th scope>`, and correct header associations
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Renderer modules + schema updates + unit tests
+- [ ] 03-02-PLAN.md — Engine integration + template updates + CLI flag
+- [ ] 03-03-PLAN.md — Integration test fixtures + visual spot-check
 
 ### Phase 4: LLM Skill + Validation
 **Goal**: A working `/md_to_yaml` Claude Code skill that generates valid YAML DSL from markdown/PDF/JPEG input, and end-to-end validation on 3+ real existing decks
@@ -90,12 +95,12 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 4
+Phases execute in numeric order: 1 -> 01.1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. DSL Schema | 2/2 | Complete | 2026-03-22 |
 | 01.1. Real-World DSL Validation | 3/3 | Complete    | 2026-03-22 |
 | 2. Compiler Core + ADA | 2/5 | In Progress|  |
-| 3. Rich Content | 0/TBD | Not started | - |
+| 3. Rich Content | 0/3 | Not started | - |
 | 4. LLM Skill + Validation | 0/TBD | Not started | - |
