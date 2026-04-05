@@ -1,4 +1,4 @@
-<h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
+<h2 id="{{ slide_id }}-heading">{{ rendered_title | safe }}</h2>
 <div class="slide-content-area">
 {% if rendered_mermaid %}
   <div class="diagram-container">

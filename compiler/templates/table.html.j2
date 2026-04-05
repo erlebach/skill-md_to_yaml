@@ -1,14 +1,37 @@
-<h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
+<h2 id="{{ slide_id }}-heading">{{ rendered_title | safe }}</h2>
 <div class="slide-content-area">
 <div class="table-scroll-wrapper" tabindex="0" role="region" aria-label="{% if slide.caption %}{{ slide.caption | e }}{% else %}Data table{% endif %}">
   <table>
-    {% if slide.caption %}<caption>{{ slide.caption | e }}</caption>{% endif %}
+    {% if slide.caption %}
+    <caption class="table-caption">
+      {% if rendered_table_caption %}{{ rendered_table_caption | safe }}{% else %}{{ slide.caption | e }}{% endif %}
+    </caption>
+    {% endif %}
     {% if slide.headers %}
     <thead>
-      <tr>{% for h in slide.headers %}<th scope="col">{{ h | e }}</th>{% endfor %}</tr>
+      <tr>
+        {% if rendered_table_headers %}
+          {% for h in rendered_table_headers %}<th scope="col">{{ h | safe }}</th>{% endfor %}
+        {% else %}
+          {% for h in slide.headers %}<th scope="col">{{ h | e }}</th>{% endfor %}
+        {% endif %}
+      </tr>
     </thead>
     {% endif %}
     <tbody>
+      {% if rendered_table_rows %}
+      {% for row_cells in rendered_table_rows %}
+      <tr>
+        {% for cell_html in row_cells %}
+          {% if loop.first and slide.row_headers %}
+            <th scope="row">{{ cell_html | safe }}</th>
+          {% else %}
+            <td>{{ cell_html | safe }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      {% else %}
       {% for row in slide.rows %}
       <tr>
         {% for cell in row %}
@@ -20,6 +43,7 @@
         {% endfor %}
       </tr>
       {% endfor %}
+      {% endif %}
     </tbody>
   </table>
 </div>

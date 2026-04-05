@@ -1,6 +1,6 @@
-<h2 id="slide-{{ loop.index }}-heading" class="visually-hidden">{{ slide.title | e }}</h2>
+<h2 id="slide-{{ loop.index }}-heading" class="visually-hidden">{{ rendered_title | safe }}</h2>
 <div class="slide-content-area">
-<blockquote>{{ slide.title | e }}</blockquote>
+<blockquote>{{ rendered_title | safe }}</blockquote>
 {% if slide.attribution %}<p class="attribution">— {{ slide.attribution | e }}</p>{% endif %}
 {% if slide.body %}<div class="slide-body">{{ slide.body | safe }}</div>{% endif %}
 </div>

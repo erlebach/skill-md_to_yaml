@@ -1,6 +1,6 @@
 """Pydantic v2 models for the YAML DSL schema.
 
-Defines all 12 layout slide types, deck metadata, and the AnySlide discriminated union.
+Defines all layout slide types, deck metadata, and the AnySlide discriminated union.
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ class SlideBase(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Layout-specific slide models (12 types)
+# Layout-specific slide models
 # ---------------------------------------------------------------------------
 
 class TitleSlide(SlideBase):
@@ -42,8 +42,14 @@ class HeroSlide(SlideBase):
 
 
 class ContentSlide(SlideBase):
-    """Generic content slide: title + Markdown body."""
+    """Presentation content slide: title + Markdown body (md_to_yaml default)."""
     layout: Literal['content']
+
+
+class TranscribeSlide(SlideBase):
+    """Dense transcription slide: same body pipeline as content; transcribe CSS in HTML."""
+
+    layout: Literal['transcribe']
 
 
 class DividerSlide(SlideBase):
@@ -120,7 +126,7 @@ class TableSlide(SlideBase):
 
 
 # ---------------------------------------------------------------------------
-# Discriminated union covering all 13 layout types
+# Discriminated union covering all layout types
 # ---------------------------------------------------------------------------
 
 AnySlide = Annotated[
@@ -128,6 +134,7 @@ AnySlide = Annotated[
         TitleSlide,
         HeroSlide,
         ContentSlide,
+        TranscribeSlide,
         DividerSlide,
         FigureSlide,
         DiagramSlide,
@@ -151,7 +158,13 @@ VALID_FONTS = ('IBM Plex Sans', 'Inter', 'Fira Sans', 'Roboto', 'Source Sans 3')
 
 
 class DeckMetadata(BaseModel):
-    """Deck-level metadata from the first frontmatter block."""
+    """Deck-level metadata from the first frontmatter block.
+
+    Attributes:
+        flavor: If ``'transcript'``, HTML uses dense left-aligned styling for
+            ``content`` and ``table`` slides (transcript / transcribe_to_html).
+            Omitted for standard presentation decks.
+    """
     model_config = ConfigDict(extra='forbid')
 
     title: str
@@ -162,6 +175,7 @@ class DeckMetadata(BaseModel):
     font: str = 'IBM Plex Sans'
     title_font_size: str = '2.4rem'
     title_top_margin: str = '0.5rem'
+    flavor: Literal['transcript'] | None = None
 
     @field_validator('font')
     @classmethod

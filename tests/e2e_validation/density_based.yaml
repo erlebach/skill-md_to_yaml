@@ -42,7 +42,7 @@ left:
       style A fill:#58a6ff,stroke:#58a6ff,color:#0d1117
       style D fill:#3fb950,stroke:#3fb950,color:#0d1117
 ---
-**Algorithm 9.4 steps:**
+**Algorithm steps:**
 
 1. Partition space into rectangular grid cells
 2. Assign each data point to a cell; compute cell density

@@ -1,4 +1,4 @@
-<h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
+<h2 id="{{ slide_id }}-heading">{{ rendered_title | safe }}</h2>
 <div class="slide-content-area">
 {% set body_html = rendered_body if rendered_body else (slide.body | e if slide.body else '') %}
 {% set left_has_content = slide.left is not none %}

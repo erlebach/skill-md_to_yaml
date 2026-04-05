@@ -41,6 +41,11 @@
           "default": "text",
           "title": "Language",
           "type": "string"
+        },
+        "line_numbers": {
+          "default": false,
+          "title": "Line Numbers",
+          "type": "boolean"
         }
       },
       "required": [
@@ -152,7 +157,7 @@
     },
     "ContentSlide": {
       "additionalProperties": false,
-      "description": "Generic content slide: title + Markdown body.",
+      "description": "Presentation content slide: title + Markdown body (md_to_yaml default).",
       "properties": {
         "layout": {
           "const": "content",
@@ -197,7 +202,7 @@
     },
     "DeckMetadata": {
       "additionalProperties": false,
-      "description": "Deck-level metadata from the first frontmatter block.",
+      "description": "Deck-level metadata from the first frontmatter block.\n\nAttributes:\n    flavor: When set to ``\"transcript\"``, HTML output applies dense\n        left-aligned styling to ``content`` and ``table`` slides\n        (``/transcribe_to_html``). Omitted for standard presentation decks.",
       "properties": {
         "title": {
           "title": "Title",
@@ -252,6 +257,29 @@
           "default": "IBM Plex Sans",
           "title": "Font",
           "type": "string"
+        },
+        "title_font_size": {
+          "default": "2.4rem",
+          "title": "Title Font Size",
+          "type": "string"
+        },
+        "title_top_margin": {
+          "default": "0.5rem",
+          "title": "Title Top Margin",
+          "type": "string"
+        },
+        "flavor": {
+          "anyOf": [
+            {
+              "const": "transcript",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Flavor"
         }
       },
       "required": [
@@ -614,6 +642,85 @@
       "title": "SummarySlide",
       "type": "object"
     },
+    "TableSlide": {
+      "additionalProperties": false,
+      "description": "Data table with accessible markup.",
+      "properties": {
+        "layout": {
+          "const": "table",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Caption"
+        },
+        "headers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Headers",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "row_headers": {
+          "default": false,
+          "title": "Row Headers",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "TableSlide",
+      "type": "object"
+    },
     "TitleSlide": {
       "additionalProperties": false,
       "description": "Deck opener: big title + optional subtitle + optional author.",
@@ -681,6 +788,51 @@
         "title"
       ],
       "title": "TitleSlide",
+      "type": "object"
+    },
+    "TranscribeSlide": {
+      "additionalProperties": false,
+      "description": "Dense transcription slide: same body pipeline as content; transcribe CSS in HTML.",
+      "properties": {
+        "layout": {
+          "const": "transcribe",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "TranscribeSlide",
       "type": "object"
     },
     "TwoColumnSlide": {
@@ -780,7 +932,9 @@
             "quote": "#/$defs/QuoteSlide",
             "steps": "#/$defs/StepsSlide",
             "summary": "#/$defs/SummarySlide",
+            "table": "#/$defs/TableSlide",
             "title": "#/$defs/TitleSlide",
+            "transcribe": "#/$defs/TranscribeSlide",
             "two-column": "#/$defs/TwoColumnSlide"
           },
           "propertyName": "layout"
@@ -794,6 +948,9 @@
           },
           {
             "$ref": "#/$defs/ContentSlide"
+          },
+          {
+            "$ref": "#/$defs/TranscribeSlide"
           },
           {
             "$ref": "#/$defs/DividerSlide"
@@ -821,6 +978,9 @@
           },
           {
             "$ref": "#/$defs/SummarySlide"
+          },
+          {
+            "$ref": "#/$defs/TableSlide"
           }
         ]
       },

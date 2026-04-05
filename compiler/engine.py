@@ -8,11 +8,16 @@ from schema.models import Deck
 from compiler.validators import validate_deck
 from compiler.renderers import (
     render_body,
+    render_rich_text,
     get_pygments_css,
     render_code,
     render_image,
     wrap_svg_ada,
     render_mermaid,
+)
+from compiler.renderers.math import (
+    extract_and_render_math,
+    strip_math_display_inline_from_heading_html,
 )
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -57,10 +62,53 @@ def _render(deck: Deck, output_path: str = ".", embed_images: bool = False) -> s
             else None
         )
 
+        rendered_table_headers = None
+        rendered_table_rows = None
+        rendered_table_caption = None
+        rendered_description = None
+        if slide.layout == "table":
+            thm = deck.metadata.theme
+            if getattr(slide, "headers", None):
+                rendered_table_headers = [
+                    render_rich_text(h, thm) for h in slide.headers
+                ]
+            rendered_table_rows = [
+                [render_rich_text(str(cell), thm) for cell in row]
+                for row in slide.rows
+            ]
+            if getattr(slide, "caption", None):
+                rendered_table_caption = render_rich_text(slide.caption, thm)
+        if slide.layout == "hero" and getattr(slide, "description", None):
+            rendered_description = render_rich_text(
+                slide.description, deck.metadata.theme
+            )
+
         rendered_code = None
         rendered_image = None
         rendered_svg = None
         rendered_mermaid_html = None
+
+        rendered_title = strip_math_display_inline_from_heading_html(
+            extract_and_render_math(str(slide.title))
+        )
+        rendered_subtitle = None
+        rendered_author_line = None
+        if slide.layout == "title":
+            if getattr(slide, "subtitle", None):
+                rendered_subtitle = strip_math_display_inline_from_heading_html(
+                    extract_and_render_math(str(slide.subtitle))
+                )
+            if getattr(slide, "author", None):
+                rendered_author_line = strip_math_display_inline_from_heading_html(
+                    extract_and_render_math(str(slide.author))
+                )
+
+        _math_marker = "<math"
+        title_has_math = _math_marker in rendered_title or (
+            rendered_subtitle is not None and _math_marker in rendered_subtitle
+        ) or (
+            rendered_author_line is not None and _math_marker in rendered_author_line
+        )
 
         if slide.layout == "code" and getattr(slide, "body", None):
             code_body = slide.body.strip()
@@ -109,7 +157,15 @@ def _render(deck: Deck, output_path: str = ".", embed_images: bool = False) -> s
             {
                 "slide": slide,
                 "slide_id": slide_id,
+                "rendered_title": rendered_title,
+                "title_has_math": title_has_math,
+                "rendered_subtitle": rendered_subtitle,
+                "rendered_author_line": rendered_author_line,
                 "rendered_body": rendered_body,
+                "rendered_table_headers": rendered_table_headers,
+                "rendered_table_rows": rendered_table_rows,
+                "rendered_table_caption": rendered_table_caption,
+                "rendered_description": rendered_description,
                 "rendered_code": rendered_code,
                 "rendered_image": rendered_image,
                 "rendered_svg": rendered_svg,

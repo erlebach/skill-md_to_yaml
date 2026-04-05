@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {# MathML namespace URI (declared once here; <math> nodes omit redundant xmlns) #}
+  <meta name="mathml-namespace-uri" content="http://www.w3.org/1998/Math/MathML">
   <title>{{ deck.metadata.title | e }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family={{ deck.metadata.font | replace(' ', '+') }}:wght@400;600;700&display=swap" rel="stylesheet">
@@ -69,17 +71,39 @@
       padding: 1in;
       scroll-snap-align: start;
     }
-    /* Title and divider slides: fully centered */
+    /* Title and divider slides: centered (presentation default) */
     section[role="group"].slide-title,
     section[role="group"].slide-divider {
       justify-content: center;
     }
-    /* Content area: fills remaining space after title, centers content vertically */
     .slide-content-area {
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
+    }
+
+    /* Math (MathML) inside headings — "inline math" keeps MathML inline-flow;
+       plain "inline" is ignored by Chromium's MathML layout engine. */
+    h1 math, h2 math, h3 math {
+      display: inline math;
+      font-size: inherit;
+    }
+    /* Override text-wrap: balance for headings with math to prevent fragments from stacking */
+    h1:has(math), h2:has(math), h3:has(math) {
+      text-wrap: wrap;
+    }
+    /* Class-based fallback when :has() is unsupported or balance still wins (see engine title_has_math) */
+    section.slide-heading-math h1,
+    section.slide-heading-math h2,
+    section.slide-heading-math h3 {
+      text-wrap: wrap !important;
+    }
+    section.slide-heading-math h1 math,
+    section.slide-heading-math h2 math,
+    section.slide-heading-math h3 math {
+      display: inline math !important;
+      vertical-align: baseline;
     }
 
     /* Title slide (h1) — ADA projection scale */
@@ -90,9 +114,19 @@
       text-wrap: balance;
       margin-bottom: 1rem;
       text-align: center;
+      color: var(--text);
     }
-    .slide-title .subtitle { font-size: clamp(22px, 2.8vw, 34px); text-align: center; color: var(--muted); margin-bottom: 0.5rem; }
-    .slide-title .author { font-size: clamp(20px, 2.2vw, 28px); text-align: center; color: var(--muted); }
+    .slide-title .subtitle {
+      font-size: clamp(22px, 2.8vw, 34px);
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .slide-title .author {
+      font-size: clamp(20px, 2.2vw, 28px);
+      text-align: center;
+      color: var(--muted);
+    }
 
     h2 {
       font-size: clamp(32px, 5vw, 52px);
@@ -108,24 +142,33 @@
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
-    /* Divider h2 keeps its own larger size */
     .divider-slide h2 { font-size: clamp(48px, 8vw, 80px); }
 
-    .slide-body { font-size: clamp(20px, 2.2vw, 28px); line-height: 1.6; }
+    .slide-body {
+      font-size: clamp(20px, 2.2vw, 28px);
+      line-height: 1.6;
+      text-align: left;
+    }
     .slide-body ul,
     .slide-body ol { padding-left: 2rem; }
     .slide-body ol { padding-left: 2.5rem; }
     .slide-body ol li { padding-left: 0.5rem; }
     .slide-body li { margin-bottom: 0.75em; }
 
-    /* Hero slide description */
     .hero-description {
       font-size: clamp(22px, 2.8vw, 34px);
       color: var(--muted);
       text-align: center;
     }
+    .hero-body {
+      font-size: clamp(20px, 2.4vw, 30px);
+      color: var(--muted);
+      text-align: center;
+      max-width: 50em;
+      margin: 1rem auto 0;
+      line-height: 1.6;
+    }
 
-    /* Figure caption */
     figcaption {
       font-size: clamp(18px, 1.8vw, 24px);
       color: var(--muted);
@@ -136,6 +179,17 @@
     .two-col-50-50 { grid-template-columns: 1fr 1fr; }
     .two-col-40-60 { grid-template-columns: 2fr 3fr; }
     .two-col-60-40 { grid-template-columns: 3fr 2fr; }
+    /* Comparison slide: first bold line in each column is the column heading */
+    section.slide-comparison .two-col-50-50 > .slide-body > p:first-of-type {
+      margin-bottom: 1rem;
+    }
+    section.slide-comparison .two-col-50-50 > .slide-body > p:first-of-type strong {
+      font-size: clamp(24px, 2.9vw, 36px);
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.25;
+      display: block;
+    }
     .two-col img { max-width: 100%; max-height: 60vh; object-fit: contain; display: block; margin: 0 auto; }
     /* When both columns have figures: center images, add spacing around the grid */
     .two-col-both { justify-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem; }
@@ -174,10 +228,100 @@
     .diagram-container svg { max-width: 100%; max-height: 70vh; }
     pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; }
 
-    .figure-container { text-align: center; }
-    .figure-container img { max-width: 80%; max-height: 60vh; }
+    .figure-container { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .figure-container img { max-width: 80%; max-height: 70vh; margin: 0 auto; display: block; }
+    /* Single figure slide (no body text): figure dominates */
+    .figure-only .figure-container img { max-width: 90%; max-height: 75vh; }
+    /* Single diagram slide: diagram dominates */
+    .diagram-only .diagram-container { max-height: 80vh; }
+    .diagram-only .diagram-container svg { max-height: 75vh; }
 
     .divider-slide { align-items: center; text-align: center; }
+
+    /* layout: transcribe — dense left-aligned body (transcribe_to_html skill) */
+    section.slide-transcribe {
+      justify-content: flex-start;
+      align-items: stretch;
+    }
+    section.slide-transcribe .slide-content-area {
+      justify-content: flex-start;
+    }
+    section.slide-transcribe h2 {
+      font-size: 16pt;
+      font-weight: 600;
+      line-height: 1.35;
+      text-wrap: balance;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+      text-align: left;
+    }
+    /* Override balance for transcribe headings with math */
+    section.slide-transcribe h2:has(math) {
+      text-wrap: wrap;
+    }
+    section.slide-transcribe .slide-body {
+      font-size: 14pt;
+      line-height: 1.45;
+      text-align: left;
+    }
+    section.slide-transcribe .slide-body p {
+      margin: 0 0 0.85em 0;
+    }
+    section.slide-transcribe .slide-body p:last-child {
+      margin-bottom: 0;
+    }
+    section.slide-transcribe .slide-body li {
+      margin-bottom: 0.35em;
+    }
+
+    /* flavor: transcript — same dense left alignment using layout: content (+ table) */
+    main.deck-flavor-transcript section.slide-content,
+    main.deck-flavor-transcript section.slide-table {
+      justify-content: flex-start;
+      align-items: stretch;
+    }
+    main.deck-flavor-transcript section.slide-content .slide-content-area,
+    main.deck-flavor-transcript section.slide-table .slide-content-area {
+      justify-content: flex-start;
+    }
+    main.deck-flavor-transcript section.slide-content h2,
+    main.deck-flavor-transcript section.slide-table h2 {
+      font-size: 16pt;
+      font-weight: 600;
+      line-height: 1.35;
+      text-wrap: balance;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+      text-align: left;
+    }
+    /* Override balance for transcript flavor headings with math */
+    main.deck-flavor-transcript section.slide-content h2:has(math),
+    main.deck-flavor-transcript section.slide-table h2:has(math) {
+      text-wrap: wrap;
+    }
+    main.deck-flavor-transcript section.slide-content .slide-body {
+      font-size: 14pt;
+      line-height: 1.45;
+      text-align: left;
+    }
+    main.deck-flavor-transcript section.slide-content .slide-body p {
+      margin: 0 0 0.85em 0;
+    }
+    main.deck-flavor-transcript section.slide-content .slide-body p:last-child {
+      margin-bottom: 0;
+    }
+    main.deck-flavor-transcript section.slide-content .slide-body li {
+      margin-bottom: 0.35em;
+    }
+    main.deck-flavor-transcript section.slide-table .table-scroll-wrapper {
+      font-size: 14pt;
+      line-height: 1.45;
+    }
+    main.deck-flavor-transcript section.slide-table .table-caption {
+      text-align: left;
+      font-size: 14pt;
+      caption-side: top;
+    }
 
     .steps-list {
       counter-reset: step;
@@ -233,17 +377,29 @@
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to content</a>
-  <main id="main-content" role="region" aria-roledescription="carousel" aria-label="{{ deck.metadata.title | e }}">
+  <main id="main-content" role="region" aria-roledescription="carousel" aria-label="{{ deck.metadata.title | e }}"{% if deck.metadata.flavor == 'transcript' %} class="deck-flavor-transcript"{% endif %}>
     <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / {{ total }}</div>
     {% for s in slides %}
     {% set slide = s.slide %}
     {% set slide_id = s.slide_id %}
+    {% set rendered_title = s.rendered_title %}
+    {% set rendered_subtitle = s.rendered_subtitle %}
+    {% set rendered_author_line = s.rendered_author_line %}
     {% set rendered_body = s.rendered_body %}
+    {% set rendered_table_headers = s.rendered_table_headers %}
+    {% set rendered_table_rows = s.rendered_table_rows %}
+    {% set rendered_table_caption = s.rendered_table_caption %}
+    {% set rendered_description = s.rendered_description %}
     {% set rendered_code = s.rendered_code %}
     {% set rendered_image = s.rendered_image %}
     {% set rendered_svg = s.rendered_svg %}
     {% set rendered_mermaid = s.rendered_mermaid %}
-    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
+    {% set title_has_math = s.title_has_math %}
+    {% set extra_class = '' %}
+    {% if slide.layout == 'figure' and not slide.body %}{% set extra_class = ' figure-only' %}{% endif %}
+    {% if slide.layout == 'diagram' and not slide.body %}{% set extra_class = ' diagram-only' %}{% endif %}
+    {% if title_has_math %}{% set extra_class = extra_class ~ ' slide-heading-math' %}{% endif %}
+    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}

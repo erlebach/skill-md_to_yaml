@@ -1,4 +1,4 @@
-<h2 id="{{ slide_id }}-heading">{{ slide.title | e }}</h2>
+<h2 id="{{ slide_id }}-heading">{{ rendered_title | safe }}</h2>
 <div class="slide-content-area">
 {% if rendered_body %}<div class="slide-body summary-content">{{ rendered_body | safe }}</div>{% elif slide.body %}<div class="slide-body summary-content">{{ slide.body | e }}</div>{% endif %}
 </div>

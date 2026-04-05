@@ -13,6 +13,7 @@ from compiler.renderers.mermaid import render_mermaid
 from compiler.renderers.svg import sanitize_svg, wrap_svg_ada
 
 __all__ = [
+    'render_rich_text',
     'render_body',
     'render_code',
     'get_pygments_css',
@@ -23,6 +24,29 @@ __all__ = [
     'sanitize_svg',
     'wrap_svg_ada',
 ]
+
+
+def render_rich_text(text: str, theme: str = 'dark') -> str:
+    """Run math extraction then Markdown on a short string (e.g. table cell).
+
+    Table and title templates historically used HTML-escaping only, which left
+    ``$...$`` visible as raw text. Use this for any field that should support
+    the same inline math and Markdown as slide bodies.
+
+    Args:
+        text: Source string (may contain ``$...$`` / ``$$...$$`` and Markdown).
+        theme: Reserved for future theme-specific rendering; unused today.
+
+    Returns:
+        HTML safe to inject with ``| safe`` in Jinja (contains MathML / tags).
+
+    """
+    del theme  # reserved
+    if not text or not str(text).strip():
+        return ''
+    text = extract_and_render_math(str(text))
+    text = render_markdown(text)
+    return text
 
 
 def render_body(slide, embed_images: bool = False, theme: str = 'dark') -> str:
