@@ -47,7 +47,7 @@ def test_code_language_label():
 
 def test_table_deck_compiles():
     html = _compile_fixture("rich_table.yaml")
-    assert "<caption>" in html
+    assert "<caption" in html  # e.g. <caption class="table-caption">, not bare <caption>
     assert 'scope="col"' in html
     assert 'scope="row"' in html  # row_headers: true on slide 2
     assert "table-scroll-wrapper" in html
@@ -65,7 +65,7 @@ def test_mixed_deck_compiles():
     assert "<math" in html  # math rendering
     assert "<strong>" in html  # markdown bold
     assert "slide-code" in html  # code highlighting
-    assert "<caption>" in html  # table
+    assert "<caption" in html  # table (caption has class attribute)
 
 
 def test_mixed_deck_markdown_in_body():

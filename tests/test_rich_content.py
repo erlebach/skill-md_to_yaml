@@ -43,6 +43,67 @@ def test_math_extraction_before_markdown():
     assert "$$" not in final
 
 
+def test_postprocess_emphasized_mathml_wraps_strong_math():
+    """**$x$** pipeline ends with accent wrapper, not <strong><math>."""
+    from compiler.renderers.math import postprocess_emphasized_mathml
+
+    frag = '<li><strong><math display="inline"><mrow><mi>N</mi></mrow></math></strong>: def</li>'
+    out = postprocess_emphasized_mathml(frag)
+    assert "deck-math-emphasis" in out
+    assert '<strong><math' not in out
+    assert "<math" in out
+    assert "role=\"presentation\"" in out
+
+
+def test_postprocess_emphasized_mathml_leaves_text_strong():
+    from compiler.renderers.math import postprocess_emphasized_mathml
+
+    assert postprocess_emphasized_mathml("<strong>bold</strong>") == "<strong>bold</strong>"
+
+
+def test_postprocess_emphasized_mathml_text_plus_math():
+    """**text $x$** becomes one accent span around text and MathML."""
+    from compiler.renderers.math import postprocess_emphasized_mathml
+
+    frag = (
+        '<p><strong>text <math display="inline"><mrow><mi>&#x003B1;</mi></mrow></math>'
+        "</strong></p>"
+    )
+    out = postprocess_emphasized_mathml(frag)
+    assert "deck-math-emphasis" in out
+    assert "<strong>" not in out
+    assert "text " in out
+    assert "<math" in out
+    assert "&#x003B1;" in out or "α" in out
+
+
+def test_render_body_bold_inline_math_accent_wrapper():
+    from compiler.renderers import render_body
+    from schema.models import ContentSlide
+
+    slide = ContentSlide(layout="content", title="T", body="- **$N$**: context length\n")
+    html = render_body(slide)
+    assert "deck-math-emphasis" in html
+    assert "<strong><math" not in html
+
+
+def test_render_body_bold_text_plus_inline_math_accent_wrapper():
+    """**symbol $\\\\alpha$**: description — symbol and math both accent-colored."""
+    from compiler.renderers import render_body
+    from schema.models import ContentSlide
+
+    slide = ContentSlide(
+        layout="content",
+        title="T",
+        body=r"- **symbol $\alpha$**: right-hand side note\n",
+    )
+    html = render_body(slide)
+    assert "deck-math-emphasis" in html
+    assert "<strong>" not in html
+    assert "symbol " in html
+    assert "<math" in html
+
+
 # ---------------------------------------------------------------------------
 # Code highlighting (RICH-02)
 # ---------------------------------------------------------------------------

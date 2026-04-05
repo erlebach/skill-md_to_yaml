@@ -105,3 +105,40 @@ def extract_and_render_math(text: str) -> str:
     text = re.sub(r'\$(.+?)\$', replace_inline, text)
 
     return text
+
+
+# Markdown **...** becomes <strong>...</strong>. When inline math was already
+# converted to <math>, patterns include:
+#   - <strong><math>...</math></strong>  (**$x$**)
+#   - <strong>text <math>...</math></strong>  (**text $x$**)
+# Browsers often ignore font-weight on MathML; replace the whole <strong> block
+# with a span using var(--accent) like slide headings (base.html.j2).
+_STRONG_CONTAINING_MATHML = re.compile(
+    r'<strong>((?:(?!</strong>).)*?<math\b[^>]*>.*?</math>(?:(?!</strong>).)*?)</strong>',
+    re.DOTALL | re.IGNORECASE,
+)
+
+
+def postprocess_emphasized_mathml(html: str) -> str:
+    """Turn ``<strong>`` regions that contain MathML into an accent-colored span.
+
+    Covers **$x$** (math only) and **text $x$** (label + math): Python-Markdown
+    emits ``<strong>text <math>...</math></strong>``, which the old
+    strong-then-math-only regex missed, so math stayed default body color.
+
+    Args:
+        html: Fragment or full slide body HTML (may contain multiple matches).
+
+    Returns:
+        HTML with each ``<strong>`` that wraps at least one ``<math>...</math>``
+        replaced by
+        ``<span class="deck-math-emphasis" role="presentation">...</span>``
+        (same inner nodes, without ``<strong>``).
+
+    """
+    if not html or "<strong>" not in html.lower() or "<math" not in html.lower():
+        return html
+    return _STRONG_CONTAINING_MATHML.sub(
+        r'<span class="deck-math-emphasis" role="presentation">\1</span>',
+        html,
+    )

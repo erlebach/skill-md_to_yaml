@@ -137,6 +137,16 @@
       color: var(--accent);
       text-align: center;
     }
+
+    /* **$...$** / **text $x$** in YAML: accent like h2; plain text in span needs color too */
+    .deck-math-emphasis {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .deck-math-emphasis math,
+    .deck-math-emphasis math * {
+      color: var(--accent);
+    }
     h3 {
       font-size: clamp(22px, 2.8vw, 34px);
       font-weight: 600;
@@ -154,6 +164,12 @@
     .slide-body ol { padding-left: 2.5rem; }
     .slide-body ol li { padding-left: 0.5rem; }
     .slide-body li { margin-bottom: 0.75em; }
+
+    /* Markdown **bold** in body: same accent as h2 (not only **$x$** / **text $x$** spans) */
+    .slide-body strong {
+      color: var(--accent);
+      font-weight: 700;
+    }
 
     .hero-description {
       font-size: clamp(22px, 2.8vw, 34px);
@@ -273,6 +289,10 @@
     section.slide-transcribe .slide-body li {
       margin-bottom: 0.35em;
     }
+    section.slide-transcribe .slide-body strong {
+      color: var(--text);
+      font-weight: 700;
+    }
 
     /* flavor: transcript — same dense left alignment using layout: content (+ table) */
     main.deck-flavor-transcript section.slide-content,
@@ -312,6 +332,11 @@
     }
     main.deck-flavor-transcript section.slide-content .slide-body li {
       margin-bottom: 0.35em;
+    }
+    main.deck-flavor-transcript section.slide-content .slide-body strong,
+    main.deck-flavor-transcript section.slide-table .slide-body strong {
+      color: var(--text);
+      font-weight: 700;
     }
     main.deck-flavor-transcript section.slide-table .table-scroll-wrapper {
       font-size: 14pt;

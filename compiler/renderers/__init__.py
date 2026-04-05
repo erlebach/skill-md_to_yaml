@@ -8,7 +8,7 @@ from __future__ import annotations
 from compiler.renderers.code import get_pygments_css, render_code
 from compiler.renderers.image import render_image
 from compiler.renderers.markdown import render_markdown
-from compiler.renderers.math import extract_and_render_math
+from compiler.renderers.math import extract_and_render_math, postprocess_emphasized_mathml
 from compiler.renderers.mermaid import render_mermaid
 from compiler.renderers.svg import sanitize_svg, wrap_svg_ada
 
@@ -20,6 +20,7 @@ __all__ = [
     'render_image',
     'render_markdown',
     'extract_and_render_math',
+    'postprocess_emphasized_mathml',
     'render_mermaid',
     'sanitize_svg',
     'wrap_svg_ada',
@@ -46,7 +47,7 @@ def render_rich_text(text: str, theme: str = 'dark') -> str:
         return ''
     text = extract_and_render_math(str(text))
     text = render_markdown(text)
-    return text
+    return postprocess_emphasized_mathml(text)
 
 
 def render_body(slide, embed_images: bool = False, theme: str = 'dark') -> str:
@@ -73,5 +74,6 @@ def render_body(slide, embed_images: bool = False, theme: str = 'dark') -> str:
 
     # Step 2: Render remaining Markdown to HTML
     body = render_markdown(body)
+    body = postprocess_emphasized_mathml(body)
 
     return body
