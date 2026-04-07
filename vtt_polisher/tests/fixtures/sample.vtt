@@ -1,0 +1,61 @@
+WEBVTT
+
+1
+00:00:01.306 --> 00:00:07.736
+499 DSL: See if any so far. Let's see what we can circle in the world.
+
+2
+00:00:07.956 --> 00:00:11.466
+499 DSL: Okay, so let's get started. Yeah, welcome, everyone.
+
+3
+00:00:30.626 --> 00:00:41.275
+499 DSL: This seminar has started, like, I don't know, like, 5 years ago.
+
+4
+00:00:59.306 --> 00:01:16.465
+499 DSL: that you are here. Today, our speaker is Isha Mukherjeev.
+
+5
+00:01:16.986 --> 00:01:23.246
+499 DSL: Drug discovery, and she's also working with, antibiotic resistance.
+
+6
+00:01:23.446 --> 00:01:37.726
+499 DSL: And I'm really happy that she's able to talk today.
+
+7
+00:01:42.816 --> 00:01:58.416
+499 DSL: Hi, everyone. Yeah, sorry, I was sick.
+
+8
+00:02:03.516 --> 00:02:23.315
+499 DSL: And really trace how we got from earlier predictive models.
+
+9
+00:02:30.116 --> 00:02:47.705
+499 DSL: What I really want to show is that the most interesting story is no longer simple.
+
+10
+00:02:48.796 --> 00:02:57.426
+499 DSL: So, health is one of the most difficult places to employ AI well.
+
+11
+00:04:36.856 --> 00:04:44.536
+499 DSL: Alert discovery, however, pushes us further.
+
+12
+00:07:20.426 --> 00:07:31.876
+499 DSL: to categorize diseases. Then came random forests, SPMs, and feature engineering.
+
+13
+00:07:34.546 --> 00:07:44.306
+499 DSL: In this phase, performance depended heavily on feature design.
+
+14
+00:07:44.306 --> 00:07:57.766
+499 DSL: Much of the work went into encoding domain knowledge, especially for time-progressive data.
+
+15
+00:07:58.876 --> 00:08:09.715
+499 DSL: Then, from 2016 to 2020, deep learning brought a paradigm shift.
