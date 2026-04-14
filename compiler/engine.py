@@ -15,6 +15,7 @@ from compiler.renderers import (
     wrap_svg_ada,
     render_mermaid,
 )
+from compiler.renderers.mermaid import _inject_text_color
 from compiler.renderers.math import (
     extract_and_render_math,
     strip_math_display_inline_from_heading_html,
@@ -152,6 +153,14 @@ def _render(deck: Deck, output_path: str = ".", embed_images: bool = False) -> s
                 )
             else:
                 rendered_svg = wrap_svg_ada(slide.body, slide.alt_text, slide_id)
+
+        # Pre-process two-column diagram sources for WCAG AA contrast.
+        # The two-column template embeds left/right .source directly, bypassing
+        # render_mermaid(). Mutate the source in-place before context is built.
+        if slide.layout == "two-column":
+            for col in (getattr(slide, "left", None), getattr(slide, "right", None)):
+                if col is not None and getattr(col, "type", None) == "diagram" and col.source:
+                    col.source = _inject_text_color(col.source)
 
         slides_context.append(
             {
