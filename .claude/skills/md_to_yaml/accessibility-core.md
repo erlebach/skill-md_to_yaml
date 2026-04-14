@@ -383,4 +383,4 @@ Before delivering, verify every item:
 - [ ] SVG diagrams: no Unicode sub/superscript characters or HTML entities used for math in `<text>` elements
 - [ ] SVG diagrams: all mathematical notation uses `<foreignObject>` + MathML (`<math xmlns="http://www.w3.org/1998/Math/MathML">`)
 - [ ] SVG diagrams: every `<foreignObject>` has explicit `width` and `height` large enough to avoid clipping
-- [ ] Every Mermaid `style` directive with `fill:` also has explicit `color:` — see `mermaid-best-practices.md`
+- [ ] Every Mermaid `style` directive with `fill:` also has explicit `color:` — see [`mermaid-best-practices.md`](mermaid-best-practices.md)
