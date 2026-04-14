@@ -36,13 +36,13 @@ These pairs are pre-verified at WCAG AA (≥ 4.5:1). Use them for semantic color
 
 | Semantic role | fill | color | Contrast | Notes |
 |---------------|------|-------|----------|-------|
-| Error / wrong | `#cc0000` | `#ffffff` | 5.1:1 ✓ | Saturated — preferred on dark slides |
-| Error / wrong (pastel) | `#ffcccc` | `#000000` | 12.5:1 ✓ | Use on light-theme slides |
-| Correct / good | `#1a7a1a` | `#ffffff` | 5.6:1 ✓ | Saturated — preferred on dark slides |
-| Correct / good (pastel) | `#ccffcc` | `#000000` | 14.1:1 ✓ | Use on light-theme slides |
-| Warning | `#b06800` | `#ffffff` | 4.7:1 ✓ | |
-| Neutral / info | `#1a4a8a` | `#ffffff` | 7.2:1 ✓ | |
-| Highlight | `#f0a500` | `#000000` | 8.9:1 ✓ | Matches deck accent color |
+| Error / wrong | `#cc0000` | `#ffffff` | 5.9:1 ✓ | Saturated — preferred on dark slides |
+| Error / wrong (pastel) | `#ffcccc` | `#000000` | 14.8:1 ✓ | Use on light-theme slides |
+| Correct / good | `#1a7a1a` | `#ffffff` | 5.5:1 ✓ | Saturated — preferred on dark slides |
+| Correct / good (pastel) | `#ccffcc` | `#000000` | 18.7:1 ✓ | Use on light-theme slides |
+| Warning | `#a06000` | `#ffffff` | 5.0:1 ✓ | Use #a06000, not #b06800 (fails AA) |
+| Neutral / info | `#1a4a8a` | `#ffffff` | 8.8:1 ✓ | |
+| Highlight | `#f0a500` | `#000000` | 10.1:1 ✓ | Matches deck accent color |
 
 ---
 
