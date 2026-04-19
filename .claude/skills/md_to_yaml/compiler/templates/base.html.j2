@@ -620,10 +620,33 @@
       theme: '{{ mermaid_theme }}',
       flowchart: { useMaxWidth: false, htmlLabels: true },
       sequence: { useMaxWidth: false },
+      timeline: { useMaxWidth: false },
+      gantt:    { useMaxWidth: false },
+      pie:      { useMaxWidth: false },
+      journey:  { useMaxWidth: false },
+      mindmap:  { useMaxWidth: false },
+      quadrantChart: { useMaxWidth: false },
       themeVariables: {
         fontSize: '22pt',
         fontFamily: "'{{ deck.metadata.font }}', sans-serif",
       },
+    });
+    // Tag each diagram container with its Mermaid diagram type, read from the
+    // source text BEFORE mermaid.run() replaces the <pre> with rendered SVG.
+    // Used later by pickSizer() — aria-roledescription on the rendered SVG is
+    // unreliable across Mermaid v11 diagram types (e.g. timeline).
+    document.querySelectorAll('.diagram-container pre.mermaid, .diagram-container .mermaid').forEach(pre => {
+      const src = (pre.textContent || '').trim();
+      // First non-empty, non-directive line; take its first token.
+      let type = '';
+      for (const raw of src.split('\n')) {
+        const line = raw.trim();
+        if (!line || line.startsWith('%%') || line.startsWith('---')) continue;
+        type = line.split(/[\s:({]/)[0].toLowerCase();
+        break;
+      }
+      const container = pre.closest('.diagram-container');
+      if (container && type) container.dataset.diagramType = type;
     });
     await mermaid.run();
     // Let layout settle so getBoundingClientRect reports accurate column widths.
@@ -658,6 +681,44 @@
       svg.style.height = (nH * scale) + 'px';
     }
 
+    // Fit-to-available for diagram types whose Mermaid renderer ignores
+    // themeVariables.fontSize (e.g. timeline, gantt, pie). For these the
+    // natural render size is arbitrary, so we scale to fill the panel
+    // without the 20–24pt clamp.
+    function sizeSvgFit(svg, availW, availH) {
+      // Prefer viewBox (true content geometry) over width/height attributes,
+      // which Mermaid may set to "100%" for some diagram types (timeline, etc.).
+      const vb = svg.viewBox && svg.viewBox.baseVal;
+      const nW = (vb && vb.width  > 0) ? vb.width  : parseFloat(svg.getAttribute('width'))  || 0;
+      const nH = (vb && vb.height > 0) ? vb.height : parseFloat(svg.getAttribute('height')) || 0;
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      svg.removeAttribute('style');
+      svg.style.display = 'block';
+      svg.style.margin  = '0 auto';
+      if (availW <= 0 || availH <= 0) return;
+      if (nW <= 0 || nH <= 0) {
+        svg.style.width  = availW + 'px';
+        svg.style.height = availH + 'px';
+        return;
+      }
+      const scale = Math.min(availW / nW, availH / nH);
+      svg.style.width  = (nW * scale) + 'px';
+      svg.style.height = (nH * scale) + 'px';
+    }
+
+    // Diagram types where Mermaid does not honor themeVariables.fontSize —
+    // use fit-to-space instead of the 20–24pt clamp.
+    const UNCLAMPED_TYPES = new Set([
+      'timeline', 'gantt', 'pie', 'quadrantchart', 'journey', 'mindmap',
+    ]);
+    function pickSizer(svg) {
+      const container = svg.closest('.diagram-container');
+      const type = (container && container.dataset.diagramType || '').toLowerCase();
+      const role = (svg.getAttribute('aria-roledescription') || '').toLowerCase();
+      return (UNCLAMPED_TYPES.has(type) || UNCLAMPED_TYPES.has(role)) ? sizeSvgFit : sizeSvg;
+    }
+
     // Scoped to Mermaid-generated SVGs (id prefix "mermaid-"). File-based
     // SVGs have author-controlled fonts and are left to render at natural
     // width (width="100%" already applied by the Python SVG normalizer).
@@ -671,7 +732,7 @@
       const capH    = caption ? caption.getBoundingClientRect().height + 16 : 0;
       const availW  = document.documentElement.clientWidth - SLIDE_PAD * 2 - PANEL_INSET;
       const availH  = window.innerHeight - SLIDE_PAD * 2 - titleH - capH - PANEL_INSET;
-      sizeSvg(svg, availW, availH);
+      pickSizer(svg)(svg, availW, availH);
     });
 
     // Two-column diagrams — constrained to the diagram column.
@@ -684,7 +745,7 @@
       const colW = container.getBoundingClientRect().width || (document.documentElement.clientWidth / 2);
       const availW = colW - PANEL_INSET;
       const availH = window.innerHeight - SLIDE_PAD * 2 - titleH - PANEL_INSET;
-      sizeSvg(svg, availW, availH);
+      pickSizer(svg)(svg, availW, availH);
     });
   </script>
   {% endif %}

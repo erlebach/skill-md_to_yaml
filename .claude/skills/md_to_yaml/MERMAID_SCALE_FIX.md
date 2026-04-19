@@ -107,6 +107,37 @@ This means two-column Mermaid diagrams now scale up to fill the column height
 (matching the vertical extent of the adjacent equations / bullets column), but
 always within the 20–24pt font band.
 
+## Diagram types that ignore `themeVariables.fontSize`
+
+Some Mermaid diagram types — notably **timeline**, and (by the same argument)
+**gantt**, **pie**, **quadrantChart**, **journey**, and **mindmap** — do not
+honor `themeVariables.fontSize` the way flowcharts and sequence diagrams do.
+Their natural rendered SVG size is therefore arbitrary (often very small),
+and the `[MIN_SCALE, MAX_SCALE]` clamp that works correctly for flowcharts
+would leave these diagrams unusably tiny.
+
+For these types we use an alternative sizing function, `sizeSvgFit`, which
+scales the SVG to fully fill the available panel with **no upper cap**. The
+routing is done by reading the SVG's `aria-roledescription` attribute that
+Mermaid sets on its rendered output:
+
+```js
+const UNCLAMPED_TYPES = new Set([
+  'timeline', 'gantt', 'pie', 'quadrantchart', 'journey', 'mindmap',
+]);
+function pickSizer(svg) {
+  const role = (svg.getAttribute('aria-roledescription') || '').toLowerCase();
+  return UNCLAMPED_TYPES.has(role) ? sizeSvgFit : sizeSvg;
+}
+```
+
+Flowcharts, sequence diagrams, state diagrams, class diagrams, ER diagrams
+and others continue through the clamped `sizeSvg` path untouched.
+
+If a new Mermaid diagram type turns up that also looks stuck tiny, add its
+`aria-roledescription` value to `UNCLAMPED_TYPES` rather than loosening the
+flowchart clamp.
+
 ## File-based SVG figures
 
 The fix above applies **only to Mermaid-generated SVGs**. The JS selector
