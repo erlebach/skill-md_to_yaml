@@ -712,10 +712,25 @@
     const UNCLAMPED_TYPES = new Set([
       'timeline', 'gantt', 'pie', 'quadrantchart', 'journey', 'mindmap',
     ]);
+    // Timeline has a lot of vertical whitespace in its natural viewBox, so
+    // height-based fit ends up too small. Width-dominant fill gives a
+    // readable font without clipping meaningful content.
+    const WIDTH_FILL_TYPES = new Set(['timeline']);
+    function sizeSvgFillWidth(svg, availW, availH) {
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      svg.removeAttribute('style');
+      svg.style.display = 'block';
+      svg.style.margin  = '0 auto';
+      svg.style.width   = availW + 'px';
+      svg.style.height  = 'auto';
+      svg.style.maxHeight = availH + 'px';
+    }
     function pickSizer(svg) {
       const container = svg.closest('.diagram-container');
       const type = (container && container.dataset.diagramType || '').toLowerCase();
       const role = (svg.getAttribute('aria-roledescription') || '').toLowerCase();
+      if (WIDTH_FILL_TYPES.has(type) || WIDTH_FILL_TYPES.has(role)) return sizeSvgFillWidth;
       return (UNCLAMPED_TYPES.has(type) || UNCLAMPED_TYPES.has(role)) ? sizeSvgFit : sizeSvg;
     }
 

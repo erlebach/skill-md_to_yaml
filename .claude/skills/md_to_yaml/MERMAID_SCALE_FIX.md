@@ -117,19 +117,61 @@ and the `[MIN_SCALE, MAX_SCALE]` clamp that works correctly for flowcharts
 would leave these diagrams unusably tiny.
 
 For these types we use an alternative sizing function, `sizeSvgFit`, which
-scales the SVG to fully fill the available panel with **no upper cap**. The
-routing is done by reading the SVG's `aria-roledescription` attribute that
-Mermaid sets on its rendered output:
+scales the SVG to fully fill the available panel with **no upper cap**.
+
+Routing is done **before** `mermaid.run()` by reading the first keyword of
+each `<pre class="mermaid">` source text (`timeline`, `flowchart`,
+`sequenceDiagram`, …) and stashing it on the parent `.diagram-container` as
+`dataset.diagramType`. `aria-roledescription` on the post-render SVG is an
+unreliable fallback in Mermaid v11 (some diagram types, including
+`timeline`, don't set it). `pickSizer` checks both:
 
 ```js
 const UNCLAMPED_TYPES = new Set([
   'timeline', 'gantt', 'pie', 'quadrantchart', 'journey', 'mindmap',
 ]);
+// Pre-run: tag container with diagram type from source text.
+document.querySelectorAll('.diagram-container pre.mermaid').forEach(pre => {
+  const line = pre.textContent.trim().split('\n')
+    .find(l => l.trim() && !l.startsWith('%%'));
+  const type = line && line.trim().split(/[\s:({]/)[0].toLowerCase();
+  const c = pre.closest('.diagram-container');
+  if (c && type) c.dataset.diagramType = type;
+});
 function pickSizer(svg) {
+  const c = svg.closest('.diagram-container');
+  const type = (c && c.dataset.diagramType || '').toLowerCase();
   const role = (svg.getAttribute('aria-roledescription') || '').toLowerCase();
-  return UNCLAMPED_TYPES.has(role) ? sizeSvgFit : sizeSvg;
+  return (UNCLAMPED_TYPES.has(type) || UNCLAMPED_TYPES.has(role))
+    ? sizeSvgFit : sizeSvg;
 }
 ```
+
+For the unclamped types we also set `useMaxWidth: false` in
+`mermaid.initialize`; without it Mermaid emits `width="100%"` and the
+diagram collapses to the container's current width rather than its natural
+layout. `sizeSvgFit` also prefers `viewBox` over the `width`/`height`
+attributes (which may still be `"100%"`) to get true content geometry.
+
+### Timeline: width-dominant fill
+
+Even with `sizeSvgFit`, Mermaid's `timeline` diagrams look too small because
+their natural `viewBox` contains a lot of vertical whitespace above the
+title and below the bottom connectors. Height-based fit therefore picks a
+scale dominated by that empty space, leaving small text.
+
+For `timeline` specifically we use `sizeSvgFillWidth`: set `width =
+availW`, let `height = auto` (browser preserves viewBox aspect), and cap
+with `max-height: availH`. The diagram fills the panel's full width and
+scales its fonts up proportionally, which is what we want for a readable
+roadmap.
+
+```js
+const WIDTH_FILL_TYPES = new Set(['timeline']);
+```
+
+Add other diagram types here if they show the same "shrunk by vertical
+whitespace" symptom.
 
 Flowcharts, sequence diagrams, state diagrams, class diagrams, ER diagrams
 and others continue through the clamped `sizeSvg` path untouched.
