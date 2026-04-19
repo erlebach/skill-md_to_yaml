@@ -143,6 +143,27 @@ Based on current presentation design best practices and your 12 layout templates
 - ✅ Photo evidence or real-world example
 - ❌ When the visual needs significant text explanation (use **two-column.html.j2**)
 
+### Figure layout selection by aspect ratio
+
+When a slide centres on a single figure, choose layout from figure geometry:
+
+| Figure aspect ratio (width ÷ height) | Layout |
+|--------------------------------------|--------|
+| 1.35 – 2.1 (near slide-shaped, 16:9) | `figure` |
+| > 2.1 (wide banner / landscape pipeline) | `figure-wide` |
+| < 1.35 (portrait / tall diagram) | `two-column` (figure + side text) |
+
+**Fallback rules:**
+- Wide figure (`> 2.1`) with almost no supporting text → use plain `figure`.
+- Tall figure (`< 1.35`) with short explanation → `figure` still works.
+- When text volume is substantial and figure is wide → prefer `figure-wide`.
+
+**`figure-wide` YAML shape:**
+
+Front matter: `src`, `alt_text`, `caption` (optional), `proportion` (optional, default `50/50`).
+Body: up to three `## Heading` sections — `## Summary` (optional, shown above figure),
+then two headings for left and right columns.
+
 ***
 
 ### **diagram.html.j2**
@@ -391,6 +412,7 @@ START: What is the primary purpose of this slide?
 │
 ├─ Showing visual evidence?
 │  ├─ Simple image/screenshot → figure.html.j2
+│  ├─ Wide figure with supporting text → figure-wide.html.j2
 │  └─ Complex diagram → diagram.html.j2
 │
 ├─ Demonstrating code/commands?
@@ -414,7 +436,7 @@ Never use the same layout for more than 3 consecutive slides (except during dens
 In a 20-slide deck:
 - **content.html.j2**: 6-8 slides (most common)
 - **two-column.html.j2**: 3-5 slides
-- **figure/diagram**: 2-4 slides
+- **figure.html.j2 / figure-wide.html.j2 / diagram.html.j2**: 2-4 slides combined
 - **title.html.j2**: 2-3 slides
 - **Other layouts**: 1-2 each as needed
 
@@ -446,7 +468,7 @@ For complex topics, use this sequence:
 | Architecture | diagram.html.j2 | two-column.html.j2 (mermaid + bullets) | content.html.j2 |
 | Process/workflow | steps.html.j2 | two-column.html.j2 (mermaid + content) | content.html.j2 |
 | Before/after | comparison.html.j2 | two-column.html.j2 | content.html.j2 |
-| Product demo | figure.html.j2 | two-column.html.j2 (figure + bullets) | content.html.j2 |
+| Product demo | figure.html.j2 | figure-wide.html.j2 (wide layout), two-column.html.j2 (figure + bullets) | content.html.j2 |
 | Data results | table.html.j2 | figure.html.j2 (chart) | content.html.j2 |
 | API example | code.html.j2 | two-column.html.j2 (code + explanation) | content.html.j2 |
 | User feedback | quote.html.j2 | content.html.j2 (multiple quotes as bullets) | hero.html.j2 |
