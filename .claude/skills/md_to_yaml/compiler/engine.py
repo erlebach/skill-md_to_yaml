@@ -1,4 +1,5 @@
 """Compiler engine: validate-then-render pipeline."""
+import re
 import sys
 from pathlib import Path
 
@@ -58,8 +59,6 @@ def _parse_figure_wide_body(body: str | None, theme: str) -> dict:
         rendered_fw_left_body, rendered_fw_right_heading, rendered_fw_right_body
     All values are HTML strings or None.
     """
-    import re
-
     empty = {
         "rendered_fw_summary": None,
         "rendered_fw_left_heading": None,
