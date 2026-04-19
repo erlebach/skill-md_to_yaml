@@ -532,6 +532,11 @@
     {% set rendered_mermaid = s.rendered_mermaid %}
     {% set rendered_left_col = s.rendered_left_col %}
     {% set rendered_right_col = s.rendered_right_col %}
+    {% set rendered_fw_summary = s.rendered_fw_summary %}
+    {% set rendered_fw_left_heading = s.rendered_fw_left_heading %}
+    {% set rendered_fw_left_body = s.rendered_fw_left_body %}
+    {% set rendered_fw_right_heading = s.rendered_fw_right_heading %}
+    {% set rendered_fw_right_body = s.rendered_fw_right_body %}
     {% set title_has_math = s.title_has_math %}
     {% set extra_class = '' %}
     {% if slide.layout == 'figure' and not slide.body %}{% set extra_class = ' figure-only' %}{% endif %}
