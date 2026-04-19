@@ -21,12 +21,13 @@
     <tbody>
       {% if rendered_table_rows %}
       {% for row_cells in rendered_table_rows %}
-      <tr>
-        {% for cell_html in row_cells %}
-          {% if loop.first and slide.row_headers %}
-            <th scope="row">{{ cell_html | safe }}</th>
+      {% set is_span_row = row_cells | selectattr("colspan", "gt", 1) | list | length > 0 %}
+      <tr{% if is_span_row %} class="span-row"{% endif %}>
+        {% for cell in row_cells %}
+          {% if loop.first and slide.row_headers and cell.colspan == 1 %}
+            <th scope="row">{{ cell.html | safe }}</th>
           {% else %}
-            <td>{{ cell_html | safe }}</td>
+            <td{% if cell.colspan > 1 %} colspan="{{ cell.colspan }}"{% endif %}>{{ cell.html | safe }}</td>
           {% endif %}
         {% endfor %}
       </tr>

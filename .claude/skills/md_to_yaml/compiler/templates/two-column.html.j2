@@ -8,27 +8,15 @@
 {% if body_html and not body_in_column %}<div class="slide-body two-col-caption-above">{{ body_html | safe }}</div>{% endif %}
 <div class="two-col two-col-{{ slide.proportion | replace('/', '-') }}{% if both_have_content %} two-col-both{% endif %}">
   <div class="col-left">
-    {% if slide.left %}
-      {% if slide.left.type == 'figure' %}
-        <img src="{{ slide.left.src | e }}" alt="{{ slide.left.alt_text | e }}">
-      {% elif slide.left.type == 'diagram' %}
-        <div class="diagram-container" role="img" aria-label="{{ slide.left.alt_text | e }}">
-          <pre class="mermaid" aria-hidden="true">{{ slide.left.source | e }}</pre>
-        </div>
-      {% endif %}
+    {% if rendered_left_col %}
+      {{ rendered_left_col | safe }}
     {% elif body_in_column %}
       <div class="slide-body">{{ body_html | safe }}</div>
     {% endif %}
   </div>
   <div class="col-right">
-    {% if slide.right %}
-      {% if slide.right.type == 'figure' %}
-        <img src="{{ slide.right.src | e }}" alt="{{ slide.right.alt_text | e }}">
-      {% elif slide.right.type == 'diagram' %}
-        <div class="diagram-container" role="img" aria-label="{{ slide.right.alt_text | e }}">
-          <pre class="mermaid" aria-hidden="true">{{ slide.right.source | e }}</pre>
-        </div>
-      {% endif %}
+    {% if rendered_right_col %}
+      {{ rendered_right_col | safe }}
     {% elif body_in_column %}
       <div class="slide-body">{{ body_html | safe }}</div>
     {% endif %}

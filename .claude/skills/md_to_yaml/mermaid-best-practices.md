@@ -90,6 +90,43 @@ subgraph label styling.
 
 ---
 
+## Math and Unicode in Mermaid Labels
+
+**Mermaid and KaTeX are completely separate rendering pipelines.** KaTeX scans the
+HTML DOM for `$...$` delimiters; Mermaid generates SVG internally and never exposes
+its label strings to the DOM in a form KaTeX can process. Therefore:
+
+- **KaTeX does NOT work inside any Mermaid label**, axis name, quadrant label, node
+  label, or title — regardless of diagram type.
+- Using `$\alpha$`, `$$\beta$$`, or any `\command` inside a Mermaid source block will
+  render as literal text (backslash + letters), not as math.
+
+### Per-diagram-type Unicode tolerance
+
+| Diagram type | Unicode letters (α β₀ ≤) | Parentheses in labels |
+|---|---|---|
+| `graph TD` / `graph LR` (quoted node) | ✓ usually OK | ✓ OK |
+| `sequenceDiagram` participant / message | ✓ usually OK | ✓ OK |
+| `stateDiagram-v2` state label | ✓ usually OK | ✓ OK |
+| `mindmap` node text | ✓ usually OK | ✓ OK |
+| `quadrantChart` axis / quadrant labels | ✗ **breaks parser** | ✗ **breaks parser** |
+| `pie` section labels | ✓ usually OK | ✓ OK |
+
+**Rule for `quadrantChart`:** use plain ASCII only in `x-axis`, `y-axis`, and
+`quadrant-N` lines. Replace math notation with English words:
+
+```
+-- WRONG: breaks Mermaid parser --
+x-axis "H₀ True" --> "H₁ True"
+quadrant-1 POWER (1 − β)
+
+-- CORRECT: plain ASCII --
+x-axis H0 True --> H1 True
+quadrant-1 POWER 1 minus beta
+```
+
+---
+
 ## Diagram Type Selection
 
 Do not default to `graph TD` for every diagram slide. Choose the type that matches
@@ -121,12 +158,12 @@ than four nodes in `graph TD`. Use `quadrantChart` for any 2×2 outcome grid.
 ```
 quadrantChart
     title Decision Outcomes
-    x-axis H₀ True --> H₁ True
-    y-axis Fail to Reject --> Reject H₀
-    quadrant-1 POWER (1 − β)
-    quadrant-2 TYPE I ERROR (α)
-    quadrant-3 Correct (1 − α)
-    quadrant-4 TYPE II ERROR (β)
+    x-axis H0 True --> H1 True
+    y-axis Fail to Reject H0 --> Reject H0
+    quadrant-1 POWER 1 minus beta
+    quadrant-2 TYPE I ERROR alpha
+    quadrant-3 Correct 1 minus alpha
+    quadrant-4 TYPE II ERROR beta
 ```
 
 ### sequenceDiagram for ordered processes
@@ -212,3 +249,38 @@ style ErrorNode fill:#cc0000,color:#ffffff
 style CorrectNode fill:#1a7a1a,color:#ffffff
 -- A, C, D, E use Mermaid default colors --
 ```
+
+---
+
+## Two-column Mermaid — Twin Roots and Vertical Stacking
+
+**Scope:** These rules matter most in **`layout: two-column`** when Mermaid lives in the **narrow diagram column**. On a **full-width** `layout: diagram` slide, Mermaid may place two unlinked roots **side by side** and that **can** be acceptable — the panel is wide enough that parallel subtrees often read clearly. In **two-column** mode the same layout usually **does not** read as two stacked ideas.
+
+The **diagram** column in `two-column` slides is **narrow**. If you put **two separate hierarchies** in **one** Mermaid graph — e.g. one root `Attention` with two children **and** a second root `FFN` with two children, with **no** edge between those subtrees — Mermaid's layout often places the two roots **side by side**. On screen it reads as **two horizontal fragments** that **should** read as **two blocks stacked vertically** (first concept above, second below).
+
+**Avoid that failure mode:**
+
+1. **Enforce top-to-bottom flow:** add a **real** edge from the **bottom** of the first block to the **top** of the second (e.g. `A2 --> B` after `A --> A1` and `A --> A2`).
+2. **Use `subgraph` + `direction TB`:** wrap each concept, then connect a **leaf** of the first subgraph to the **root** of the second so the renderer cannot place the blocks as unrelated siblings.
+3. **Simplify scope:** only **one** rooted tree per narrow column; put the second concept on a **full-width** `diagram` slide or in **bullets** in the text column.
+
+This is a **content/layout choice in YAML**, not a compiler bug — the auto-layout follows graph structure.
+
+---
+
+## Mermaid Canvas Aspect Ratios
+
+**Source of truth:** `compiler/templates/base.html.j2` (update this subsection if those styles change).
+
+Slides use **`min-height: 100vh`**, **`padding: 1in`** left/right, a centered **`h2`**, and a flex **content area**. Rendered Mermaid is an **`svg`** with **`max-width: 100%`** of its parent and a viewport-based height cap (`vh`). Exact pixels vary with monitor and zoom; use the table below to choose **`layout: diagram`** vs **`two-column`** and **`graph LR`** vs **`graph TD`**.
+
+| Diagram placement | CSS (summary) | Typical usable shape (heuristic) |
+|-------------------|---------------|----------------------------------|
+| **`layout: diagram`**, **no** body | Class **`diagram-only`**: container **`max-height: 80vh`**, **`svg`** **`max-height: 75vh`** | **Wide landscape:** width ≈ full slide minus **2×1in** padding; height ≈ **¾** of viewport. On **1080p** the box is often **~2∶1** width∶height or wider — good for **`graph LR`**, broad flows, or **side-by-side** rooted trees. |
+| **`layout: diagram`**, **with** body | Same **`svg`** caps; body shares the slide | **Shorter** vertical room for the graph than diagram-only; still **wider-than-tall** vs any single **column**. |
+| **`two-column`**, diagram in **one** cell | Grid **`50/50`** → `1fr 1fr`; **`60/40`** → `3fr 2fr`; **`40/60`** → `2fr 3fr`; gap **`2rem`**; **`svg`** usually **`max-height: 70vh`** | **Much narrower width** (only **40–50%** of row for common splits) with **similar height cap** → canvas tends **square to portrait-ish**. **50/50** column ≈ **~1∶1**; diagram in the **40%** column ≈ **~0.9∶1** width∶height — favor **`graph TD`**, **stacks**, **one** root; **wide LR** often **cramped** or scrolls. |
+| **`two-column`**, diagram in **60%** cell | Wider column of **`60/40`** or **`40/60`** | **Between** full slide and 50/50 — often **~1.3–1.6∶1** on **1080p** for shallow **`graph LR`**. |
+
+**Rule of thumb:** **full-width slide ⇒ horizontal breathing room**; **column ⇒ vertical stacking and fewer nodes per rank.**
+
+**Viewport caveat:** **`vh`** scales with window height; **4∶3** projectors and **ultrawide** displays shift the ratio — treat values as **guides**, not fixed aspect locks.

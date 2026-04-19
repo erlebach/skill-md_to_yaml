@@ -15,13 +15,24 @@ def main() -> None:
         default=False,
         help="Embed images as base64 data URIs",
     )
+    parser.add_argument(
+        "--include-skipped",
+        action="store_true",
+        default=False,
+        help="Render slides marked skip: true (omitted by default)",
+    )
     args = parser.parse_args()
 
     from schema.parser import parse_deck_file
     from compiler.engine import compile_deck  # noqa: F401 — created in Plan 03
 
     deck = parse_deck_file(args.input)
-    compile_deck(deck, args.output, embed_images=args.embed_images)
+    compile_deck(
+        deck,
+        args.output,
+        embed_images=args.embed_images,
+        include_skipped=args.include_skipped,
+    )
 
 
 if __name__ == "__main__":

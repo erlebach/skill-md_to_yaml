@@ -7,6 +7,7 @@ from pathlib import Path
 from vtt_polisher.parser import parse_vtt
 from vtt_polisher.chunker import chunk_by_time, chunk_by_count
 from vtt_polisher.llm import call_llm, make_ollama_client, stop_ollama_model
+from vtt_polisher.patcher import apply_corrections, render_vtt
 
 
 def main():
@@ -43,6 +44,10 @@ def main():
         help="Disable streaming for Ollama backend (no real-time token output)"
     )
     parser.add_argument(
+        "--apply", type=Path, default=None, metavar="CORRECTIONS_JSON",
+        help="Apply a corrections JSON to the input VTT and write a patched VTT; skips LLM calls"
+    )
+    parser.add_argument(
         "--dry-run", action="store_true",
         help="Parse and chunk only; do not call the API"
     )
@@ -51,6 +56,14 @@ def main():
     vtt_text = args.input.read_text(encoding="utf-8", errors="replace")
     cues = parse_vtt(vtt_text)
     print(f"Parsed {len(cues)} cues from {args.input.name}", file=sys.stderr)
+
+    if args.apply:
+        corrections = json.loads(args.apply.read_text(encoding="utf-8"))
+        patched = apply_corrections(cues, corrections)
+        out_vtt = args.output or args.input.with_suffix(".polished.vtt")
+        out_vtt.write_text(render_vtt(patched), encoding="utf-8")
+        print(f"Wrote patched VTT to {out_vtt}", file=sys.stderr)
+        return
 
     if args.chunk_mode == "time":
         chunks = chunk_by_time(cues, window_seconds=args.chunk_size)

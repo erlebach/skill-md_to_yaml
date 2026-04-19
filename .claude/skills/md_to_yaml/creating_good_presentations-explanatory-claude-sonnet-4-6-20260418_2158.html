@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ deck.metadata.theme }}">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {# MathML namespace URI (declared once here; <math> nodes omit redundant xmlns) #}
+  
   <meta name="mathml-namespace-uri" content="http://www.w3.org/1998/Math/MathML">
-  <title>{{ deck.metadata.title | e }}</title>
+  <title>Effective Presentations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family={{ deck.metadata.font | replace(' ', '+') }}:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -16,11 +16,9 @@
       --bg2: #161b22;
       --text: #e6edf3;
       --muted: #8b949e;
-      --accent: {% if deck.metadata.accent_color %}{{ deck.metadata.accent_color }}{% else %}#f0a500{% endif %};
+      --accent: #f0a500;
       --border: #30363d;
-      --font-family: '{{ deck.metadata.font }}', sans-serif;
-      --fig-panel: #1e2330;        /* figure panel bg — contrast vs #e6edf3 text ≥ 9:1 (WCAG AA) */
-      --fig-panel-border: #2d3548;
+      --font-family: 'IBM Plex Sans', sans-serif;
     }
 
     :root[data-theme="light"] {
@@ -28,17 +26,13 @@
       --bg2: #f6f8fa;
       --text: #1f2328;
       --muted: #656d76;
-      --fig-panel: #eef1f5;        /* figure panel bg — contrast vs #1f2328 text ≥ 11:1 (WCAG AA) */
-      --fig-panel-border: #d0d7de;
-      --accent: {% if deck.metadata.accent_color %}{{ deck.metadata.accent_color }}{% else %}#b06800{% endif %};
+      --accent: #b06800;
       --border: #d1d9e0;
-      --font-family: '{{ deck.metadata.font }}', sans-serif;
+      --font-family: 'IBM Plex Sans', sans-serif;
     }
 
     html, body {
       height: 100%;
-      overflow-x: hidden;
-      overflow-y: hidden;
       background: var(--bg);
       color: var(--text);
       font-family: var(--font-family);
@@ -67,9 +61,7 @@
     main {
       scroll-snap-type: y mandatory;
       overflow-y: auto;
-      overflow-x: hidden;
       height: 100vh;
-      width: 100vw;
     }
 
     section[role="group"] {
@@ -278,20 +270,6 @@
     pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; }
     /* Gutter between diagram and caption text below */
     .diagram-caption { margin-top: 1.5rem; }
-    /* Panel background on standalone diagram slides */
-    .slide-diagram .slide-content-area > .diagram-container {
-      background: var(--fig-panel);
-      border: 1px solid var(--fig-panel-border);
-      border-radius: 10px;
-      padding: 1.5rem 2rem;
-    }
-    /* Panel background on two-column diagram columns */
-    .slide-two-column .diagram-container {
-      background: var(--fig-panel);
-      border: 1px solid var(--fig-panel-border);
-      border-radius: 10px;
-      padding: 1rem 1.5rem;
-    }
 
     /* Standalone diagram slide: container fills content area and centers diagram vertically */
     .slide-diagram .slide-content-area > .diagram-container {
@@ -306,13 +284,13 @@
     .slide-diagram .diagram-container > pre.mermaid {
       text-align: center;
     }
-    /* Two-column diagram column: fill column width, let SVG viewBox set height */
+    /* Two-column diagram column: center within the column cell */
     .slide-two-column .diagram-container {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: stretch;
-      width: 100%;
+      height: 100%;
     }
     .slide-two-column .diagram-container > [role="img"],
     .slide-two-column .diagram-container > pre.mermaid {
@@ -320,18 +298,9 @@
     }
 
     .figure-container { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-    .figure-container figure {
-      background: var(--fig-panel);
-      border: 1px solid var(--fig-panel-border);
-      border-radius: 10px;
-      padding: 1.5rem 2rem 1rem;
-      display: inline-block;
-      max-width: 100%;
-    }
-    .figure-container img { max-width: 80%; max-height: 62vh; margin: 0 auto; display: block; }
+    .figure-container img { max-width: 80%; max-height: 70vh; margin: 0 auto; display: block; }
     /* Single figure slide (no body text): figure dominates */
-    .figure-only .figure-container figure { padding: 2rem 2.5rem 1.25rem; }
-    .figure-only .figure-container img { max-width: 90%; max-height: 68vh; }
+    .figure-only .figure-container img { max-width: 90%; max-height: 75vh; }
     /* Single diagram slide: diagram dominates */
     .diagram-only .diagram-container { max-height: 80vh; }
     .diagram-only .diagram-container svg { max-height: 75vh; }
@@ -454,7 +423,7 @@
     .summary-list { list-style: none; padding: 0; }
     .summary-list li::before { content: '\2713 '; color: var(--accent); font-weight: 700; }
 
-    .table-scroll-wrapper { overflow-x: auto; max-width: 100%; background: var(--fig-panel); border: 1px solid var(--fig-panel-border); border-radius: 10px; padding: 1rem 1.5rem; }
+    .table-scroll-wrapper { overflow-x: auto; max-width: 100%; }
     .table-scroll-wrapper:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     .table-scroll-wrapper table { width: 100%; border-collapse: collapse; }
     .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; font-size: clamp(18px, 1.9vw, 26px); }
@@ -490,89 +459,382 @@
       white-space: nowrap;
       border: 0;
     }
-    {{ pygments_css | safe }}
-    /* ── figure-wide layout ────────────────────────────────────────────── */
-    .slide-figure-wide .slide-content-area {
-      justify-content: flex-start;
-    }
-    .figure-wide-layout {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .figure-wide-summary {
-      text-align: left;
-      max-width: 64em;
-      font-size: clamp(18px, 2vw, 24px);
-      color: var(--muted);
-      margin-bottom: 0.25rem;
-    }
-    .figure-wide-figure-wrap {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 0.75rem;
-      padding: 1rem 1.25rem;
-    }
-    .figure-wide-figure { margin: 0; }
-    .figure-wide-figure img,
-    .slide-figure-wide .diagram-container svg {
-      max-width: 100%;
-      max-height: 32vh;
-      margin: 0 auto;
-      display: block;
-    }
-    .figure-wide-columns {
-      align-items: start;
-    }
-    .figure-wide-columns .col-left,
-    .figure-wide-columns .col-right {
-      min-width: 0;
-    }
-    .figure-wide-columns h3 {
-      color: var(--accent);
-      margin-bottom: 0.4rem;
-    }
-    .slide-figure-wide figcaption {
-      margin-top: 0.75rem;
-      text-align: left;
-    }
+    
   </style>
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to content</a>
-  <main id="main-content" role="region" aria-roledescription="carousel" aria-label="{{ deck.metadata.title | e }}"{% if deck.metadata.flavor == 'transcript' %} class="deck-flavor-transcript"{% endif %}>
-    <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / {{ total }}</div>
-    {% for s in slides %}
-    {% set slide = s.slide %}
-    {% set slide_id = s.slide_id %}
-    {% set rendered_title = s.rendered_title %}
-    {% set rendered_subtitle = s.rendered_subtitle %}
-    {% set rendered_author_line = s.rendered_author_line %}
-    {% set rendered_body = s.rendered_body %}
-    {% set rendered_table_headers = s.rendered_table_headers %}
-    {% set rendered_table_rows = s.rendered_table_rows %}
-    {% set rendered_table_caption = s.rendered_table_caption %}
-    {% set rendered_description = s.rendered_description %}
-    {% set rendered_code = s.rendered_code %}
-    {% set rendered_image = s.rendered_image %}
-    {% set rendered_svg = s.rendered_svg %}
-    {% set rendered_mermaid = s.rendered_mermaid %}
-    {% set rendered_left_col = s.rendered_left_col %}
-    {% set rendered_right_col = s.rendered_right_col %}
-    {% set rendered_fw_summary = s.rendered_fw_summary %}
-    {% set rendered_fw_left_heading = s.rendered_fw_left_heading %}
-    {% set rendered_fw_left_body = s.rendered_fw_left_body %}
-    {% set rendered_fw_right_heading = s.rendered_fw_right_heading %}
-    {% set rendered_fw_right_body = s.rendered_fw_right_body %}
-    {% set title_has_math = s.title_has_math %}
-    {% set extra_class = '' %}
-    {% if slide.layout == 'figure' and not slide.body %}{% set extra_class = ' figure-only' %}{% endif %}
-    {% if slide.layout == 'diagram' and not slide.body %}{% set extra_class = ' diagram-only' %}{% endif %}
-    {% if title_has_math %}{% set extra_class = extra_class ~ ' slide-heading-math' %}{% endif %}
-    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
-      {% include slide.layout ~ '.html.j2' %}
+  <main id="main-content" role="region" aria-roledescription="carousel" aria-label="Effective Presentations">
+    <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / 9</div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-1" role="group" class="slide-title" aria-roledescription="slide" aria-label="Slide 1 of 9" aria-labelledby="slide-1-heading">
+      <h1 id="slide-1-heading">Effective Presentations</h1>
+<p class="subtitle">Design Principles for Clear, Engaging Slides</p>
+
+
+
     </section>
-    {% endfor %}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-2" role="group" class="slide-hero" aria-roledescription="slide" aria-label="Slide 2 of 9" aria-labelledby="slide-2-heading">
+      <h2 id="slide-2-heading">One Idea Per Slide, Every Time</h2>
+<div class="slide-content-area">
+
+<div class="hero-body"><p>Every strong slide carries exactly one clear message — the layout reinforces it, and the speaker supplies the detail.</p></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-3" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 3 of 9" aria-labelledby="slide-3-heading">
+      <h2 id="slide-3-heading">Build a Narrative Arc</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>Through-line:</strong> each slide connects logically to the one before</li>
+<li><strong>State:</strong> introduce the learning objective up front</li>
+<li><strong>Illustrate:</strong> show a figure, diagram, table, or example</li>
+<li><strong>Derive:</strong> explain why it matters or what follows next</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-4" role="group" class="slide-figure figure-only" aria-roledescription="slide" aria-label="Slide 4 of 9" aria-labelledby="slide-4-heading">
+      <h2 id="slide-4-heading">The State → Illustrate → Derive Cycle</h2>
+<div class="slide-content-area">
+<div class="figure-container">
+  <figure>
+    
+      <div class="diagram-container" role="img" aria-label="Circular flow diagram showing three presentation stages: State (introduce the objective), Illustrate (show a visual or example), and Derive (explain significance). Green arrows connect State to Illustrate to Derive and back to State, with small labels: &#39;show it&#39;, &#39;why it matters&#39;, and &#39;next idea&#39;."><svg role="img" aria-labelledby="slide-4-svg-title slide-4-svg-desc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" width="100%" height="auto"><title id="slide-4-svg-title">Circular flow diagram showing three presentation stages: State (introduce the objective), Illustrate (show a visual or example), and Derive (explain significance). Green arrows connect State to Illustrate to Derive and back to State, with small labels: 'show it', 'why it matters', and 'next idea'.</title><desc id="slide-4-svg-desc">Circular flow diagram showing three presentation stages: State (introduce the objective), Illustrate (show a visual or example), and Derive (explain significance). Green arrows connect State to Illustrate to Derive and back to State, with small labels: 'show it', 'why it matters', and 'next idea'.</desc>
+  <title id="na-title">Narrative Arc: State, Illustrate, Derive</title>
+  <desc id="na-desc">Circular flow showing three presentation stages: State introduces the objective, Illustrate shows a visual or example, and Derive explains significance. Arrows connect each stage in sequence forming a repeating cycle.</desc>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3fb950"></polygon>
+    </marker>
+  </defs>
+
+  
+  <rect width="420" height="320" fill="#0d1117" rx="10"></rect>
+
+  
+  <ellipse cx="210" cy="55" rx="68" ry="30" fill="#1a4a8a" stroke="#58a6ff" stroke-width="2"></ellipse>
+  <text x="210" y="60" text-anchor="middle" fill="#e6edf3" font-size="16">Stating</text>
+
+  
+  <ellipse cx="330" cy="250" rx="75" ry="30" fill="#1a4a8a" stroke="#58a6ff" stroke-width="2"></ellipse>
+  <text x="330" y="255" text-anchor="middle" fill="#e6edf3" font-size="16">Illustrating</text>
+
+  
+  <ellipse cx="90" cy="250" rx="68" ry="30" fill="#1a4a8a" stroke="#58a6ff" stroke-width="2"></ellipse>
+  <text x="90" y="255" text-anchor="middle" fill="#e6edf3" font-size="16">Deriving</text>
+
+  
+  <path d="M268 72 Q370 130 318 222" fill="none" stroke="#3fb950" stroke-width="2.5"></path>
+
+  
+  <path d="M258 258 L165 258" fill="none" stroke="#3fb950" stroke-width="2.5"></path>
+
+  
+  <path d="M105 222 Q62 130 148 80" fill="none" stroke="#3fb950" stroke-width="2.5"></path>
+
+  
+  <text x="330" y="148" text-anchor="middle" fill="#8b949e" font-size="12">show it</text>
+  <text x="210" y="248" text-anchor="middle" fill="#8b949e" font-size="12">why it matters</text>
+  <text x="80" y="148" text-anchor="middle" fill="#8b949e" font-size="12">next idea</text>
+</svg>
+</div>
+    
+    <figcaption id="slide-4-caption">Circular flow diagram showing three presentation stages: State (introduce the objective), Illustrate (show a visual or example), and Derive (explain significance). Green arrows connect State to Illustrate to Derive and back to State, with small labels: &#39;show it&#39;, &#39;why it matters&#39;, and &#39;next idea&#39;.</figcaption>
+  </figure>
+</div>
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-5" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 5 of 9" aria-labelledby="slide-5-heading">
+      <h2 id="slide-5-heading">Bullets Are Memory Cues, Not a Script</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>5×5 rule:</strong> aim for ≤ 5 bullets, ~5 words each — 8 is the hard ceiling</li>
+<li><strong>One idea per bullet:</strong> split if a bullet contains "and" twice</li>
+<li><strong>Parallel structure:</strong> all bullets start with the same part of speech</li>
+<li><strong>Short phrases:</strong> avoid wrapping past two lines</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-6" role="group" class="slide-figure figure-only" aria-roledescription="slide" aria-label="Slide 6 of 9" aria-labelledby="slide-6-heading">
+      <h2 id="slide-6-heading">Layout Types at a Glance</h2>
+<div class="slide-content-area">
+<div class="figure-container">
+  <figure>
+    
+      <div class="diagram-container"><div role="img" aria-label="Mindmap with root node &#x27;Slide Layouts&#x27; branching into four categories: Opening (title, hero, divider), Information (content, steps, table, comparison), Visual (figure, diagram, two-column), and Closing (summary, quote, code)."><pre class="mermaid" aria-hidden="true">mindmap
+  root((Slide Layouts))
+    Opening
+      title
+      hero
+      divider
+    Information
+      content
+      steps
+      table
+      comparison
+    Visual
+      figure
+      diagram
+      two-column
+    Closing
+      summary
+      quote
+      code</pre></div></div>
+    
+    <figcaption id="slide-6-caption">Mindmap with root node &#39;Slide Layouts&#39; branching into four categories: Opening (title, hero, divider), Information (content, steps, table, comparison), Visual (figure, diagram, two-column), and Closing (summary, quote, code).</figcaption>
+  </figure>
+</div>
+
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-7" role="group" class="slide-steps" aria-roledescription="slide" aria-label="Slide 7 of 9" aria-labelledby="slide-7-heading">
+      <h2 id="slide-7-heading">Every Presentation Has the Same Skeleton</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ol>
+<li><strong>Open</strong> — title slide, then a hook or agenda, then problem context</li>
+<li><strong>Body</strong> — 4–8 content slides per section; vary layouts throughout</li>
+<li><strong>Close</strong> — key-takeaway summary, then a call to action</li>
+</ol></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-8" role="group" class="slide-content" aria-roledescription="slide" aria-label="Slide 8 of 9" aria-labelledby="slide-8-heading">
+      <h2 id="slide-8-heading">Variety Signals Importance</h2>
+<div class="slide-content-area">
+<div class="slide-body"><ul>
+<li><strong>3-slide rule:</strong> never repeat the same layout more than 3 times in a row</li>
+<li><strong>Layout change = attention cue</strong> — the audience notices a shift</li>
+<li><strong>10-second test:</strong> the main point should be graspable in under 10 seconds</li>
+<li><strong>Simplification test:</strong> ask whether a complex layout truly serves the message</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <section id="slide-9" role="group" class="slide-summary" aria-roledescription="slide" aria-label="Slide 9 of 9" aria-labelledby="slide-9-heading">
+      <h2 id="slide-9-heading">Key Takeaways</h2>
+<div class="slide-content-area">
+<div class="slide-body summary-content"><ul>
+<li>One primary message per slide — split rather than cram</li>
+<li>Build a repeating arc: state → illustrate → derive</li>
+<li>Short, parallel bullets keep slides readable at distance</li>
+<li>Vary layouts deliberately to signal topic shifts</li>
+<li>Test: can the audience grasp the main point in 10 seconds?</li>
+</ul></div>
+</div>
+
+
+    </section>
+    
   </main>
   <script>
   (function() {
@@ -610,83 +872,42 @@
     });
   })();
   </script>
-  {% if has_mermaid %}
+  
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-    // Render Mermaid with 22pt node labels. Cells are auto-sized by Mermaid
-    // around this font, giving correctly-proportioned boxes out of the box.
     mermaid.initialize({
       startOnLoad: false,
-      theme: '{{ mermaid_theme }}',
+      theme: 'dark',
       flowchart: { useMaxWidth: false, htmlLabels: true },
       sequence: { useMaxWidth: false },
-      themeVariables: {
-        fontSize: '22pt',
-        fontFamily: "'{{ deck.metadata.font }}', sans-serif",
-      },
     });
     await mermaid.run();
-    // Let layout settle so getBoundingClientRect reports accurate column widths.
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-    // Font-size constraints: 20pt min, 24pt max, rendered natural = 22pt.
-    // Scaling the SVG scales font and cells together, so we clamp the scale
-    // factor to keep font within the allowed band.
-    const NATURAL_PT = 22, MIN_PT = 20, MAX_PT = 24;
-    const MIN_SCALE = MIN_PT / NATURAL_PT;   // 0.909 — smaller overflows
-    const MAX_SCALE = MAX_PT / NATURAL_PT;   // 1.091 — larger overblown
-
-    function sizeSvg(svg, availW, availH) {
-      const nW = parseFloat(svg.getAttribute('width'))
-              || (svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal.width  : 0);
-      const nH = parseFloat(svg.getAttribute('height'))
-              || (svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal.height : 0);
+    // Mermaid sets explicit width/height/style attributes on SVGs which override CSS.
+    // Remove them and apply context-aware sizing via viewBox scaling.
+    document.querySelectorAll('.slide-diagram .diagram-container svg').forEach(svg => {
       svg.removeAttribute('width');
       svg.removeAttribute('height');
       svg.removeAttribute('style');
+      svg.style.maxWidth = '75vw';
+      // If there's a caption below the diagram, reserve space for it
+      const slide = svg.closest('section[role="group"]');
+      const hasCaption = slide && slide.querySelector('.diagram-caption');
+      svg.style.maxHeight = hasCaption ? '52vh' : '72vh';
+      svg.style.width = '100%';
       svg.style.display = 'block';
-      svg.style.margin  = '0 auto';
-      if (nW <= 0 || nH <= 0 || availW <= 0 || availH <= 0) {
-        svg.style.width = '100%';
-        svg.style.height = 'auto';
-        return;
-      }
-      // Scale to fit the available box, clamped to the font-size band.
-      const fitScale = Math.min(availW / nW, availH / nH);
-      const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
-      svg.style.width  = (nW * scale) + 'px';
-      svg.style.height = (nH * scale) + 'px';
-    }
-
-    // Scoped to Mermaid-generated SVGs (id prefix "mermaid-"). File-based
-    // SVGs have author-controlled fonts and are left to render at natural
-    // width (width="100%" already applied by the Python SVG normalizer).
-    const SLIDE_PAD  = 96;   // 1in slide edge
-    const PANEL_INSET = 48;  // panel internal padding (top+bottom or left+right combined)
-    document.querySelectorAll('.slide-diagram .diagram-container svg[id^="mermaid"]').forEach(svg => {
-      const slide   = svg.closest('section[role="group"]');
-      const h2      = slide && slide.querySelector('h2');
-      const titleH  = h2 ? h2.getBoundingClientRect().height : 60;
-      const caption = slide && slide.querySelector('.diagram-caption');
-      const capH    = caption ? caption.getBoundingClientRect().height + 16 : 0;
-      const availW  = document.documentElement.clientWidth - SLIDE_PAD * 2 - PANEL_INSET;
-      const availH  = window.innerHeight - SLIDE_PAD * 2 - titleH - capH - PANEL_INSET;
-      sizeSvg(svg, availW, availH);
+      svg.style.margin = '0 auto';
     });
-
-    // Two-column diagrams — constrained to the diagram column.
-    document.querySelectorAll('.slide-two-column .diagram-container svg[id^="mermaid"]').forEach(svg => {
-      const slide  = svg.closest('section[role="group"]');
-      const h2     = slide && slide.querySelector('h2');
-      const titleH = h2 ? h2.getBoundingClientRect().height : 60;
-      const container = svg.closest('.diagram-container');
-      // After RAF, getBoundingClientRect reflects the actual grid-sized column width.
-      const colW = container.getBoundingClientRect().width || (document.documentElement.clientWidth / 2);
-      const availW = colW - PANEL_INSET;
-      const availH = window.innerHeight - SLIDE_PAD * 2 - titleH - PANEL_INSET;
-      sizeSvg(svg, availW, availH);
+    document.querySelectorAll('.slide-two-column .diagram-container svg').forEach(svg => {
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      svg.removeAttribute('style');
+      svg.style.maxWidth = '95%';
+      svg.style.maxHeight = '60vh';
+      svg.style.width = '100%';
+      svg.style.display = 'block';
+      svg.style.margin = '0 auto';
     });
   </script>
-  {% endif %}
+  
 </body>
 </html>

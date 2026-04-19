@@ -9,17 +9,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family={{ deck.metadata.font | replace(' ', '+') }}:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /*
-     * Global heading / emphasis colors — all are CSS variables on :root[data-theme].
-     *
-     *   --heading-h1       Title slide main title (h1). Default: --text
-     *   --heading-h2       Slide section titles (h2), divider titles. Default: --accent
-     *   --slide-emphasis   Body **bold** and .deck-math-emphasis (gold labels). Default: --heading-h2
-     *
-     * Override after compile, e.g. second <style> in <head>:
-     *   :root[data-theme="dark"] { --heading-h2: #e3b341; --heading-h1: #f0f6fc; }
-     * Or edit the :root blocks below.
-     */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root[data-theme="dark"] {
@@ -30,9 +19,6 @@
       --accent: {% if deck.metadata.accent_color %}{{ deck.metadata.accent_color }}{% else %}#f0a500{% endif %};
       --border: #30363d;
       --font-family: '{{ deck.metadata.font }}', sans-serif;
-      --heading-h1: var(--text);
-      --heading-h2: var(--accent);
-      --slide-emphasis: var(--heading-h2);
     }
 
     :root[data-theme="light"] {
@@ -43,13 +29,12 @@
       --accent: {% if deck.metadata.accent_color %}{{ deck.metadata.accent_color }}{% else %}#b06800{% endif %};
       --border: #d1d9e0;
       --font-family: '{{ deck.metadata.font }}', sans-serif;
-      --heading-h1: var(--text);
-      --heading-h2: var(--accent);
-      --slide-emphasis: var(--heading-h2);
     }
 
     html, body {
       height: 100%;
+      overflow-x: hidden;
+      overflow-y: hidden;
       background: var(--bg);
       color: var(--text);
       font-family: var(--font-family);
@@ -78,7 +63,9 @@
     main {
       scroll-snap-type: y mandatory;
       overflow-y: auto;
+      overflow-x: hidden;
       height: 100vh;
+      width: 100vw;
     }
 
     section[role="group"] {
@@ -131,7 +118,7 @@
       text-wrap: balance;
       margin-bottom: 1rem;
       text-align: center;
-      color: var(--heading-h1);
+      color: var(--text);
     }
     .slide-title .subtitle {
       font-size: clamp(22px, 2.8vw, 34px);
@@ -151,31 +138,23 @@
       line-height: 1.1;
       text-wrap: balance;
       margin-bottom: 1rem;
-      color: var(--heading-h2);
+      color: var(--accent);
       text-align: center;
     }
 
-    /* **$...$** / **text $x$** in YAML: match slide-emphasis (default: same as h2) */
+    /* **$...$** / **text $x$** in YAML: accent like h2; plain text in span needs color too */
     .deck-math-emphasis {
-      color: var(--slide-emphasis);
+      color: var(--accent);
       font-weight: 700;
     }
     .deck-math-emphasis math,
     .deck-math-emphasis math * {
-      color: var(--slide-emphasis);
+      color: var(--accent);
     }
     h3 {
       font-size: clamp(22px, 2.8vw, 34px);
       font-weight: 600;
       margin-bottom: 0.5rem;
-      color: var(--heading-h2);
-    }
-    /* Markdown ### / #### inside slide body */
-    .slide-body h3,
-    .slide-body h4,
-    .slide-body h5,
-    .slide-body h6 {
-      color: var(--heading-h2);
     }
     .divider-slide h2 { font-size: clamp(48px, 8vw, 80px); }
 
@@ -190,9 +169,32 @@
     .slide-body ol li { padding-left: 0.5rem; }
     .slide-body li { margin-bottom: 0.75em; }
 
-    /* Markdown **bold** in body: --slide-emphasis (default tracks --heading-h2) */
+    /* Markdown tables in body */
+    .slide-body table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 1.5rem 0;
+    }
+    .slide-body th,
+    .slide-body td {
+      padding: 0.65em 1.4em;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .slide-body th {
+      color: var(--accent);
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+    }
+    .slide-body tr:last-child td { border-bottom: none; }
+    .slide-body td:first-child { color: var(--accent); font-weight: 700; }
+    .slide-body th:not(:last-child),
+    .slide-body td:not(:last-child) { padding-right: 2.5em; }
+
+    /* Markdown **bold** in body: same accent as h2 (not only **$x$** / **text $x$** spans) */
     .slide-body strong {
-      color: var(--slide-emphasis);
+      color: var(--accent);
       font-weight: 700;
     }
 
@@ -227,7 +229,7 @@
     section.slide-comparison .two-col-50-50 > .slide-body > p:first-of-type strong {
       font-size: clamp(24px, 2.9vw, 36px);
       font-weight: 700;
-      color: var(--slide-emphasis);
+      color: var(--accent);
       line-height: 1.25;
       display: block;
     }
@@ -266,8 +268,38 @@
     .slide-codetable td.code pre { border: none; padding: 0; margin: 0; max-height: none; }
 
     .diagram-container { text-align: center; max-height: 75vh; overflow: auto; }
-    .diagram-container svg { max-width: 100%; max-height: 70vh; }
+    .diagram-container svg { max-width: 100%; max-height: 52vh; }
+    /* Standalone diagram: JS post-processes SVG sizing after Mermaid renders */
+    .slide-diagram .diagram-container svg { display: block; margin: 0 auto; }
     pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; }
+    /* Gutter between diagram and caption text below */
+    .diagram-caption { margin-top: 1.5rem; }
+
+    /* Standalone diagram slide: container fills content area and centers diagram vertically */
+    .slide-diagram .slide-content-area > .diagram-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+    }
+    /* Inner wrapper and pre must center their SVG content horizontally */
+    .slide-diagram .diagram-container > [role="img"],
+    .slide-diagram .diagram-container > pre.mermaid {
+      text-align: center;
+    }
+    /* Two-column diagram column: center within the column cell */
+    .slide-two-column .diagram-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+      height: 100%;
+    }
+    .slide-two-column .diagram-container > [role="img"],
+    .slide-two-column .diagram-container > pre.mermaid {
+      text-align: center;
+    }
 
     .figure-container { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
     .figure-container img { max-width: 80%; max-height: 70vh; margin: 0 auto; display: block; }
@@ -388,17 +420,26 @@
       content: counter(step);
       position: absolute;
       left: 0;
-      color: var(--heading-h2);
+      color: var(--accent);
       font-weight: 700;
     }
 
     .summary-list { list-style: none; padding: 0; }
-    .summary-list li::before { content: '\2713 '; color: var(--heading-h2); font-weight: 700; }
+    .summary-list li::before { content: '\2713 '; color: var(--accent); font-weight: 700; }
 
     .table-scroll-wrapper { overflow-x: auto; max-width: 100%; }
     .table-scroll-wrapper:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     .table-scroll-wrapper table { width: 100%; border-collapse: collapse; }
-    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; }
+    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; font-size: clamp(18px, 1.9vw, 26px); }
+    .table-scroll-wrapper tr.span-row td {
+      color: var(--muted);
+      font-style: italic;
+      font-size: clamp(15px, 1.5vw, 20px);
+      border-top: 2px solid var(--accent);
+      border-left: none;
+      border-right: none;
+      padding-top: 0.6em;
+    }
     .table-scroll-wrapper caption {
       font-size: clamp(18px, 1.8vw, 24px);
       font-weight: bold;
@@ -444,6 +485,8 @@
     {% set rendered_image = s.rendered_image %}
     {% set rendered_svg = s.rendered_svg %}
     {% set rendered_mermaid = s.rendered_mermaid %}
+    {% set rendered_left_col = s.rendered_left_col %}
+    {% set rendered_right_col = s.rendered_right_col %}
     {% set title_has_math = s.title_has_math %}
     {% set extra_class = '' %}
     {% if slide.layout == 'figure' and not slide.body %}{% set extra_class = ' figure-only' %}{% endif %}
@@ -458,12 +501,26 @@
   (function() {
     var slides = Array.from(document.querySelectorAll('[role="group"]'));
     var idx = 0;
+    var counter = document.getElementById('slide-counter');
+
+    // Keep idx in sync with the visible slide (handles find-in-page, direct scroll, etc.)
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          idx = slides.indexOf(entry.target);
+          counter.textContent = (idx + 1) + ' / ' + slides.length;
+        }
+      });
+    }, { threshold: 0.5 });
+    slides.forEach(function(s) { observer.observe(s); });
+
     function goTo(n) {
       idx = Math.max(0, Math.min(n, slides.length - 1));
       slides[idx].scrollIntoView({behavior: 'instant', block: 'start'});
-      document.getElementById('slide-counter').textContent = (idx + 1) + ' / ' + slides.length;
+      counter.textContent = (idx + 1) + ' / ' + slides.length;
     }
     document.addEventListener('keydown', function(e) {
+      if (e.target.closest('[role="region"]')) return; // let table scroll handle its own keys
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
         e.preventDefault(); goTo(idx + 1);
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
@@ -479,7 +536,62 @@
   {% if has_mermaid %}
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-    mermaid.initialize({ startOnLoad: true, theme: '{{ mermaid_theme }}' });
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: '{{ mermaid_theme }}',
+      flowchart: { useMaxWidth: false, htmlLabels: true },
+      sequence: { useMaxWidth: false },
+    });
+    await mermaid.run();
+    // Mermaid sets explicit width/height/style attributes on SVGs which override CSS.
+    // Remove them and scale SVG to fill the available container space.
+    document.querySelectorAll('.slide-diagram .diagram-container svg').forEach(svg => {
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      svg.removeAttribute('style');
+      svg.style.display = 'block';
+      svg.style.margin = '0 auto';
+      // Override CSS max-width/max-height rules that would otherwise cap the SVG.
+      svg.style.maxWidth = 'none';
+      svg.style.maxHeight = 'none';
+
+      const slide = svg.closest('section[role="group"]');
+      const hasCaption = slide && slide.querySelector('.diagram-caption');
+
+      // Compute available space from slide dimensions (container.clientHeight is 0 at
+      // this point because flex sizing depends on SVG content — measure directly instead).
+      const pad = 96; // 1in at 96dpi
+      const h2 = slide && slide.querySelector('h2');
+      const titleH = h2 ? h2.getBoundingClientRect().height : 60;
+      const captionH = hasCaption ? 60 : 0;
+      // clientWidth excludes scrollbar; subtract a small buffer to prevent overflow.
+      const availW = document.documentElement.clientWidth - pad * 2 - 4;
+      const availH = window.innerHeight - pad * 2 - titleH - captionH - 8;
+
+      const vb = svg.viewBox && svg.viewBox.baseVal;
+      if (vb && vb.width > 0 && vb.height > 0) {
+        const ar = vb.width / vb.height;
+        let w = availW;
+        let h = w / ar;
+        if (h > availH) { h = availH; w = h * ar; }
+        svg.style.width = w + 'px';
+        svg.style.height = h + 'px';
+      } else {
+        svg.style.maxWidth = '75vw';
+        svg.style.maxHeight = hasCaption ? '52vh' : '72vh';
+        svg.style.width = '100%';
+      }
+    });
+    document.querySelectorAll('.slide-two-column .diagram-container svg').forEach(svg => {
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      svg.removeAttribute('style');
+      svg.style.maxWidth = '95%';
+      svg.style.maxHeight = '60vh';
+      svg.style.width = '100%';
+      svg.style.display = 'block';
+      svg.style.margin = '0 auto';
+    });
   </script>
   {% endif %}
 </body>
