@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import base64
+import html
 import os
 import sys
 
@@ -29,6 +30,10 @@ def render_image(
         embed: When True, embed as base64 data URI.
         base_dir: Directory to resolve relative paths against.
     """
+    if not alt_text:
+        alt_text = os.path.splitext(os.path.basename(src))[0]
+        print(f"WARNING: Missing alt text for image '{src}'; using filename '{alt_text}'", file=sys.stderr)
+
     if embed:
         resolved = os.path.join(base_dir, src)
         if os.path.isfile(resolved):
@@ -36,9 +41,9 @@ def render_image(
             mime = _MIME_MAP.get(ext, 'application/octet-stream')
             with open(resolved, 'rb') as fh:
                 data = base64.b64encode(fh.read()).decode('ascii')
-            return f'<img src="data:{mime};base64,{data}" alt="">'
+            return f'<img src="data:{mime};base64,{data}" alt="{html.escape(alt_text)}">'
         else:
             print(f"WARNING: Image not found: {resolved}", file=sys.stderr)
             # Fall through to path reference
 
-    return f'<img src="{src}" alt="">'
+    return f'<img src="{src}" alt="{html.escape(alt_text)}">'

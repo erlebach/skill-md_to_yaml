@@ -14,16 +14,17 @@ THEME_BACKGROUNDS = {'dark': '#0d1117', 'light': '#ffffff'}
 
 
 def _check_alt_text(slides: list) -> list[str]:
-    """Check that all figure/diagram slides (and columns) have non-empty alt_text."""
+    """Check that every image/diagram surface has non-empty alt_text."""
     errors: list[str] = []
     for i, slide in enumerate(slides, start=1):
         layout = slide.layout
-        if layout in ('figure', 'diagram'):
-            if not (hasattr(slide, 'alt_text') and slide.alt_text):
-                errors.append(
-                    f"**ERROR** slide {i}: missing alt_text on {layout} slide"
-                )
-        elif layout == 'two-column':
+        # Slide-level: any slide whose model declares alt_text as a field
+        if hasattr(slide, 'alt_text') and not slide.alt_text:
+            errors.append(
+                f"**ERROR** slide {i}: missing alt_text on {layout} slide"
+            )
+        # Column-level: two-column left/right columns that carry an image or diagram
+        if layout == 'two-column':
             for side_name in ('left', 'right'):
                 col = getattr(slide, side_name, None)
                 if col is None:
@@ -100,17 +101,26 @@ def _check_bullet_limits(slides: list) -> list[str]:
 
 
 def _check_image_paths(slides: list, base_dir: str = '.') -> list[str]:
-    """Warn when a figure slide references a non-existent image file."""
+    """Warn when any image src references a non-existent file."""
     warnings: list[str] = []
+
+    def _check_src(src: str | None, label: str) -> None:
+        if not src:
+            return
+        resolved = Path(src) if Path(src).is_absolute() else Path(base_dir) / src
+        if not resolved.exists():
+            warnings.append(f"WARNING: Image file not found: {src} ({label})")
+
     for i, slide in enumerate(slides, start=1):
-        if slide.layout == 'figure':
-            src = getattr(slide, 'src', None)
-            if src:
-                resolved = Path(src) if Path(src).is_absolute() else Path(base_dir) / src
-                if not resolved.exists():
-                    warnings.append(
-                        f"WARNING: Image file not found: {src} (slide {i})"
-                    )
+        # Slide-level src (figure, figure-wide, diagram with src, …)
+        _check_src(getattr(slide, 'src', None), f"slide {i}")
+        # two-column column-level src
+        if slide.layout == 'two-column':
+            for side_name in ('left', 'right'):
+                col = getattr(slide, side_name, None)
+                if col is not None:
+                    _check_src(getattr(col, 'src', None), f"slide {i} {side_name} column")
+
     return warnings
 
 
