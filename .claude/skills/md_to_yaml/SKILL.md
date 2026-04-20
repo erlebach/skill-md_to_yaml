@@ -1,4 +1,4 @@
-//---
+---
 name: md_to_yaml
 description: Generate YAML DSL slide decks from PDF or folder input, then compile to ADA-compliant HTML using the bundled compiler in this skill folder. Use when the user wants to convert source material into a structured YAML slide deck (15-layout DSL including proof). Supports optional --detail (concise | standard | rich) to control overall deck length and how many slides are allocated per topic; outputs validated YAML plus compiled HTML; runs portably from the skill directory.
 ---
