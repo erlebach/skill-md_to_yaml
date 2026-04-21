@@ -18,6 +18,7 @@
       --muted: #8b949e;
       --accent: {% if deck.metadata.accent_color %}{{ deck.metadata.accent_color }}{% else %}#f0a500{% endif %};
       --border: #30363d;
+      --slide-frame: #4a5568;      /* slide outer border — visible on dark bg; override in YAML via accent_color */
       --font-family: '{{ deck.metadata.font }}', sans-serif;
       --fig-panel: #1e2330;        /* figure panel bg — contrast vs #e6edf3 text ≥ 9:1 (WCAG AA) */
       --fig-panel-border: #2d3548;
@@ -28,6 +29,7 @@
       --bg2: #f6f8fa;
       --text: #1f2328;
       --muted: #656d76;
+      --slide-frame: #a0aab4;      /* slide outer border — visible on light bg */
       --fig-panel: #eef1f5;        /* figure panel bg — contrast vs #1f2328 text ≥ 11:1 (WCAG AA) */
       --fig-panel-border: #d0d7de;
       --accent: {% if deck.metadata.accent_color %}{{ deck.metadata.accent_color }}{% else %}#b06800{% endif %};
@@ -78,6 +80,7 @@
       flex-direction: column;
       padding: 1in;
       scroll-snap-align: start;
+      border: 2px solid var(--slide-frame);
     }
     /* Title and divider slides: centered (presentation default) */
     section[role="group"].slide-title,
