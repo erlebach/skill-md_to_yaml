@@ -176,6 +176,17 @@
     .slide-body ol li { padding-left: 0.5rem; }
     .slide-body li { margin-bottom: 0.75em; }
 
+    /* Display equations ($$...$$) rendered as <math display="block"> */
+    .slide-body math[display="block"] {
+      display: block;
+      margin: 0.85em auto;
+      text-align: center;
+    }
+    /* Prevent double margin when the paragraph wrapper contains only block math */
+    .slide-body p:has(> math[display="block"]:only-child) {
+      margin: 0;
+    }
+
     /* Markdown tables in body */
     .slide-body table {
       width: 100%;
