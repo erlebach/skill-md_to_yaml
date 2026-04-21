@@ -5,6 +5,8 @@ Math extraction runs before Markdown to prevent delimiter mangling (Pitfall 1).
 """
 from __future__ import annotations
 
+import re
+
 from compiler.renderers.code import get_pygments_css, render_code
 from compiler.renderers.image import render_image
 from compiler.renderers.markdown import render_markdown
@@ -12,9 +14,18 @@ from compiler.renderers.math import extract_and_render_math, postprocess_emphasi
 from compiler.renderers.mermaid import render_mermaid
 from compiler.renderers.svg import sanitize_svg, wrap_svg_ada
 
+_COMMENT_LINE = re.compile(r'^//.*$', re.MULTILINE)
+
+
+def strip_comment_lines(text: str) -> str:
+    """Remove lines starting with '//' (slide-author comments, never rendered)."""
+    return _COMMENT_LINE.sub('', text)
+
+
 __all__ = [
     'render_rich_text',
     'render_body',
+    'strip_comment_lines',
     'render_code',
     'get_pygments_css',
     'render_image',
@@ -68,6 +79,8 @@ def render_body(slide, embed_images: bool = False, theme: str = 'dark') -> str:
     body = getattr(slide, 'body', None)
     if not body:
         return ''
+
+    body = strip_comment_lines(body)
 
     # Step 1: Extract and render math before Markdown processes $ delimiters
     body = extract_and_render_math(body)

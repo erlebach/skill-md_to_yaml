@@ -24,6 +24,12 @@ from pydantic import TypeAdapter
 from schema.models import AnySlide, Deck, DeckMetadata
 
 FENCE_RE = re.compile(r'^---\s*$', re.MULTILINE)
+_COMMENT_LINE = re.compile(r'^//.*$', re.MULTILINE)
+
+
+def _strip_comments(text: str) -> str:
+    """Remove lines starting with '//' before YAML or Markdown processing."""
+    return _COMMENT_LINE.sub('', text)
 
 _slide_adapter: TypeAdapter[AnySlide] = TypeAdapter(AnySlide)
 
@@ -53,7 +59,7 @@ def parse_deck_file(path: str | Path) -> Deck:
         raise ValueError("Empty deck file")
 
     # First part is deck metadata YAML
-    metadata_raw = yaml.safe_load(non_empty[0])
+    metadata_raw = yaml.safe_load(_strip_comments(non_empty[0]))
     if not isinstance(metadata_raw, dict):
         raise ValueError(
             f"Deck metadata must be a YAML mapping, got {type(metadata_raw).__name__}"
@@ -74,7 +80,7 @@ def parse_deck_file(path: str | Path) -> Deck:
         # Body is the next part; may not exist if this is the last slide with no body
         body_str = slide_parts[i + 1] if i + 1 < len(slide_parts) else ''
 
-        frontmatter = yaml.safe_load(frontmatter_str)
+        frontmatter = yaml.safe_load(_strip_comments(frontmatter_str))
         if not isinstance(frontmatter, dict):
             i += 2
             continue
