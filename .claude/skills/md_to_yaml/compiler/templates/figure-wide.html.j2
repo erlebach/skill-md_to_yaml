@@ -22,6 +22,7 @@
     </figure>
   </div>
 
+  {% if rendered_fw_right_heading or rendered_fw_right_body %}
   <div class="two-col two-col-{{ slide.proportion | replace('/', '-') }} figure-wide-columns">
     <div class="col-left">
       {% if rendered_fw_left_heading %}
@@ -40,6 +41,16 @@
       {% endif %}
     </div>
   </div>
+  {% elif rendered_fw_left_heading or rendered_fw_left_body %}
+  <div class="figure-wide-single-col">
+    {% if rendered_fw_left_heading %}
+      <h3>{{ rendered_fw_left_heading | safe }}</h3>
+    {% endif %}
+    {% if rendered_fw_left_body %}
+      <div class="slide-body">{{ rendered_fw_left_body | safe }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
 
 </div>
 {% if slide.notes %}<aside class="slide-notes" hidden aria-hidden="true">{{ slide.notes | e }}</aside>{% endif %}
