@@ -3,6 +3,8 @@ import re
 import sys
 from pathlib import Path
 
+import yaml as _yaml
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from schema.models import Deck
@@ -51,7 +53,7 @@ def _render_col_html(col, base_dir: str, embed_images: bool, col_id: str, theme:
     return ""
 
 
-def _parse_figure_wide_body(body: str | None, theme: str) -> dict:
+def _parse_figure_wide_body(body: str | None, theme: str, macros: dict[str, str] | None = None) -> dict:
     """Parse a figure-wide slide body into summary + left/right column sections.
 
     Returns dict with keys:
@@ -92,19 +94,19 @@ def _parse_figure_wide_body(body: str | None, theme: str) -> dict:
                     layout = 'content'
                 proxy = _SummaryProxy()
                 proxy.body = content
-                summary_html = render_body(proxy, embed_images=False, theme=theme)
+                summary_html = render_body(proxy, embed_images=False, theme=theme, macros=macros)
         else:
             col_sections.append((heading, content))
 
     def _render_col(heading, content):
-        heading_html = render_rich_text(heading, theme) if heading else None
+        heading_html = render_rich_text(heading, theme, macros=macros) if heading else None
         body_html = None
         if content:
             class _ColProxy:
                 layout = 'content'
             proxy = _ColProxy()
             proxy.body = content
-            body_html = render_body(proxy, embed_images=False, theme=theme)
+            body_html = render_body(proxy, embed_images=False, theme=theme, macros=macros)
         return heading_html, body_html
 
     left_h = left_b = right_h = right_b = None
@@ -154,11 +156,20 @@ def compile_deck(
             print(e, file=sys.stderr)
         sys.exit(1)
 
+    macros: dict[str, str] = {}
+    if deck.metadata.macros:
+        macros_path = Path(yaml_dir) / deck.metadata.macros
+        try:
+            macros = _yaml.safe_load(macros_path.read_text(encoding="utf-8")) or {}
+        except FileNotFoundError:
+            print(f"WARNING: macros file not found: {macros_path}", file=sys.stderr)
+
     html = _render(
         deck,
         output_path=output_path,
         embed_images=embed_images,
         include_skipped=include_skipped,
+        macros=macros,
     )
     Path(output_path).write_text(html, encoding="utf-8")
 
@@ -168,6 +179,7 @@ def _render(
     output_path: str = ".",
     embed_images: bool = False,
     include_skipped: bool = False,
+    macros: dict[str, str] | None = None,
 ) -> str:
     """Render deck to HTML string using Jinja2 templates."""
     template = _env.get_template("base.html.j2")
@@ -187,7 +199,7 @@ def _render(
             "rendered_fw_right_body": None,
         }
         rendered_body = (
-            render_body(slide, embed_images=embed_images, theme=deck.metadata.theme)
+            render_body(slide, embed_images=embed_images, theme=deck.metadata.theme, macros=macros)
             if getattr(slide, "body", None)
             else None
         )
@@ -200,25 +212,25 @@ def _render(
             thm = deck.metadata.theme
             if getattr(slide, "headers", None):
                 rendered_table_headers = [
-                    render_rich_text(h, thm) for h in slide.headers
+                    render_rich_text(h, thm, macros=macros) for h in slide.headers
                 ]
             rendered_table_rows = [
                 [
                     {
-                        "html": render_rich_text(cell.text, thm),
+                        "html": render_rich_text(cell.text, thm, macros=macros),
                         "colspan": cell.colspan,
                     }
                     if hasattr(cell, "colspan")
-                    else {"html": render_rich_text(str(cell), thm), "colspan": 1}
+                    else {"html": render_rich_text(str(cell), thm, macros=macros), "colspan": 1}
                     for cell in row
                 ]
                 for row in slide.rows
             ]
             if getattr(slide, "caption", None):
-                rendered_table_caption = render_rich_text(slide.caption, thm)
+                rendered_table_caption = render_rich_text(slide.caption, thm, macros=macros)
         if slide.layout == "hero" and getattr(slide, "description", None):
             rendered_description = render_rich_text(
-                slide.description, deck.metadata.theme
+                slide.description, deck.metadata.theme, macros=macros
             )
 
         rendered_code = None
@@ -227,18 +239,18 @@ def _render(
         rendered_mermaid_html = None
 
         rendered_title = strip_math_display_inline_from_heading_html(
-            extract_and_render_math(str(slide.title))
+            extract_and_render_math(str(slide.title), macros=macros)
         )
         rendered_subtitle = None
         rendered_author_line = None
         if slide.layout == "title":
             if getattr(slide, "subtitle", None):
                 rendered_subtitle = strip_math_display_inline_from_heading_html(
-                    extract_and_render_math(str(slide.subtitle))
+                    extract_and_render_math(str(slide.subtitle), macros=macros)
                 )
             if getattr(slide, "author", None):
                 rendered_author_line = strip_math_display_inline_from_heading_html(
-                    extract_and_render_math(str(slide.author))
+                    extract_and_render_math(str(slide.author), macros=macros)
                 )
 
         _math_marker = "<math"
@@ -316,7 +328,7 @@ def _render(
                     class _BodyProxy:
                         body = caption_body
                         layout = "content"
-                    rendered_body = render_body(_BodyProxy(), embed_images=embed_images, theme=deck.metadata.theme)
+                    rendered_body = render_body(_BodyProxy(), embed_images=embed_images, theme=deck.metadata.theme, macros=macros)
                 else:
                     rendered_body = None
             else:
@@ -333,7 +345,7 @@ def _render(
 
         if slide.layout == 'figure-wide':
             fw_ctx = _parse_figure_wide_body(
-                getattr(slide, 'body', None), deck.metadata.theme
+                getattr(slide, 'body', None), deck.metadata.theme, macros=macros
             )
             base_dir = str(Path(output_path).parent) if embed_images else "."
             ext = Path(slide.src).suffix.lower()

@@ -206,6 +206,7 @@ class DeckMetadata(BaseModel):
     theme: Literal['dark', 'light'] = 'dark'
     accent_color: str | None = None
     font: str = 'IBM Plex Sans'
+    macros: str | None = None  # path to color-macro YAML file (relative to deck YAML)
     title_font_size: str = '2.4rem'
     title_top_margin: str = '0.5rem'
     flavor: Literal['transcript'] | None = None

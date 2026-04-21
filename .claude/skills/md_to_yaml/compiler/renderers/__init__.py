@@ -10,7 +10,7 @@ import re
 from compiler.renderers.code import get_pygments_css, render_code
 from compiler.renderers.image import render_image
 from compiler.renderers.markdown import render_markdown
-from compiler.renderers.math import extract_and_render_math, postprocess_emphasized_mathml
+from compiler.renderers.math import expand_color_macros, extract_and_render_math, postprocess_emphasized_mathml
 from compiler.renderers.mermaid import render_mermaid
 from compiler.renderers.svg import sanitize_svg, wrap_svg_ada
 
@@ -30,6 +30,7 @@ __all__ = [
     'get_pygments_css',
     'render_image',
     'render_markdown',
+    'expand_color_macros',
     'extract_and_render_math',
     'postprocess_emphasized_mathml',
     'render_mermaid',
@@ -38,7 +39,7 @@ __all__ = [
 ]
 
 
-def render_rich_text(text: str, theme: str = 'dark') -> str:
+def render_rich_text(text: str, theme: str = 'dark', macros: dict[str, str] | None = None) -> str:
     """Run math extraction then Markdown on a short string (e.g. table cell).
 
     Table and title templates historically used HTML-escaping only, which left
@@ -48,6 +49,7 @@ def render_rich_text(text: str, theme: str = 'dark') -> str:
     Args:
         text: Source string (may contain ``$...$`` / ``$$...$$`` and Markdown).
         theme: Reserved for future theme-specific rendering; unused today.
+        macros: Optional color-macro dict (name → hex) from deck ``macros:`` file.
 
     Returns:
         HTML safe to inject with ``| safe`` in Jinja (contains MathML / tags).
@@ -56,12 +58,12 @@ def render_rich_text(text: str, theme: str = 'dark') -> str:
     del theme  # reserved
     if not text or not str(text).strip():
         return ''
-    text = extract_and_render_math(str(text))
+    text = extract_and_render_math(str(text), macros=macros)
     text = render_markdown(text)
     return postprocess_emphasized_mathml(text)
 
 
-def render_body(slide, embed_images: bool = False, theme: str = 'dark') -> str:
+def render_body(slide, embed_images: bool = False, theme: str = 'dark', macros: dict[str, str] | None = None) -> str:
     """Orchestrate body rendering for a slide.
 
     Processing order:
@@ -72,6 +74,7 @@ def render_body(slide, embed_images: bool = False, theme: str = 'dark') -> str:
         slide: Any slide model instance with an optional ``body`` field.
         embed_images: When True, embed image files as base64 data URIs.
         theme: 'dark' or 'light' — controls code highlighting theme.
+        macros: Optional color-macro dict (name → hex) from deck ``macros:`` file.
 
     Returns:
         Rendered HTML string, or empty string if slide has no body.
@@ -83,7 +86,7 @@ def render_body(slide, embed_images: bool = False, theme: str = 'dark') -> str:
     body = strip_comment_lines(body)
 
     # Step 1: Extract and render math before Markdown processes $ delimiters
-    body = extract_and_render_math(body)
+    body = extract_and_render_math(body, macros=macros)
 
     # Step 2: Render remaining Markdown to HTML
     body = render_markdown(body)

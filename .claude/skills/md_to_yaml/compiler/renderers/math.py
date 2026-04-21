@@ -79,14 +79,37 @@ def render_math_display(tex: str) -> str:
     )
 
 
-def extract_and_render_math(text: str) -> str:
+def expand_color_macros(tex: str, macros: dict[str, str]) -> str:
+    """Replace \\name with \\color{hex} for each entry in macros.
+
+    Macros are defined in a color_macros YAML file referenced by ``macros:`` in
+    deck metadata. This runs inside each $...$ / $$...$$ span before latex2mathml
+    sees the expression, so authors write e.g. ``{\\accent S^2 d}`` instead of
+    hardcoding ``{\\color{#f0a500} S^2 d}``.
+    """
+    for name, color in macros.items():
+        tex = tex.replace(f'\\{name}', f'\\color{{{color}}}')
+    return tex
+
+
+def extract_and_render_math(text: str, macros: dict[str, str] | None = None) -> str:
     """Replace $$...$$ and $...$ spans with rendered MathML.
 
     Processes display math ($$...$$) first to avoid matching $$ as two $'s.
+
+    Args:
+        text: Source text potentially containing ``$...$`` / ``$$...$$``.
+        macros: Optional dict mapping macro names to hex color strings (loaded
+            from a ``macros:`` YAML file in deck metadata). Expanded inside
+            each math span before conversion.
     """
+    _macros = macros or {}
+
     # Display math: $$...$$ (may span multiple lines, non-greedy)
     def replace_display(match: re.Match) -> str:
         tex = match.group(1)
+        if _macros:
+            tex = expand_color_macros(tex, _macros)
         try:
             return render_math_display(tex)
         except Exception:
@@ -97,6 +120,8 @@ def extract_and_render_math(text: str) -> str:
     # Inline math: $...$ (non-greedy, single line)
     def replace_inline(match: re.Match) -> str:
         tex = match.group(1)
+        if _macros:
+            tex = expand_color_macros(tex, _macros)
         try:
             return render_math_inline(tex)
         except Exception:
