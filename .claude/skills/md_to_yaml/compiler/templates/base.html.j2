@@ -22,6 +22,9 @@
       --font-family: '{{ deck.metadata.font }}', sans-serif;
       --fig-panel: #1e2330;        /* figure panel bg — contrast vs #e6edf3 text ≥ 9:1 (WCAG AA) */
       --fig-panel-border: #2d3548;
+      --two-col-title-gap: 0.5in;           /* gap between slide title and two-column content area */
+      --two-col-fig-max-height: 100%;       /* image height cap in two-col (single figure). 100% = fill column; use e.g. 78vh to cap */
+      --two-col-both-fig-max-height: 100%;  /* image height cap when both columns have figures */
     }
 
     :root[data-theme="light"] {
@@ -236,10 +239,42 @@
       margin-top: 0.75rem;
     }
 
-    .two-col { display: grid; gap: 2rem; align-items: center; }
+    .two-col {
+      display: grid;
+      gap: 2rem;
+      align-items: stretch;
+      min-height: 0;
+      height: 100%;
+    }
     .two-col-50-50 { grid-template-columns: 1fr 1fr; }
     .two-col-40-60 { grid-template-columns: 2fr 3fr; }
     .two-col-60-40 { grid-template-columns: 3fr 2fr; }
+    /* Columns fill the grid cell; image/body centered within */
+    .two-col > .col-left,
+    .two-col > .col-right {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    /* Hard viewport height on two-column slides so the figure's max-height:100% cascade resolves.
+       Without this, section[role="group"]'s min-height:100vh lets the section grow past the viewport
+       and the image overflows into/past the bottom 1in margin. */
+    section[role="group"].slide-two-column,
+    section[role="group"].slide-comparison {
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+    }
+    /* Reserve a gap below the title so the figure never encroaches on it */
+    .slide-two-column .slide-content-area,
+    .slide-comparison .slide-content-area {
+      min-height: 0;
+      margin-top: var(--two-col-title-gap);
+    }
+    /* Flex item min-height:auto would prevent shrinking — images need min-height:0 to honor max-height:100% */
+    .two-col img { min-height: 0; flex-shrink: 1; }
     /* Comparison slide: first bold line in each column is the column heading */
     section.slide-comparison .two-col-50-50 > .slide-body > p:first-of-type {
       margin-bottom: 1rem;
@@ -251,11 +286,11 @@
       line-height: 1.25;
       display: block;
     }
-    .two-col img { max-width: 100%; max-height: 60vh; object-fit: contain; display: block; margin: 0 auto; }
+    .two-col img { max-width: 100%; max-height: var(--two-col-fig-max-height); object-fit: contain; display: block; margin: 0 auto; }
     /* When both columns have figures: center images, add spacing around the grid */
     .two-col-both { justify-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem; }
     .two-col-caption-above { margin-bottom: 1.5rem; }
-    .two-col-both img { max-height: 55vh; }
+    .two-col-both img { max-height: var(--two-col-both-fig-max-height); }
 
     blockquote {
       font-size: clamp(28px, 3.5vw, 44px);
