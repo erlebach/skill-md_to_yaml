@@ -1,6 +1,6 @@
 # Equation Guidelines for YAML DSL Slide Generation
 
-> **Purpose:** Guide the LLM on correct math delimiter usage in slide YAML. The compiler passes math delimiters through to KaTeX in the HTML output — incorrect delimiter choice causes rendering problems.
+> **Purpose:** Guide the LLM on correct math delimiter usage in slide YAML. The compiler converts `$...$` / `$$...$$` to MathML via **latex2mathml** (not KaTeX) — incorrect delimiter choice or unsupported macros cause rendering problems.
 
 ---
 
@@ -178,3 +178,58 @@ Ask yourself: **"Is this equation the main point of the slide, or is it supporti
 - **Main point** (the formula being taught, a key derivation, a standalone equation) → `$$...$$`
 
 When in doubt, use `$...$`. Display math should appear at most 1-2 times per deck, not on every slide.
+
+---
+
+## Coloring sub-expressions
+
+The compiler uses **latex2mathml**, not KaTeX. This matters for color support:
+
+| Form | Supported? | Notes |
+|---|---|---|
+| `\textcolor{#hex}{expr}` | ❌ | Emitted as literal text — breaks math |
+| `\color{#hex}{group}` | ⚠️ | `\color` is a switch; leaks color past `}` |
+| `{\color{#hex} expr}` | ✅ | Correct: outer braces scope the switch |
+
+**Add color manually where pedagogically useful** — don't color for decoration. Use the grouped switch form:
+
+```yaml
+# Single-quoted YAML — one backslash, no escaping needed
+- Cost: '$L(12Sd^2 + 2{\color{#f0a500} S^2 d})$'
+```
+
+### Color macro file (recommended — avoid hardcoding hex in YAML)
+
+Define named colors once in a `color_macros.yaml` file alongside the deck:
+
+```yaml
+# color_macros.yaml
+accent: "#f0a500"     # matches dark theme --accent
+accent_light: "#b06800"  # matches light theme --accent
+warn: "#e74c3c"
+highlight: "#3b82f6"
+```
+
+Reference it in deck metadata:
+
+```yaml
+---
+title: "My Deck"
+theme: dark
+macros: color_macros.yaml
+---
+```
+
+Then use `\macroname` (backslash + key) in any math expression:
+
+```yaml
+# Single-quoted YAML
+- Cost: '$L(12Sd^2 + 2{\accent S^2 d})$'
+- Error: '${\warn \epsilon}$ must stay small'
+```
+
+Python expands `\accent` → `\color{#f0a500}` before latex2mathml runs, so no hex ever appears in the YAML source. The macro file is shared across all decks in the same directory.
+
+**YAML quoting rule for macros**: single-quoted YAML is cleanest (one `\` in the file = one `\` in the string). In double-quoted YAML, double the backslash: `"${\\accent S^2 d}$"`.
+
+**Do not** ask the LLM to generate `\color{hex}` inline — always use a named macro from the deck's macro file instead.

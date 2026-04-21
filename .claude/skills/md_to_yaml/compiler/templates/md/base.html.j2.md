@@ -18,7 +18,11 @@
       --muted: #8b949e;
       --accent: {% if deck.metadata.accent_color %}{{ deck.metadata.accent_color }}{% else %}#f0a500{% endif %};
       --border: #30363d;
+      --slide-frame: #4a5568;      /* slide outer border — visible on dark bg */
       --font-family: '{{ deck.metadata.font }}', sans-serif;
+      --two-col-title-gap: 0.5in;           /* gap between slide title and two-column content area */
+      --two-col-fig-max-height: 100%;       /* image height cap in two-col (single figure). 100% = fill column; use e.g. 78vh to cap */
+      --two-col-both-fig-max-height: 100%;  /* image height cap when both columns have figures */
     }
 
     :root[data-theme="light"] {
@@ -26,6 +30,7 @@
       --bg2: #f6f8fa;
       --text: #1f2328;
       --muted: #656d76;
+      --slide-frame: #a0aab4;      /* slide outer border — visible on light bg */
       --accent: {% if deck.metadata.accent_color %}{{ deck.metadata.accent_color }}{% else %}#b06800{% endif %};
       --border: #d1d9e0;
       --font-family: '{{ deck.metadata.font }}', sans-serif;
@@ -74,6 +79,7 @@
       flex-direction: column;
       padding: 1in;
       scroll-snap-align: start;
+      border: 2px solid var(--slide-frame);
     }
     /* Title and divider slides: centered (presentation default) */
     section[role="group"].slide-title,
@@ -169,6 +175,17 @@
     .slide-body ol li { padding-left: 0.5rem; }
     .slide-body li { margin-bottom: 0.75em; }
 
+    /* Display equations ($$...$$) rendered as <math display="block"> */
+    .slide-body math[display="block"] {
+      display: block;
+      margin: 0.85em auto;
+      text-align: center;
+    }
+    /* Prevent double margin when the paragraph wrapper contains only block math */
+    .slide-body p:has(> math[display="block"]:only-child) {
+      margin: 0;
+    }
+
     /* Markdown tables in body */
     .slide-body table {
       width: 100%;
@@ -218,10 +235,36 @@
       margin-top: 0.75rem;
     }
 
-    .two-col { display: grid; gap: 2rem; align-items: center; }
+    .two-col {
+      display: grid;
+      gap: 2rem;
+      align-items: stretch;
+      min-height: 0;
+      height: 100%;
+    }
     .two-col-50-50 { grid-template-columns: 1fr 1fr; }
     .two-col-40-60 { grid-template-columns: 2fr 3fr; }
     .two-col-60-40 { grid-template-columns: 3fr 2fr; }
+    .two-col > .col-left,
+    .two-col > .col-right {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    section[role="group"].slide-two-column,
+    section[role="group"].slide-comparison {
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+    }
+    .slide-two-column .slide-content-area,
+    .slide-comparison .slide-content-area {
+      min-height: 0;
+      margin-top: var(--two-col-title-gap);
+    }
+    .two-col img { min-height: 0; flex-shrink: 1; }
     /* Comparison slide: first bold line in each column is the column heading */
     section.slide-comparison .two-col-50-50 > .slide-body > p:first-of-type {
       margin-bottom: 1rem;
@@ -233,11 +276,11 @@
       line-height: 1.25;
       display: block;
     }
-    .two-col img { max-width: 100%; max-height: 60vh; object-fit: contain; display: block; margin: 0 auto; }
+    .two-col img { max-width: 100%; max-height: var(--two-col-fig-max-height); object-fit: contain; display: block; margin: 0 auto; }
     /* When both columns have figures: center images, add spacing around the grid */
     .two-col-both { justify-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem; }
     .two-col-caption-above { margin-bottom: 1.5rem; }
-    .two-col-both img { max-height: 55vh; }
+    .two-col-both img { max-height: var(--two-col-both-fig-max-height); }
 
     blockquote {
       font-size: clamp(28px, 3.5vw, 44px);
@@ -451,6 +494,25 @@
     .code-language-label { position: absolute; top: 0.25em; right: 0.5em; font-size: 0.75em; opacity: 0.6; }
 
     .slide-notes { display: none; }
+
+    @media print {
+      @page { size: landscape; margin: 0; }
+      html, body {
+        overflow: visible !important;
+        height: auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      main { overflow: visible !important; height: auto !important; scroll-snap-type: none !important; }
+      section[role="group"] {
+        break-after: page;
+        height: 100vh;
+        overflow: hidden;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      #slide-counter { display: none !important; }
+    }
 
     .visually-hidden {
       position: absolute;
