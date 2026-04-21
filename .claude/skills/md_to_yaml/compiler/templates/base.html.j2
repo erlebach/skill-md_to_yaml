@@ -11,6 +11,13 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      /* Global multiplier applied to every content font-size (titles, body, captions,
+         tables, transcripts). UI chrome (#slide-counter, code-language-label) is
+         intentionally excluded. Adjust to scale all text at once. */
+      --font-scale: 1.35;
+    }
+
     :root[data-theme="dark"] {
       --bg: #0d1117;
       --bg2: #161b22;
@@ -122,7 +129,7 @@
 
     /* Title slide (h1) — ADA projection scale */
     h1 {
-      font-size: clamp(48px, 10vw, 96px);
+      font-size: calc(clamp(48px, 10vw, 96px) * var(--font-scale));
       font-weight: 700;
       line-height: 1.0;
       text-wrap: balance;
@@ -131,19 +138,19 @@
       color: var(--text);
     }
     .slide-title .subtitle {
-      font-size: clamp(22px, 2.8vw, 34px);
+      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--font-scale));
       text-align: center;
       color: var(--muted);
       margin-bottom: 0.5rem;
     }
     .slide-title .author {
-      font-size: clamp(20px, 2.2vw, 28px);
+      font-size: calc(clamp(20px, 2.2vw, 28px) * var(--font-scale));
       text-align: center;
       color: var(--muted);
     }
 
     h2 {
-      font-size: clamp(32px, 5vw, 52px);
+      font-size: calc(clamp(32px, 5vw, 52px) * var(--font-scale));
       font-weight: 700;
       line-height: 1.1;
       text-wrap: balance;
@@ -162,14 +169,14 @@
       color: var(--accent);
     }
     h3 {
-      font-size: clamp(22px, 2.8vw, 34px);
+      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--font-scale));
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
-    .divider-slide h2 { font-size: clamp(48px, 8vw, 80px); }
+    .divider-slide h2 { font-size: calc(clamp(48px, 8vw, 80px) * var(--font-scale)); }
 
     .slide-body {
-      font-size: clamp(20px, 2.2vw, 28px);
+      font-size: calc(clamp(20px, 2.2vw, 28px) * var(--font-scale));
       line-height: 1.6;
       text-align: left;
     }
@@ -220,12 +227,12 @@
     }
 
     .hero-description {
-      font-size: clamp(22px, 2.8vw, 34px);
+      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--font-scale));
       color: var(--muted);
       text-align: center;
     }
     .hero-body {
-      font-size: clamp(20px, 2.4vw, 30px);
+      font-size: calc(clamp(20px, 2.4vw, 30px) * var(--font-scale));
       color: var(--muted);
       text-align: center;
       max-width: 50em;
@@ -234,7 +241,7 @@
     }
 
     figcaption {
-      font-size: clamp(18px, 1.8vw, 24px);
+      font-size: calc(clamp(18px, 1.8vw, 24px) * var(--font-scale));
       color: var(--muted);
       margin-top: 0.75rem;
     }
@@ -280,7 +287,7 @@
       margin-bottom: 1rem;
     }
     section.slide-comparison .two-col-50-50 > .slide-body > p:first-of-type strong {
-      font-size: clamp(24px, 2.9vw, 36px);
+      font-size: calc(clamp(24px, 2.9vw, 36px) * var(--font-scale));
       font-weight: 700;
       color: var(--accent);
       line-height: 1.25;
@@ -293,7 +300,7 @@
     .two-col-both img { max-height: var(--two-col-both-fig-max-height); }
 
     blockquote {
-      font-size: clamp(28px, 3.5vw, 44px);
+      font-size: calc(clamp(28px, 3.5vw, 44px) * var(--font-scale));
       font-style: italic;
       border-left: 4px solid var(--accent);
       padding-left: 1.5rem;
@@ -308,11 +315,11 @@
       overflow-x: auto;
       overflow-y: auto;
       max-height: 70vh;
-      font-size: clamp(15px, 1.6vw, 20px);
+      font-size: calc(clamp(15px, 1.6vw, 20px) * var(--font-scale));
       line-height: 1.6;
     }
     pre:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-    code { font-family: 'IBM Plex Mono', monospace; font-size: clamp(15px, 1.6vw, 20px); }
+    code { font-family: 'IBM Plex Mono', monospace; font-size: calc(clamp(15px, 1.6vw, 20px) * var(--font-scale)); }
 
     .slide-code { overflow: auto; max-height: 75vh; border-radius: 0.5rem; }
     .slide-codetable { width: 100%; border-collapse: collapse; }
@@ -396,7 +403,7 @@
       justify-content: flex-start;
     }
     section.slide-transcribe h2 {
-      font-size: 16pt;
+      font-size: calc(16pt * var(--font-scale));
       font-weight: 600;
       line-height: 1.35;
       text-wrap: balance;
@@ -409,7 +416,7 @@
       text-wrap: wrap;
     }
     section.slide-transcribe .slide-body {
-      font-size: 14pt;
+      font-size: calc(14pt * var(--font-scale));
       line-height: 1.45;
       text-align: left;
     }
@@ -439,7 +446,7 @@
     }
     main.deck-flavor-transcript section.slide-content h2,
     main.deck-flavor-transcript section.slide-table h2 {
-      font-size: 16pt;
+      font-size: calc(16pt * var(--font-scale));
       font-weight: 600;
       line-height: 1.35;
       text-wrap: balance;
@@ -453,7 +460,7 @@
       text-wrap: wrap;
     }
     main.deck-flavor-transcript section.slide-content .slide-body {
-      font-size: 14pt;
+      font-size: calc(14pt * var(--font-scale));
       line-height: 1.45;
       text-align: left;
     }
@@ -472,12 +479,12 @@
       font-weight: 700;
     }
     main.deck-flavor-transcript section.slide-table .table-scroll-wrapper {
-      font-size: 14pt;
+      font-size: calc(14pt * var(--font-scale));
       line-height: 1.45;
     }
     main.deck-flavor-transcript section.slide-table .table-caption {
       text-align: left;
-      font-size: 14pt;
+      font-size: calc(14pt * var(--font-scale));
       caption-side: top;
     }
 
@@ -506,18 +513,18 @@
     .table-scroll-wrapper { overflow-x: auto; max-width: 100%; background: var(--fig-panel); border: 1px solid var(--fig-panel-border); border-radius: 10px; padding: 1rem 1.5rem; }
     .table-scroll-wrapper:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     .table-scroll-wrapper table { width: 100%; border-collapse: collapse; }
-    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; font-size: clamp(18px, 1.9vw, 26px); }
+    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; font-size: calc(clamp(18px, 1.9vw, 26px) * var(--font-scale)); }
     .table-scroll-wrapper tr.span-row td {
       color: var(--muted);
       font-style: italic;
-      font-size: clamp(15px, 1.5vw, 20px);
+      font-size: calc(clamp(15px, 1.5vw, 20px) * var(--font-scale));
       border-top: 2px solid var(--accent);
       border-left: none;
       border-right: none;
       padding-top: 0.6em;
     }
     .table-scroll-wrapper caption {
-      font-size: clamp(18px, 1.8vw, 24px);
+      font-size: calc(clamp(18px, 1.8vw, 24px) * var(--font-scale));
       font-weight: bold;
       caption-side: bottom;
       margin-top: 0.75em;
@@ -571,7 +578,7 @@
     .figure-wide-summary {
       text-align: left;
       max-width: 64em;
-      font-size: clamp(18px, 2vw, 24px);
+      font-size: calc(clamp(18px, 2vw, 24px) * var(--font-scale));
       color: var(--muted);
       margin-bottom: 0.25rem;
     }
