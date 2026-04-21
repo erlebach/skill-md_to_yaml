@@ -528,6 +528,25 @@
 
     .slide-notes { display: none; }
 
+    @media print {
+      @page { size: landscape; margin: 0; }
+      html, body {
+        overflow: visible !important;
+        height: auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      main { overflow: visible !important; height: auto !important; scroll-snap-type: none !important; }
+      section[role="group"] {
+        break-after: page;
+        height: 100vh;
+        overflow: hidden;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      #slide-counter { display: none !important; }
+    }
+
     .visually-hidden {
       position: absolute;
       width: 1px;
