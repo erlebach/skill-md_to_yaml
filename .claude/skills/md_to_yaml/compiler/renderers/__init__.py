@@ -14,6 +14,7 @@ from compiler.renderers.math import expand_color_macros, extract_and_render_math
 from compiler.renderers.mermaid import render_mermaid
 from compiler.renderers.svg import sanitize_svg, wrap_svg_ada
 
+_MATH_BLOCK = re.compile(r'<math\b[^>]*>.*?</math>', re.DOTALL | re.IGNORECASE)
 _COMMENT_LINE = re.compile(r'^//.*$', re.MULTILINE)
 
 
@@ -21,6 +22,28 @@ def strip_comment_lines(text: str) -> str:
     """Remove lines starting with '//' (slide-author comments, never rendered)."""
     return _COMMENT_LINE.sub('', text)
 
+
+def _shield_math(text: str) -> tuple[str, list[str]]:
+    """Replace <math>…</math> spans with inline placeholders.
+
+    Python-Markdown treats a line that begins with <math> as raw block HTML and
+    parses trailing text on the same line as a separate paragraph (breaking
+    cells like "$S$ large"). Swapping the math for an opaque inline token keeps
+    the cell content as one paragraph; the token is restored after Markdown.
+    """
+    saved: list[str] = []
+
+    def stash(match: re.Match) -> str:
+        saved.append(match.group(0))
+        return f'\x00MATH{len(saved) - 1}\x00'
+
+    return _MATH_BLOCK.sub(stash, text), saved
+
+
+def _restore_math(html: str, saved: list[str]) -> str:
+    for i, frag in enumerate(saved):
+        html = html.replace(f'\x00MATH{i}\x00', frag)
+    return html
 
 __all__ = [
     'render_rich_text',
@@ -59,7 +82,9 @@ def render_rich_text(text: str, theme: str = 'dark', macros: dict[str, str] | No
     if not text or not str(text).strip():
         return ''
     text = extract_and_render_math(str(text), macros=macros)
+    text, saved = _shield_math(text)
     text = render_markdown(text)
+    text = _restore_math(text, saved)
     return postprocess_emphasized_mathml(text)
 
 
