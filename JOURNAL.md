@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-04-22 - `math_display_color` (deck + slide) for `$$` block MathML
+
+### Completed Tasks ✅
+- [x] **`DeckMetadata` / `SlideBase`** — optional **`math_display_color`** (string); **`_check_math_display_color`** rejects obvious CSS injection.
+- [x] **`engine.py`** — effective color per slide in **`slides_context`**; Jinja sets **`--math-display-color`** on **`<section>`** when set.
+- [x] **`base.html.j2`** — block display **`math`**: **`color: var(--math-display-color, inherit)`**; table cells via **`section.slide-table td/th math[display=block]`**.
+- [x] **`deck.schema.json`** — regenerated; **`SKILL.md`**, **`HANDOFF_CENTER.md`** updated.
+- [x] **`tests/test_models.py`** — valid colors + rejection of **`;`**.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/schema/models.py`, `schema/deck.schema.json`, `compiler/engine.py`, `compiler/templates/base.html.j2`, `SKILL.md`, `HANDOFF_CENTER.md`, `tests/test_models.py`, `JOURNAL.md`, `SNAPSHOT.md`
+
+### Notes
+- **`PYTHONPATH=.claude/skills/md_to_yaml` pytest `tests/test_models.py` `tests/test_compiler.py`** — **73** passed.
+
+---
+
 ## 2026-04-22 - Display-math centering: `width: fit-content` for bare block `<math>`
 
 ### Completed Tasks ✅

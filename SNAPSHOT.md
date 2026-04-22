@@ -10,7 +10,7 @@
 
 ## Active Features
 
-- **Display math tuning** — deck metadata and per-slide frontmatter: **`math_display_scale`** (**0.75–2.0**, default **1.0**) and **`math_display_center`** (default **true**) for **`$$...$$`** in **`.slide-body`** / **hero** text; HTML uses **`--math-display-scale`** and **`math-display-eq-center`** / **`math-display-eq-start`** on each **`<section>`** (implemented under **`.claude/skills/md_to_yaml`**). When centering is on, block MathML also uses **`width: fit-content; max-width: 100%`** with **`margin: auto`** so equations center when Markdown leaves **`<math display="block">` outside `<p>`** (the usual case for a standalone **$$** line).
+- **Display math tuning** — deck metadata and per-slide frontmatter: **`math_display_scale`** (**0.75–2.0**, default **1.0**), **`math_display_center`** (default **true**), and optional **`math_display_color`** (e.g. **`cyan`**, hex, **`hsl(...)`**) for **`$$...$$`** block MathML in body, hero, and table cells; HTML sets **`--math-display-scale`**, optional **`--math-display-color`**, and **`math-display-eq-center`** / **`math-display-eq-start`** on each **`<section>`** (under **`.claude/skills/md_to_yaml`**). When centering is on, block MathML also uses **`width: fit-content; max-width: 100%`** with **`margin: auto`** so bare **`<math>`** between paragraphs still centers.
 - **Slide `subtitle`** — optional on all layouts that have **`title`**; rendered below the heading with **80%** of the title font size (CSS **`0.8em`** on **`header.slide-heading-stack`**); rich text / inline math like **`title`**
 - **`transcribe_to_html`** — transcript decks: dense left-aligned body text via `flavor: transcript`
 - **`md_to_yaml`** — pedagogical decks with `explanatory`, `implementation`, `tutorial` flavors (content tone; standard presentation metadata)
@@ -54,6 +54,8 @@ md_to_yaml/
 ```
 
 ## Recent Changes
+
+- **2026-04-22**: **`math_display_color`** (optional) on **`DeckMetadata`** and **`SlideBase`**; **`--math-display-color`** on **`<section>`**; block **`math`** and table-cell block math use **`color: var(--math-display-color, inherit)`**. Validated with **`tests/test_models.py`**. Regenerate **`deck.schema.json`** with **`python -m schema.json_schema`** from the skill tree.
 
 - **2026-04-22**: **Display-math centering (md_to_yaml skill)** — **`base.html.j2`**: for **`math-display-eq-center`**, block **`<math>`** in body / table cells includes **`width: fit-content; max-width: 100%`** with **`margin: auto`** so standalone **`$$...$$`** lines center (Markdown often omits a wrapping **`<p>`**). **`HANDOFF_CENTER.md`** updated. Tests: **70** passed (**`test_compiler`**, **`test_models`** with **`PYTHONPATH=.claude/skills/md_to_yaml`**).
 

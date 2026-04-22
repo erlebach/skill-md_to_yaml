@@ -258,6 +258,12 @@
       font-size: calc(1em * var(--math-display-scale, 1));
       margin: 0.85em 0;
       text-align: start;
+      color: var(--math-display-color, inherit);
+    }
+    /* Table slides: block math in cells (not .slide-body) still get display-math color */
+    section.slide-table td math[display="block"],
+    section.slide-table th math[display="block"] {
+      color: var(--math-display-color, inherit);
     }
     section.math-display-eq-center .slide-body math[display="block"],
     section.math-display-eq-center .hero-body math[display="block"],
@@ -861,7 +867,7 @@
     {% if slide.layout == 'diagram' and not slide.body %}{% set extra_class = ' diagram-only' %}{% endif %}
     {% if title_has_math %}{% set extra_class = extra_class ~ ' slide-heading-math' %}{% endif %}
     {% if s.math_display_center|default(true) %}{% set extra_class = extra_class ~ ' math-display-eq-center' %}{% else %}{% set extra_class = extra_class ~ ' math-display-eq-start' %}{% endif %}
-    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" style="--math-display-scale: {{ s.math_display_scale }};" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
+    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" style="--math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}

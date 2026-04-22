@@ -377,6 +377,14 @@ def _render(
         )
         eff_math_scale = float(eff_math_scale)
         eff_math_center = bool(eff_math_center)
+        slide_math_color = getattr(slide, "math_display_color", None)
+        eff_math_color = (
+            slide_math_color
+            if slide_math_color is not None
+            else deck.metadata.math_display_color
+        )
+        if eff_math_color is not None and not str(eff_math_color).strip():
+            eff_math_color = None
 
         slides_context.append(
             {
@@ -404,6 +412,7 @@ def _render(
                 "rendered_fw_right_body": fw_ctx["rendered_fw_right_body"],
                 "math_display_scale": eff_math_scale,
                 "math_display_center": eff_math_center,
+                "math_display_color": eff_math_color,
             }
         )
 

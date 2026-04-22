@@ -214,6 +214,27 @@ def test_deck_metadata_rejects_unknown_field():
         DeckMetadata(title='D', bogus='x')
 
 
+def test_deck_metadata_math_display_color_accepts_named_and_hex():
+    meta = DeckMetadata(title='D', math_display_color='cyan')
+    assert meta.math_display_color == 'cyan'
+    meta2 = DeckMetadata(title='D', math_display_color='#0af')
+    assert meta2.math_display_color == '#0af'
+
+
+def test_deck_metadata_math_display_color_rejects_injection():
+    with pytest.raises(ValidationError):
+        DeckMetadata(title='D', math_display_color='red; x:1')
+
+
+def test_content_slide_inherits_math_display_color_override():
+    slide = ContentSlide(
+        layout='content',
+        title='T',
+        math_display_color='hsl(180, 80%, 60%)',
+    )
+    assert slide.math_display_color == 'hsl(180, 80%, 60%)'
+
+
 # ---------------------------------------------------------------------------
 # AnySlide discriminated union
 # ---------------------------------------------------------------------------

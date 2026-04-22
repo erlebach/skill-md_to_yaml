@@ -9,6 +9,22 @@ from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+# Guardrail: reject obvious injection in CSS `color` values for display math
+def _check_math_display_color(v: str | None) -> str | None:
+    """Normalize and validate an optional ``math_display_color`` string."""
+    if v is None:
+        return None
+    s = str(v).strip()
+    if not s:
+        return None
+    if len(s) > 120:
+        raise ValueError("math_display_color: max 120 characters")
+    if ";" in s or "{" in s or "}" in s or "<" in s or "url(" in s.lower() or chr(92) in s:
+        raise ValueError(
+            "math_display_color: use a short CSS color (e.g. cyan, #0af, rgb(0, 200, 200));"
+            " semicolons, angle brackets, backslashes, and url() are not allowed."
+        )
+    return s
 
 # ---------------------------------------------------------------------------
 # Base slide model
@@ -33,7 +49,16 @@ class SlideBase(BaseModel):
         default=None,
         description='Override deck math_display_center for this slide (None = inherit).',
     )
+    math_display_color: str | None = Field(
+        default=None,
+        description='Override deck math_display_color for this slide (None = inherit).',
+    )
     body: str | None = Field(None, exclude=True)  # Markdown body, excluded from JSON Schema
+
+    @field_validator('math_display_color')
+    @classmethod
+    def _v_slide_math_color(cls, v: str | None) -> str | None:
+        return _check_math_display_color(v)
 
 
 # ---------------------------------------------------------------------------
@@ -230,6 +255,15 @@ class DeckMetadata(BaseModel):
         True,
         description='If True, display math is centered; if False, aligned with body text.',
     )
+    math_display_color: str | None = Field(
+        default=None,
+        description='Optional CSS color for $$...$$ (display / block) math in slide bodies and tables.',
+    )
+
+    @field_validator('math_display_color')
+    @classmethod
+    def _v_deck_math_color(cls, v: str | None) -> str | None:
+        return _check_math_display_color(v)
 
     @field_validator('font')
     @classmethod

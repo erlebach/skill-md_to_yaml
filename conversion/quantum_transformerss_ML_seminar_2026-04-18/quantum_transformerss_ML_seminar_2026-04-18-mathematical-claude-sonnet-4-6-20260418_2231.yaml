@@ -6,6 +6,7 @@ theme: dark
 font: IBM Plex Sans
 math_display_scale: 1.35
 math_display_center: true
+math_display_color: cyan
 ---
 
 ---

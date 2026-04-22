@@ -70,6 +70,19 @@
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
         },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
+        },
         "body": {
           "anyOf": [
             {
@@ -225,6 +238,19 @@
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
         },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
+        },
         "body": {
           "anyOf": [
             {
@@ -314,6 +340,19 @@
           "default": null,
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
+        },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
         },
         "body": {
           "anyOf": [
@@ -441,6 +480,19 @@
           "description": "If True, display math is centered; if False, aligned with body text.",
           "title": "Math Display Center",
           "type": "boolean"
+        },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional CSS color for $$...$$ (display / block) math in slide bodies and tables.",
+          "title": "Math Display Color"
         }
       },
       "required": [
@@ -518,6 +570,19 @@
           "default": null,
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
+        },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
         },
         "body": {
           "anyOf": [
@@ -614,6 +679,19 @@
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
         },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
+        },
         "body": {
           "anyOf": [
             {
@@ -703,6 +781,19 @@
           "default": null,
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
+        },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
         },
         "body": {
           "anyOf": [
@@ -803,6 +894,19 @@
           "default": null,
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
+        },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
         },
         "body": {
           "anyOf": [
@@ -926,6 +1030,19 @@
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
         },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
+        },
         "body": {
           "anyOf": [
             {
@@ -1028,6 +1145,19 @@
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
         },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
+        },
         "body": {
           "anyOf": [
             {
@@ -1117,6 +1247,19 @@
           "default": null,
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
+        },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
         },
         "body": {
           "anyOf": [
@@ -1220,6 +1363,19 @@
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
         },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
+        },
         "body": {
           "anyOf": [
             {
@@ -1309,6 +1465,19 @@
           "default": null,
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
+        },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
         },
         "body": {
           "anyOf": [
@@ -1419,6 +1588,19 @@
           "default": null,
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
+        },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
         },
         "body": {
           "anyOf": [
@@ -1551,6 +1733,19 @@
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
         },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
+        },
         "body": {
           "anyOf": [
             {
@@ -1653,6 +1848,19 @@
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
         },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
+        },
         "body": {
           "anyOf": [
             {
@@ -1742,6 +1950,19 @@
           "default": null,
           "description": "Override deck math_display_center for this slide (None = inherit).",
           "title": "Math Display Center"
+        },
+        "math_display_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_color for this slide (None = inherit).",
+          "title": "Math Display Color"
         },
         "body": {
           "anyOf": [
