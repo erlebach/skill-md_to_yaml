@@ -1,6 +1,8 @@
 # CSS Controls Reference
 
-The canonical template is [`skills/deck-compile/compiler/templates/base.html.j2`](skills/deck-compile/compiler/templates/base.html.j2) (a copy may also live under `.claude/skills/md_to_yaml/compiler/templates/`). Most **figure scaling** is plain CSS in the `<style>` block (not only `:root` variables). Color tokens are defined in `:root[data-theme="dark" | "light"]`. The prose mirror is [`skills/deck-compile/compiler/templates/md/base.html.j2.md`](skills/deck-compile/compiler/templates/md/base.html.j2.md); keep it in sync when you edit the template.
+The **actively maintained** slide template for the **`md_to_yaml`** compiler is [`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`](.claude/skills/md_to_yaml/compiler/templates/base.html.j2). A mirror may also exist as [`skills/deck-compile/compiler/templates/base.html.j2`](skills/deck-compile/compiler/templates/base.html.j2); if the two differ, treat the **`.claude/skills/md_to_yaml/`** file as source of truth for display-math, YAML-driven knobs, and recent layout fixes.
+
+Most **figure scaling** is plain CSS in the `<style>` block (not only `:root` variables). Color tokens are defined in `:root[data-theme="dark" | "light"]`. A prose mirror (if present) is under `skills/deck-compile/compiler/templates/md/base.html.j2.md`; keep it in sync when you edit the template.
 
 ---
 
@@ -47,6 +49,50 @@ accent_color: "#3b82f6"   # any CSS color
 
 ---
 
+## Display math (block `$$...$$`)
+
+Block display equations use **MathML** from the `latex2mathml` pipeline (not KaTeX). The compiler can inject **per-deck and per-slide** options from YAML; each **`<section>`** then carries **inline** custom properties and alignment classes. Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`** (search: **`Display equations`**, **`math-display-eq-`**, **`--math-display-`**).
+
+### YAML (deck metadata and slide frontmatter)
+
+| Key | Default | What it does |
+|-----|--------|--------------|
+| `math_display_scale` | `1.0` (deck) | `float` in ~**0.75–2.0** — multiplier for `$$...$$` font size vs slide body `em`. |
+| `math_display_center` | `true` (deck) | If **true**, block math is centered (with **`.math-display-eq-center`** on the section). If **false**, **`.math-display-eq-start`** (aligned with body text). |
+| `math_display_color` | *(omit)* | Optional CSS `color` for block `$$...$$` only (e.g. `cyan`, `#6cf`, `hsl(180, 80%, 60%)`). Omitted = no extra tint (**`inherit`** body). Validated: no `;`, `url()`, braces, or angle brackets in the value. |
+
+Use **top-level** keys in each slide’s frontmatter (same indent as `layout:` / `title:`). **Omit** or **`null`** on a slide to inherit the deck; deck **omit** for color means “no `--math-display-color` on the section.”
+
+```yaml
+# Deck-wide (first frontmatter block)
+title: My Deck
+math_display_scale: 1.1
+math_display_center: true
+math_display_color: cyan
+```
+
+```yaml
+# Per slide (optional)
+---
+layout: content
+title: "Derivation"
+math_display_scale: 1.2
+math_display_color: "#9cf"
+---
+```
+
+### CSS on each slide (`<section>`)
+
+| Mechanism | Set by | Purpose |
+|----------|--------|---------|
+| `style="--math-display-scale: <float>; …"` | Compiler (always) | Drives `font-size: calc(1em * var(--math-display-scale, 1))` on block `math[display="block"]` in **`.slide-body`**, **`.hero-body`**, **`.hero-description`**. |
+| `style="… --math-display-color: <color>;"` | Compiler (when `math_display_color` is set) | Drives `color: var(--math-display-color, inherit)` on block math in **body / hero** and in **`section.slide-table` `td` / `th`**. |
+| Class **`math-display-eq-center`** or **`math-display-eq-start`** | Compiler from `math_display_center` | Centering uses `width: fit-content`, `max-width: 100%`, and `margin: auto` on block math, plus flex on **`p`** that wrap only a block `math` when the parser emits that pattern. **Table** slides: extra rules for **`td` / `th`**. |
+
+To change **how** centering or color apply (e.g. only centered mode), edit the **Display equations** comment block in **`base.html.j2`**. There is no separate YAML key for `$$` **inline** math color (that follows body / emphasis rules).
+
+---
+
 ## Slide frame
 
 In the current template, the frame uses **`--border`**. It is applied to every `section[role="group"]`:
@@ -57,13 +103,13 @@ section[role="group"] {
 }
 ```
 
-To change **thickness**, edit that `border` line in `skills/deck-compile/compiler/templates/base.html.j2`. To make the **frame** stand out from inner borders, you can introduce a dedicated token (e.g. `--slide-frame`) in `:root` and point `section[role="group"]` at it.
+To change **thickness**, edit that `border` line in the canonical `base.html.j2` (see the first paragraph of this document). To make the **frame** stand out from inner borders, you can introduce a dedicated token (e.g. `--slide-frame`) in `:root` and point `section[role="group"]` at it.
 
 ---
 
 ## Typography scale (clamp values)
 
-All font sizes use `clamp(min, fluid, max)`. Edit in `base.html.j2`:
+All font sizes use `clamp(min, fluid, max)`. Edit in the canonical `base.html.j2` (path at top of this doc):
 
 | Selector | Size range | Used for |
 |---|---|---|
@@ -222,7 +268,9 @@ Print styles force landscape layout with each slide on its own page. Controlled 
 
 | What you want to change | File | What to search for |
 |---|---|---|
-| Slide frame (color) | `skills/deck-compile/compiler/templates/base.html.j2` | `--border` on `section[role="group"]` |
+| **Display math** scale / center / color (YAML) | deck or slide `.yaml` | `math_display_scale`, `math_display_center`, `math_display_color` |
+| **Display math** (CSS / HTML) | `.claude/skills/md_to_yaml/compiler/templates/base.html.j2` | `Display equations ($$...$$)`, `--math-display-scale`, `--math-display-color`, `math-display-eq-center`, `math[display="block"]` |
+| Slide frame (color) | `base.html.j2` | `--border` on `section[role="group"]` |
 | Frame thickness | same | `section[role="group"] { border: ...` |
 | Accent color (per-deck) | deck `.yaml` metadata | `accent_color:` |
 | Theme (dark/light) | deck `.yaml` metadata | `theme:` |

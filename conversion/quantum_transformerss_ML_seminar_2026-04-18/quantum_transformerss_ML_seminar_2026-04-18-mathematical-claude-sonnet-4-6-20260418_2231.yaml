@@ -291,7 +291,6 @@ layout: figure
 #title: "Case a=1 — One Ancilla Qubit Doubles the Hilbert Space"
 title: "Embedding a Non-Unitary Matrix in a larger Unitary Matrix"
 src: quantum_circuit_ancilla.svg
-#src: _page_5_Figure_4.jpeg
 alt_text: "Quantum circuit labeled Case a = 1, one ancilla qubit. One ancilla wire (ket-zero) and three system qubits (n plus 1 qubits total) pass through U_A (blue box). Inside U_A the matrix is partitioned into a 2-by-2 block structure: A over alpha (red border) top-left, B top-right, C bottom-left, D bottom-right. Post-selecting the ancilla on ket-zero extracts A over alpha on the system register."
 ---
 

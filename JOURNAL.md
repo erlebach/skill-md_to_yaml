@@ -2,6 +2,42 @@
 
 ---
 
+## 2026-04-22 - Polylog plots: `--format png` and `--dpi`
+
+### Completed Tasks ✅
+- [x] **`--format svg|png`** on **`polylog/plot_scaling_families.py`** and **`plot_attention_contrast.py`**; default output stem picks extension from format when **`--output`** is omitted
+- [x] **`--dpi`** for PNG (ignored for SVG); shared **`plot_export.save_figure`**
+
+### Files Created/Modified
+- `polylog/plot_export.py`, `polylog/plot_scaling_families.py`, `polylog/plot_attention_contrast.py`, `polylog/requirements-plots.txt`, `JOURNAL.md`
+
+---
+
+## 2026-04-22 - Polylog notes: matplotlib SVG scaling figures
+
+### Completed Tasks ✅
+- [x] **`polylog/plot_scaling_families.py`** — log–log $n$ with semilogy $y$: $n$, $n^2$, $n^3$, $\log_2 n$, $(\log_2 n)^2$, $(\log_2 n)^3$ → **`scaling_families.svg`**
+- [x] **`polylog/plot_attention_contrast.py`** — classical $n^2$ vs $(\log_2 n)^{2,3}$ → **`attention_scaling_contrast.svg`**
+- [x] **`polylog/requirements-plots.txt`** — optional **matplotlib** / **numpy** for **`uv run --with ...`**
+
+### Files Created/Modified
+- `polylog/plot_scaling_families.py`, `polylog/plot_attention_contrast.py`, `polylog/requirements-plots.txt`, `polylog/scaling_families.svg`, `polylog/attention_scaling_contrast.svg`, `JOURNAL.md`, `SNAPSHOT.md`
+
+### Notes
+- Illustrates scalings from **`polylog/polylog.md`** (polynomial vs polylog; attention vs polylog-depth narrative). SVGs are reproducible via **`uv run`** from **`polylog/requirements-plots.txt`**.
+
+---
+
+## 2026-04-22 - `CSS_CONTROLS.md`: display math + canonical template path
+
+### Completed Tasks ✅
+- [x] **`CSS_CONTROLS.md`** — Document **`math_display_scale`**, **`math_display_center`**, **`math_display_color`**, per-**`<section>`** **`--math-display-*`**, and alignment classes; point canonical template to **`.claude/skills/md_to_yaml/.../base.html.j2`**; extended summary table with search terms.
+
+### Files Created/Modified
+- `CSS_CONTROLS.md`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
 ## 2026-04-22 - `math_display_color` (deck + slide) for `$$` block MathML
 
 ### Completed Tasks ✅

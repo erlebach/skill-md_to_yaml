@@ -50,10 +50,15 @@ md_to_yaml/
 │   └── create_figure_captions/  # if present
 ├── conversion_full/    # Full-document transcriptions
 ├── conversion/         # Partial/page-range conversions
-└── conversion_results/ # Survey and other conversion outputs
+├── conversion_results/ # Survey and other conversion outputs
+└── polylog/            # Polylog scaling notes; matplotlib scripts + SVG figures
 ```
 
 ## Recent Changes
+
+- **2026-04-22**: **`polylog/`** — matplotlib scripts **`plot_scaling_families.py`** / **`plot_attention_contrast.py`** (Agg) with **`--format svg|png`**, **`--dpi`** for PNG, default output name picks the extension; helper **`plot_export.py`**; optional deps **`polylog/requirements-plots.txt`**; illustrates **`polylog.md`** scalings.
+
+- **2026-04-22**: **[`CSS_CONTROLS.md`](CSS_CONTROLS.md)** — new **Display math (block `$$...$$`)** section (YAML + **`--math-display-scale` / `--math-display-color`**, center/start classes, template search); intro clarifies **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`** as the maintained template; summary table updated.
 
 - **2026-04-22**: **`math_display_color`** (optional) on **`DeckMetadata`** and **`SlideBase`**; **`--math-display-color`** on **`<section>`**; block **`math`** and table-cell block math use **`color: var(--math-display-color, inherit)`**. Validated with **`tests/test_models.py`**. Regenerate **`deck.schema.json`** with **`python -m schema.json_schema`** from the skill tree.
 
