@@ -424,11 +424,11 @@ alt_text: "Four-stage geometric diagram with a consistent 35-degree rotation car
 ## Summary
 - Every matrix $A \in \mathbb{C}^{m \times n}$ admits: $A = U \Sigma V^\dagger$
 
-## Properties
-- $U$, $V$ unitary (rotations); $\Sigma$ diagonal with singular values $\sigma_1 \geq \sigma_2 \geq \cdots \geq \sigma_r \geq 0$
-- **Geometric reading:** $V^\dagger$ rotates input to right singular vector basis; $\Sigma$ stretches along those axes; $U$ rotates result to output basis
-- **Key insight:** the singular values $\{\sigma_i\}$ are the intrinsic amplitudes of the transformation — basis-independent and encoding all scaling information
-- **Why target singular values?** Low-rank approximation, pseudoinverse, and attention scores are all functions of $\{\sigma_i\}$
+//## Properties
+//- $U$, $V$ unitary (rotations); $\Sigma$ diagonal with singular values $\sigma_1 \geq \sigma_2 \geq \cdots \geq \sigma_r \geq 0$
+//- **Geometric reading:** $V^\dagger$ rotates input to right singular vector basis; $\Sigma$ stretches along those axes; $U$ rotates result to output basis
+//- **Key insight:** the singular values $\{\sigma_i\}$ are the intrinsic amplitudes of the transformation — basis-independent and encoding all scaling information
+//- **Why target singular values?** Low-rank approximation, pseudoinverse, and attention scores are all functions of $\{\sigma_i\}$
 
 
 ---
@@ -668,6 +668,7 @@ title: Four Cost Components — All Must Be Accounted For
 ---
 layout: content
 title: "Cost 1 — Readin: The QRAM Problem"
+skip: true
 ---
 - Loading $\mathbf{x} \in \mathbb{R}^N$ into $|\psi\rangle = \sum_i x_i|i\rangle$ naively requires $O(N)$ operations
 - **QRAM proposed:** $\text{QRAM}: \sum_i \alpha_i|i\rangle|0\rangle \to \sum_i \alpha_i|i\rangle|x_i\rangle$ in $O(\log N)$ time
@@ -677,6 +678,7 @@ title: "Cost 1 — Readin: The QRAM Problem"
 ---
 layout: content
 title: "Cost 2 — Readout: The No-Cloning Barrier"
+skip: true
 ---
 - One measurement of $|\psi\rangle = \sum_i \alpha_i|i\rangle$ yields **one sample** from $\{|\alpha_i|^2\}$ — destroys the state
 - Full state tomography costs $O(N/\varepsilon^2)$ — exponential in register size, infeasible at scale
@@ -700,6 +702,7 @@ rows:
 ---
 layout: content
 title: "Costs 3–4 — Shots and Circuit Evaluation"
+skip: true
 ---
 - **Shots (attention weights as expectation values):**
 
@@ -747,6 +750,7 @@ $$\text{FFN}(\mathbf{x}) = W_2\,\sigma(W_1\mathbf{x} + \mathbf{b}_1) + \mathbf{b
 ---
 layout: content
 title: "Step 1 — Block-Encoding $W_1$ and $W_2$"
+skip: true
 ---
 $$U_{W_1}: \quad (\langle 0|^{\otimes a_1} \otimes I_n)\; U_{W_1}\; (|0\rangle^{\otimes a_1} \otimes I_n) = \frac{W_1}{\alpha_1}$$
 
@@ -757,6 +761,7 @@ $$U_{W_1}: \quad (\langle 0|^{\otimes a_1} \otimes I_n)\; U_{W_1}\; (|0\rangle^{
 ---
 layout: content
 title: "Step 2 — Activation via QSVT: Spectral vs Elementwise"
+skip: true
 ---
 - Softmax in attention acts on **singular values** of the score matrix — exactly the QSVT spectral setting
 - The FFN activation $\sigma$ acts **elementwise** on the post-linear vector — a different primitive
@@ -794,6 +799,7 @@ $$T_{\text{FFN}} = O\!\left(\alpha_1 \cdot \alpha_\sigma \cdot \alpha_2 \cdot \l
 ---
 layout: content
 title: "Step 4 — Bias Terms via LCU"
+skip: true
 ---
 - Classical affine map $\mathbf{x} \mapsto W\mathbf{x} + \mathbf{b}$ must be block-encoded
 - **LCU technique:** $W\mathbf{x} + \mathbf{b} = \sum_k \lambda_k U_k|\psi\rangle$
@@ -803,6 +809,7 @@ title: "Step 4 — Bias Terms via LCU"
 ---
 layout: figure
 title: "FFN QSVT Circuit: Weight Matrices Flanking QSVT Activation"
+skip: true
 src: _page_34_Figure_0.jpeg
 alt_text: "Multi-panel diagram of the QSP/QSVT circuit for FFN activation from Guo et al. 2024. Top panel: circuit with ancilla (a qubits, ket-zero) and system (n qubits, ket-x). Proceeds through U_W1 (blue, W1/alpha-1), phase gate (orange), U_sigma diagonal activation (red), phase gate (orange), U_sigma-dagger conjugate (red), more phase gates, then U_W2 (blue, W2/alpha-2). Ancilla post-selected to ket-zero; system output is FFN(x)/alpha. Bracket labels QSVT activation region, depth O(log 1/epsilon) for GELU. Boxes below: activation choice (GELU O(log), ReLU O(1/epsilon)); QSP theorem; amplitude amplification (boost 1/alpha-squared to O(1)); LCU for bias. Bottom box: total FFN T-gate cost O(alpha-1 times alpha-sigma times alpha-2 times log(1/epsilon) times poly(log d))."
 ---
@@ -856,5 +863,5 @@ title: "Summary — Quantum Transformers: What We Know"
 - **Quantum engine:** QSVT applies any bounded polynomial to all singular values in $O(d_{\text{poly}})$ depth; analytic functions (GELU, softmax) achieve $d_{\text{poly}} = O(\log(1/\varepsilon))$
 - **End-to-end speedup claim:** $O(S^2 d) \to O(\text{poly}\log(Sd))$ under QRAM + sparse attention + FTQC + bounded $\alpha$
 - **Three caveats:** QRAM is speculative; $\alpha$ hides potentially large constants; dequantization may recover the speedup classically
-- **Open:** LayerNorm, backpropagation, QRAM hardware, multi-head analysis
+- **Open Problems:** LayerNorm, backpropagation, QRAM hardware, multi-head analysis
 - **Bottom line:** beautiful mathematics with exponential potential — but every load-bearing assumption needs independent verification
