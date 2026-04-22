@@ -363,6 +363,21 @@ def _render(
                     slide.src, slide.alt_text, embed=embed_images, base_dir=base_dir
                 )
 
+        slide_math_scale = getattr(slide, "math_display_scale", None)
+        eff_math_scale = (
+            slide_math_scale
+            if slide_math_scale is not None
+            else deck.metadata.math_display_scale
+        )
+        slide_math_center = getattr(slide, "math_display_center", None)
+        eff_math_center = (
+            slide_math_center
+            if slide_math_center is not None
+            else deck.metadata.math_display_center
+        )
+        eff_math_scale = float(eff_math_scale)
+        eff_math_center = bool(eff_math_center)
+
         slides_context.append(
             {
                 "slide": slide,
@@ -387,6 +402,8 @@ def _render(
                 "rendered_fw_left_body": fw_ctx["rendered_fw_left_body"],
                 "rendered_fw_right_heading": fw_ctx["rendered_fw_right_heading"],
                 "rendered_fw_right_body": fw_ctx["rendered_fw_right_body"],
+                "math_display_scale": eff_math_scale,
+                "math_display_center": eff_math_center,
             }
         )
 

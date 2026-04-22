@@ -10,13 +10,14 @@
 
 ## Active Features
 
+- **Display math tuning** — deck metadata and per-slide frontmatter: **`math_display_scale`** (**0.75–2.0**, default **1.0**) and **`math_display_center`** (default **true**) for **`$$...$$`** in **`.slide-body`** / **hero** text; HTML uses **`--math-display-scale`** and **`math-display-eq-center`** / **`math-display-eq-start`** on each **`<section>`** (implemented under **`.claude/skills/md_to_yaml`**). When centering is on, block MathML also uses **`width: fit-content; max-width: 100%`** with **`margin: auto`** so equations center when Markdown leaves **`<math display="block">` outside `<p>`** (the usual case for a standalone **$$** line).
 - **Slide `subtitle`** — optional on all layouts that have **`title`**; rendered below the heading with **80%** of the title font size (CSS **`0.8em`** on **`header.slide-heading-stack`**); rich text / inline math like **`title`**
 - **`transcribe_to_html`** — transcript decks: dense left-aligned body text via `flavor: transcript`
 - **`md_to_yaml`** — pedagogical decks with `explanatory`, `implementation`, `tutorial` flavors (content tone; standard presentation metadata)
 - **`create_figure_captions`** — from any slide-deck YAML, propose 3–4 figures and Nano Banana–style image captions → `suggested_figures.md` (no API; prompt-native)
 - **Image embedding** — `--embed-images` flag for base64 data URI embedding
 - **13 layout types**: title, hero, content, divider, figure, diagram, two-column, quote, comparison, code, steps, summary, table (+ legacy `transcribe`)
-- **Math rendering** — KaTeX-based `$$...$$` block and `$...$` inline math
+- **Math rendering** — **latex2mathml** MathML: **`$$...$$`** block and **`$...$`** inline math
 - **ADA compliance** — required `alt_text` on figures/diagrams, contrast validation
 
 ## File Structure
@@ -53,6 +54,8 @@ md_to_yaml/
 ```
 
 ## Recent Changes
+
+- **2026-04-22**: **Display-math centering (md_to_yaml skill)** — **`base.html.j2`**: for **`math-display-eq-center`**, block **`<math>`** in body / table cells includes **`width: fit-content; max-width: 100%`** with **`margin: auto`** so standalone **`$$...$$`** lines center (Markdown often omits a wrapping **`<p>`**). **`HANDOFF_CENTER.md`** updated. Tests: **70** passed (**`test_compiler`**, **`test_models`** with **`PYTHONPATH=.claude/skills/md_to_yaml`**).
 
 - **2026-04-22**: **Optional `subtitle`** on every slide layout — **`SlideBase.subtitle`** in **`skills/deck-compile/schema/models.py`**, shared heading templates + **`0.8em`** subtitle in **`base.html.j2`**; **`engine.py`** renders subtitle for all slides; **`deck.schema.json`** regenerated.
 

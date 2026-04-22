@@ -4,6 +4,8 @@ author: ML Seminar — May 1, 2026
 date: 2026-05-01
 theme: dark
 font: IBM Plex Sans
+math_display_scale: 1.35
+math_display_center: true
 ---
 
 ---
@@ -327,13 +329,12 @@ title: "Part 4 — Shots: Sampling Quantum Outputs"
 ---
 layout: content
 title: Why Shots Are Necessary — Quantum Measurement Is Probabilistic
-subtitle: "this slide needs a subtitle"
 ---
-- Measuring $|\psi\rangle = \alpha|0\rangle + \beta|1\rangle$ yields 0 with probability $|\alpha|^2$ and 1 with probability $|\beta|^2$; the state is **destroyed**
-- You must re-run the circuit to reconstruct the distribution — this is **not** a hardware limitation, it is a law of quantum mechanics
+- Measuring $|\psi\rangle = \alpha|0\rangle + \beta|1\rangle$ yields 0 with probability $|\alpha|^2$ and 1 with probability $|\beta|^2$ 
+- The state is **destroyed**
+- You must re-run the circuit to reconstruct the distribution — this is **not** a hardware limitation, it is a **law of quantum mechanics**
 
-// SHOULD BE LARGER fonts
-$$S_{\text{NISQ}} = S_{\text{stats}} \times S_{\text{noise mitigation}}, \qquad S_{\text{FTQC}} = S_{\text{stats}}$$
+$$\color{cyan}S_{\text{NISQ}} = S_{\text{stats}} \times S_{\text{noise mitigation}}, \qquad S_{\text{FTQC}} = S_{\text{stats}}$$
 
 - FTQC noise-mitigation; the statistical floor remains in both eras
 
@@ -558,7 +559,7 @@ title: "Activation Choice Is Not Cosmetic — It Determines Feasibility"
 - **Softmax:** involves $e^\sigma$ — entire; degree $d = O(\log(1/\varepsilon))$
 - **ReLU:** $\text{ReLU}(x) = (x + |x|)/2$ — involves $|x|$ which is **not analytic** at $x = 0$:
 
-$$\big\||x| - p_d(x)\big\|_\infty \leq O(1/d) \quad \Rightarrow \quad d = O(1/\varepsilon) \text{ for ReLU}$$
+$$\| |x| - p_d(x)\;\|_\infty \leq O(1/d) \quad \Rightarrow \quad d = O(1/\varepsilon) \text{ for ReLU}$$
 
 - At $\varepsilon = 10^{-3}$: GELU needs depth $\approx 10$; ReLU needs depth $10^3$ — three orders of magnitude more
 

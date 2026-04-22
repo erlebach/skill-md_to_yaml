@@ -2,6 +2,63 @@
 
 ---
 
+## 2026-04-22 - Display-math centering: `width: fit-content` for bare block `<math>`
+
+### Completed Tasks ✅
+- [x] **CSS** — For **`section.math-display-eq-center`**, block MathML in **`.slide-body` / hero / table cells** now includes **`width: fit-content; max-width: 100%`** with **`margin-left/right: auto`** so centered equations work when Python-Markdown emits **`<math display="block">` as a sibling of `<p>`** (the **`p:has(> math:only-child)`** flex path rarely applies).
+- [x] **`HANDOFF_CENTER.md`** — Documented the bare-**`<math>`** + Markdown behavior and the **fit-content** fix.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `HANDOFF_CENTER.md`, `JOURNAL.md`, `SNAPSHOT.md`
+
+### Notes
+- **`PYTHONPATH=.claude/skills/md_to_yaml` pytest `tests/test_compiler.py` `tests/test_models.py`** — **70** passed.
+
+---
+
+## 2026-04-22 - `HANDOFF_CENTER.md` reentry handoff
+
+### Completed Tasks ✅
+- [x] Added **[`HANDOFF_CENTER.md`](HANDOFF_CENTER.md)** — compile path, YAML placement, display-math centering/scale behavior, fixes, verification.
+
+---
+
+## 2026-04-22 - Fix `math_display_center` visibility (flex + tables + Jinja default)
+
+### Completed Tasks ✅
+- [x] **Centering CSS** — paragraphs that only contain block math use **`display: flex; justify-content: center`** so MathML centers reliably in Chromium; **table** slides get **`td`/`th`** rules and transcript-specific overrides.
+- [x] **Jinja** — **`s.math_display_center|default(true)`** so a missing context key defaults to centered (matches deck default).
+- [x] **`engine.py`** — coerce **`float`/`bool`** for effective math display values.
+- [x] **`SKILL.md`** — note that **`math_display_*`** must be **top-level** in slide YAML (same indent as **`layout:`**), not nested under **`title:`**.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `compiler/engine.py`, `SKILL.md`
+
+### Notes
+- If centering still fails, confirm compile uses **`PYTHONPATH=.claude/skills/md_to_yaml`** and YAML indentation is valid.
+
+---
+
+## 2026-04-22 - Display math: `math_display_scale` and `math_display_center` (deck + slide)
+
+### Completed Tasks ✅
+- [x] **`DeckMetadata`** — **`math_display_scale`** (default `1.0`, **0.75–2.0**) and **`math_display_center`** (default `true`).
+- [x] **`SlideBase`** — optional overrides (**`None`** = inherit).
+- [x] **`engine.py`** — **`math_display_scale`** / **`math_display_center`** on each **`slides_context`** entry.
+- [x] **`base.html.j2`** — **`--math-display-scale`** on **`<section>`**; classes **`math-display-eq-center`** / **`math-display-eq-start`**; display-math CSS for **`.slide-body`**, **`.hero-body`**, **`.hero-description`**.
+- [x] **`deck.schema.json`** regenerated; **`.claude/skills/md_to_yaml/SKILL.md`** documented.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/schema/models.py`, `schema/deck.schema.json`, `compiler/engine.py`, `compiler/templates/base.html.j2`, `SKILL.md`
+
+### Key Changes
+- **`$$...$$`** block math font size scales with body via **`font-size: calc(1em * var(--math-display-scale))`**; centering is optional per deck/slide.
+
+### Notes
+- **`PYTHONPATH=.claude/skills/md_to_yaml uv run python -m pytest`** — **95** tests passed (subset run).
+
+---
+
 ## 2026-04-22 - Optional `subtitle` on all slide layouts (80% of title size)
 
 ### Completed Tasks ✅

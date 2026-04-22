@@ -250,15 +250,74 @@
     .slide-body ol li { padding-left: 0.5rem; }
     .slide-body li { margin-bottom: 0.75em; }
 
-    /* Display equations ($$...$$) rendered as <math display="block"> */
-    .slide-body math[display="block"] {
+    /* Display equations ($$...$$): scale via --math-display-scale; center vs start via section class */
+    .slide-body math[display="block"],
+    .hero-body math[display="block"],
+    .hero-description math[display="block"] {
       display: block;
-      margin: 0.85em auto;
+      font-size: calc(1em * var(--math-display-scale, 1));
+      margin: 0.85em 0;
+      text-align: start;
+    }
+    section.math-display-eq-center .slide-body math[display="block"],
+    section.math-display-eq-center .hero-body math[display="block"],
+    section.math-display-eq-center .hero-description math[display="block"] {
+      /* Without an intrinsic width, block <math> fills the line and
+         margin:auto does not move the visual formula (Markdown often emits
+         bare <math> between <p> blocks, so the p:flex rule does not run). */
+      width: fit-content;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
       text-align: center;
     }
-    /* Prevent double margin when the paragraph wrapper contains only block math */
-    .slide-body p:has(> math[display="block"]:only-child) {
+    section.math-display-eq-start .slide-body math[display="block"],
+    section.math-display-eq-start .hero-body math[display="block"],
+    section.math-display-eq-start .hero-description math[display="block"] {
+      margin-left: 0;
+      margin-right: 0;
+      text-align: start;
+    }
+    .slide-body p:has(> math[display="block"]:only-child),
+    .hero-body p:has(> math[display="block"]:only-child),
+    .hero-description p:has(> math[display="block"]:only-child) {
       margin: 0;
+    }
+    /* Flex centers block MathML reliably (margin:auto on <math> is inconsistent across UAs). */
+    section.math-display-eq-center .slide-body p:has(> math[display="block"]:only-child),
+    section.math-display-eq-center .hero-body p:has(> math[display="block"]:only-child),
+    section.math-display-eq-center .hero-description p:has(> math[display="block"]:only-child) {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    section.math-display-eq-start .slide-body p:has(> math[display="block"]:only-child),
+    section.math-display-eq-start .hero-body p:has(> math[display="block"]:only-child),
+    section.math-display-eq-start .hero-description p:has(> math[display="block"]:only-child) {
+      display: block;
+      text-align: start;
+    }
+    /* Table slides: no .slide-body wrapper; center display math in cells when requested */
+    section.math-display-eq-center.slide-table td math[display="block"],
+    section.math-display-eq-center.slide-table th math[display="block"] {
+      display: block;
+      width: fit-content;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
+    section.math-display-eq-center.slide-table td:has(> math[display="block"]:only-child),
+    section.math-display-eq-center.slide-table th:has(> math[display="block"]:only-child) {
+      text-align: center;
+      vertical-align: middle;
+    }
+    /* Transcript table: beat cell text-align:left from theme rules */
+    main.deck-flavor-transcript section.slide-table.math-display-eq-center td:has(> math[display="block"]:only-child),
+    main.deck-flavor-transcript section.slide-table.math-display-eq-center th:has(> math[display="block"]:only-child) {
+      text-align: center;
     }
 
     /* Markdown tables in body */
@@ -801,7 +860,8 @@
     {% if slide.layout == 'figure' and not slide.body %}{% set extra_class = ' figure-only' %}{% endif %}
     {% if slide.layout == 'diagram' and not slide.body %}{% set extra_class = ' diagram-only' %}{% endif %}
     {% if title_has_math %}{% set extra_class = extra_class ~ ' slide-heading-math' %}{% endif %}
-    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
+    {% if s.math_display_center|default(true) %}{% set extra_class = extra_class ~ ' math-display-eq-center' %}{% else %}{% set extra_class = extra_class ~ ' math-display-eq-start' %}{% endif %}
+    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" style="--math-display-scale: {{ s.math_display_scale }};" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}

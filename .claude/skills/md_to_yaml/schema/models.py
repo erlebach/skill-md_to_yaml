@@ -23,6 +23,16 @@ class SlideBase(BaseModel):
     subtitle: str | None = None
     notes: str | None = None
     skip: bool = False  # If True, slide is validated but excluded from compiled HTML
+    math_display_scale: float | None = Field(
+        default=None,
+        ge=0.75,
+        le=2.0,
+        description='Override deck math_display_scale for this slide (None = inherit).',
+    )
+    math_display_center: bool | None = Field(
+        default=None,
+        description='Override deck math_display_center for this slide (None = inherit).',
+    )
     body: str | None = Field(None, exclude=True)  # Markdown body, excluded from JSON Schema
 
 
@@ -210,6 +220,16 @@ class DeckMetadata(BaseModel):
     title_font_size: str = '2.4rem'
     title_top_margin: str = '0.5rem'
     flavor: Literal['transcript'] | None = None
+    math_display_scale: float = Field(
+        1.0,
+        ge=0.75,
+        le=2.0,
+        description='Multiplier for $$...$$ display math font size vs slide body.',
+    )
+    math_display_center: bool = Field(
+        True,
+        description='If True, display math is centered; if False, aligned with body text.',
+    )
 
     @field_validator('font')
     @classmethod

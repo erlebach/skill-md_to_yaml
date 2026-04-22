@@ -42,6 +42,34 @@
           "title": "Skip",
           "type": "boolean"
         },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
+        },
         "body": {
           "anyOf": [
             {
@@ -169,6 +197,34 @@
           "title": "Skip",
           "type": "boolean"
         },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
+        },
         "body": {
           "anyOf": [
             {
@@ -230,6 +286,34 @@
           "default": false,
           "title": "Skip",
           "type": "boolean"
+        },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
         },
         "body": {
           "anyOf": [
@@ -343,6 +427,20 @@
           ],
           "default": null,
           "title": "Flavor"
+        },
+        "math_display_scale": {
+          "default": 1.0,
+          "description": "Multiplier for $$...$$ display math font size vs slide body.",
+          "maximum": 2.0,
+          "minimum": 0.75,
+          "title": "Math Display Scale",
+          "type": "number"
+        },
+        "math_display_center": {
+          "default": true,
+          "description": "If True, display math is centered; if False, aligned with body text.",
+          "title": "Math Display Center",
+          "type": "boolean"
         }
       },
       "required": [
@@ -392,6 +490,34 @@
           "default": false,
           "title": "Skip",
           "type": "boolean"
+        },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
         },
         "body": {
           "anyOf": [
@@ -460,6 +586,34 @@
           "title": "Skip",
           "type": "boolean"
         },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
+        },
         "body": {
           "anyOf": [
             {
@@ -521,6 +675,34 @@
           "default": false,
           "title": "Skip",
           "type": "boolean"
+        },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
         },
         "body": {
           "anyOf": [
@@ -593,6 +775,34 @@
           "default": false,
           "title": "Skip",
           "type": "boolean"
+        },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
         },
         "body": {
           "anyOf": [
@@ -688,6 +898,34 @@
           "title": "Skip",
           "type": "boolean"
         },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
+        },
         "body": {
           "anyOf": [
             {
@@ -762,6 +1000,34 @@
           "title": "Skip",
           "type": "boolean"
         },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
+        },
         "body": {
           "anyOf": [
             {
@@ -823,6 +1089,34 @@
           "default": false,
           "title": "Skip",
           "type": "boolean"
+        },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
         },
         "body": {
           "anyOf": [
@@ -898,6 +1192,34 @@
           "title": "Skip",
           "type": "boolean"
         },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
+        },
         "body": {
           "anyOf": [
             {
@@ -959,6 +1281,34 @@
           "default": false,
           "title": "Skip",
           "type": "boolean"
+        },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
         },
         "body": {
           "anyOf": [
@@ -1041,6 +1391,34 @@
           "default": false,
           "title": "Skip",
           "type": "boolean"
+        },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
         },
         "body": {
           "anyOf": [
@@ -1145,6 +1523,34 @@
           "title": "Skip",
           "type": "boolean"
         },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
+        },
         "body": {
           "anyOf": [
             {
@@ -1219,6 +1625,34 @@
           "title": "Skip",
           "type": "boolean"
         },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
+        },
         "body": {
           "anyOf": [
             {
@@ -1280,6 +1714,34 @@
           "default": false,
           "title": "Skip",
           "type": "boolean"
+        },
+        "math_display_scale": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_scale for this slide (None = inherit).",
+          "title": "Math Display Scale"
+        },
+        "math_display_center": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck math_display_center for this slide (None = inherit).",
+          "title": "Math Display Center"
         },
         "body": {
           "anyOf": [
