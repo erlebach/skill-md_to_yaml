@@ -2,6 +2,31 @@
 
 ---
 
+## 2026-04-22 - Optional `subtitle` on all slide layouts (80% of title size)
+
+### Completed Tasks ✅
+- [x] **`SlideBase`** — optional **`subtitle`** on every layout (title slide no longer declares it separately).
+- [x] **`engine.py`** — render **`subtitle`** through the same math/Markdown path as **`title`** for all slides; **`title_has_math`** includes subtitle math.
+- [x] **Templates** — **`slide_heading_h2.html.j2`** / **`slide_heading_h2_divider.html.j2`**; layouts with **`h2`** include the stack; **`title.html.j2`** uses **`header.slide-heading-stack--title`**; **quote** wraps blockquote + subtitle in **`slide-quote-block`**.
+- [x] **`base.html.j2` CSS** — heading stacks set a **title font-size** on the wrapper; **`.slide-subtitle`** uses **`font-size: 0.8em`** (20% smaller than the title). Transcript / **transcribe** stacks use **`16pt`** base with left-aligned subtitle; diagram Mermaid sizing uses **`header.slide-heading-stack`** height when present.
+- [x] **`deck.schema.json`** — regenerated from Pydantic.
+
+### Files Created/Modified
+- `skills/deck-compile/schema/models.py`
+- `skills/deck-compile/schema/deck.schema.json`
+- `skills/deck-compile/compiler/engine.py`
+- `skills/deck-compile/compiler/templates/base.html.j2`
+- `skills/deck-compile/compiler/templates/title.html.j2`, `divider.html.j2`, `quote.html.j2`, `hero.html.j2`, `content.html.j2`, `transcribe.html.j2`, `proof.html.j2`, `summary.html.j2`, `steps.html.j2`, `comparison.html.j2`, `code.html.j2`, `table.html.j2`, `diagram.html.j2`, `figure.html.j2`, `figure-wide.html.j2`, `two-column.html.j2`
+- `skills/deck-compile/compiler/templates/slide_heading_h2.html.j2`, `slide_heading_h2_divider.html.j2`
+
+### Key Changes
+- One optional **`subtitle:`** field per slide (YAML), same rich-text behavior as **`title`** where the engine runs **`extract_and_render_math`**.
+
+### Notes
+- **`uv run python -m pytest tests/test_compiler.py`** (with **`PYTHONPATH=skills/deck-compile`**, **`--extra dev`**) — 17 passed.
+
+---
+
 ## 2026-04-22 - `CSS_CONTROLS.md`: figure scale documentation
 
 ### Completed Tasks ✅

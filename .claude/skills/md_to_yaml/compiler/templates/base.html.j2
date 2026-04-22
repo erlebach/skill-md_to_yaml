@@ -137,11 +137,77 @@
       text-align: center;
       color: var(--text);
     }
-    .slide-title .subtitle {
-      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--font-scale));
+    /* h1/h2 + optional subtitle: stack font-size is the title; subtitle is 80% */
+    .slide-heading-stack {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .slide-heading-stack--title {
+      font-size: calc(clamp(48px, 10vw, 96px) * var(--font-scale));
+      margin-bottom: 1rem;
+    }
+    .slide-heading-stack--title h1 {
+      font-size: 1em;
+      margin-bottom: 0;
+    }
+    .slide-heading-stack--title .slide-subtitle {
+      font-size: 0.8em;
+      font-weight: 500;
+      line-height: 1.25;
       text-align: center;
       color: var(--muted);
-      margin-bottom: 0.5rem;
+      margin-top: 0.35em;
+      margin-bottom: 0;
+      text-wrap: balance;
+    }
+    .slide-heading-stack--standard {
+      font-size: calc(clamp(32px, 5vw, 52px) * var(--font-scale));
+    }
+    .slide-heading-stack--standard h2 {
+      font-size: 1em;
+      margin-bottom: 0;
+    }
+    .slide-heading-stack--standard .slide-subtitle {
+      font-size: 0.8em;
+      font-weight: 500;
+      line-height: 1.25;
+      text-align: center;
+      color: var(--muted);
+      margin-top: 0.35em;
+      margin-bottom: 0;
+      text-wrap: balance;
+    }
+    .slide-heading-stack--divider {
+      font-size: calc(clamp(48px, 8vw, 80px) * var(--font-scale));
+    }
+    .slide-heading-stack--divider h2 {
+      font-size: 1em;
+      margin-bottom: 0;
+    }
+    .slide-heading-stack--divider .slide-subtitle {
+      font-size: 0.8em;
+      font-weight: 500;
+      line-height: 1.25;
+      text-align: center;
+      color: var(--muted);
+      margin-top: 0.35em;
+      margin-bottom: 0;
+      text-wrap: balance;
+    }
+    .slide-quote-block {
+      font-size: calc(clamp(28px, 3.5vw, 44px) * var(--font-scale));
+    }
+    section.slide-quote .slide-quote-block blockquote {
+      font-size: 1em;
+    }
+    section.slide-quote .slide-quote-block .slide-subtitle {
+      font-size: 0.8em;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 1.25;
+      color: var(--muted);
+      margin-top: 0.5em;
+      text-wrap: balance;
     }
     .slide-title .author {
       font-size: calc(clamp(20px, 2.2vw, 28px) * var(--font-scale));
@@ -173,8 +239,6 @@
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
-    .divider-slide h2 { font-size: calc(clamp(48px, 8vw, 80px) * var(--font-scale)); }
-
     .slide-body {
       font-size: calc(clamp(20px, 2.2vw, 28px) * var(--font-scale));
       line-height: 1.6;
@@ -415,6 +479,12 @@
     section.slide-transcribe h2:has(math) {
       text-wrap: wrap;
     }
+    section.slide-transcribe .slide-heading-stack--standard {
+      font-size: calc(16pt * var(--font-scale));
+    }
+    section.slide-transcribe .slide-heading-stack--standard .slide-subtitle {
+      text-align: left;
+    }
     section.slide-transcribe .slide-body {
       font-size: calc(14pt * var(--font-scale));
       line-height: 1.45;
@@ -458,6 +528,14 @@
     main.deck-flavor-transcript section.slide-content h2:has(math),
     main.deck-flavor-transcript section.slide-table h2:has(math) {
       text-wrap: wrap;
+    }
+    main.deck-flavor-transcript section.slide-content .slide-heading-stack--standard,
+    main.deck-flavor-transcript section.slide-table .slide-heading-stack--standard {
+      font-size: calc(16pt * var(--font-scale));
+    }
+    main.deck-flavor-transcript section.slide-content .slide-heading-stack--standard .slide-subtitle,
+    main.deck-flavor-transcript section.slide-table .slide-heading-stack--standard .slide-subtitle {
+      text-align: left;
     }
     main.deck-flavor-transcript section.slide-content .slide-body {
       font-size: calc(14pt * var(--font-scale));
@@ -895,8 +973,8 @@
     const PANEL_INSET = 48;  // panel internal padding (top+bottom or left+right combined)
     document.querySelectorAll('.slide-diagram .diagram-container svg[id^="mermaid"]').forEach(svg => {
       const slide   = svg.closest('section[role="group"]');
-      const h2      = slide && slide.querySelector('h2');
-      const titleH  = h2 ? h2.getBoundingClientRect().height : 60;
+      const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
+      const titleH  = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
       const caption = slide && slide.querySelector('.diagram-caption');
       const capH    = caption ? caption.getBoundingClientRect().height + 16 : 0;
       const availW  = document.documentElement.clientWidth - SLIDE_PAD * 2 - PANEL_INSET;
@@ -907,8 +985,8 @@
     // Two-column diagrams — constrained to the diagram column.
     document.querySelectorAll('.slide-two-column .diagram-container svg[id^="mermaid"]').forEach(svg => {
       const slide  = svg.closest('section[role="group"]');
-      const h2     = slide && slide.querySelector('h2');
-      const titleH = h2 ? h2.getBoundingClientRect().height : 60;
+      const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
+      const titleH = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
       const container = svg.closest('.diagram-container');
       // After RAF, getBoundingClientRect reflects the actual grid-sized column width.
       const colW = container.getBoundingClientRect().width || (document.documentElement.clientWidth / 2);

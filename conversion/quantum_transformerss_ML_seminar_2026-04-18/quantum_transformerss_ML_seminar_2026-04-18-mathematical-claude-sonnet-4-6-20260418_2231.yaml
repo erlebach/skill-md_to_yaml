@@ -259,15 +259,12 @@ $$(\langle 0|^{\otimes a} \otimes I_n)\; U_A\; (|0\rangle^{\otimes a} \otimes I_
 - **Post-selection:** measuring ancilla $= |0\rangle$ collapses the system register to $A|\psi\rangle/\alpha$
 
 ---
-layout: figure-wide
+layout: figure
 title: "Case 0 — When A Is Unitary, No Embedding Needed"
 src: _page_5_Picture_0.jpeg
 alt_text: "Quantum circuit labeled Case 0, A is unitary. Three qubit wires labeled ket-psi-0, ket-psi-1, ket-psi-2 pass through a single large green box labeled A equals U_A (unitary). Caption: n system qubits, circuit is 2-to-the-n by 2-to-the-n, no ancillae needed."
 ---
 
-## Fundamental Problem
-- A quantum gate $U$ acting on $n$ qubits must be **unitary**: $U^\dagger U = I$
-- Matrices of interest — attention weights, FFN weight matrices $W_1, W_2$ — are **not unitary**
 
 // - **Solution:** embed $A$ into the top-left corner of a larger unitary $U_A$:
 // 
@@ -287,20 +284,13 @@ title: "Adding Ancilla Qubits Expands the Hilbert Space"
 - **Post-selecting** the ancilla on $|0\rangle$ projects onto that top-left corner, effectively applying $A/\alpha$
 
 ---
-layout: figure-wide
+layout: figure
 #title: "Case a=1 — One Ancilla Qubit Doubles the Hilbert Space"
 title: "Embedding a Non-Unitary Matrix in a larger Unitary Matrix"
 src: quantum_circuit_ancilla.svg
-proportion: 60/40
 #src: _page_5_Figure_4.jpeg
 alt_text: "Quantum circuit labeled Case a = 1, one ancilla qubit. One ancilla wire (ket-zero) and three system qubits (n plus 1 qubits total) pass through U_A (blue box). Inside U_A the matrix is partitioned into a 2-by-2 block structure: A over alpha (red border) top-left, B top-right, C bottom-left, D bottom-right. Post-selecting the ancilla on ket-zero extracts A over alpha on the system register."
 ---
-## Case a=1 — One Ancilla Qubit Doubles the Hilbert Space
-- When $A$ is **non-unitary**, we must embed it into a larger unitary $U_A$ by adding ancilla qubits
-- Each ancilla qubit **doubles** the total Hilbert space: $n$ system qubits + $a$ ancilla qubits → matrix size $2^{n+a} \times 2^{n+a}$
-- $A/\alpha$ occupies only the top-left $2^n \times 2^n$ corner — the rest of $U_A$ is filled to enforce unitarity
-- **Post-selecting** the ancilla on $|0\rangle$ projects onto that top-left corner, effectively applying $A/\alpha$
-
 
 ---
 layout: figure
@@ -337,13 +327,15 @@ title: "Part 4 — Shots: Sampling Quantum Outputs"
 ---
 layout: content
 title: Why Shots Are Necessary — Quantum Measurement Is Probabilistic
+subtitle: "this slide needs a subtitle"
 ---
 - Measuring $|\psi\rangle = \alpha|0\rangle + \beta|1\rangle$ yields 0 with probability $|\alpha|^2$ and 1 with probability $|\beta|^2$; the state is **destroyed**
 - You must re-run the circuit to reconstruct the distribution — this is **not** a hardware limitation, it is a law of quantum mechanics
 
+// SHOULD BE LARGER fonts
 $$S_{\text{NISQ}} = S_{\text{stats}} \times S_{\text{noise mitigation}}, \qquad S_{\text{FTQC}} = S_{\text{stats}}$$
 
-- FTQC eliminates the noise-mitigation tax; the statistical floor remains in both eras
+- FTQC noise-mitigation; the statistical floor remains in both eras
 
 ---
 layout: figure
@@ -352,12 +344,13 @@ src: _page_11_Figure_0.jpeg
 alt_text: "Two-column diagram comparing NISQ era (left) and FTQC era (right). NISQ: salmon box for noise mitigation shots (gate errors, readout errors, cross-talk; overhead 10x to 1000x) plus purple box for statistical estimation shots (quantum measurement is probabilistic, fundamental and unavoidable). FTQC: noise mitigation box is crossed out (logical error rate approximately 10 to the minus 15, overhead eliminated); statistical estimation box remains active. Equations: total NISQ shots equals stats times noise overhead; total FTQC shots approximately statistical floor only."
 ---
 
-# ---
-#layout: figure
-#title: "Hoeffding Bound: Shots Scale with the Question, Not the System"
-#src: _page_12_Figure_0.jpeg
-#alt_text: "Two-panel diagram. Left: purple box showing Hoeffding bound S greater than or equal to ln(2 over delta) divided by 2 epsilon squared; epsilon is desired precision; delta is failure probability; bound is independent of qubit count n for binary questions. Green box: key insight, shots scale with question precision not Hilbert space size 2-to-the-n; full tomography does not equal running an algorithm. Right: table for epsilon 0.03, delta 0.01 — 1 qubit, 4 qubits, and 64 qubits asking binary questions all require approximately 2800 shots; 64 qubits full state tomography is labeled Impossible."
-# ---
+---
+layout: figure
+title: "Hoeffding Bound: Shots Scale with the Question, Not the System"
+src: _page_12_Figure_0.jpeg
+skip: true
+alt_text: "Two-panel diagram. Left: purple box showing Hoeffding bound S greater than or equal to ln(2 over delta) divided by 2 epsilon squared; epsilon is desired precision; delta is failure probability; bound is independent of qubit count n for binary questions. Green box: key insight, shots scale with question precision not Hilbert space size 2-to-the-n; full tomography does not equal running an algorithm. Right: table for epsilon 0.03, delta 0.01 — 1 qubit, 4 qubits, and 64 qubits asking binary questions all require approximately 2800 shots; 64 qubits full state tomography is labeled Impossible."
+---
 
 ---
 layout: content

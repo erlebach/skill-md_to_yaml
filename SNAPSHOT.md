@@ -10,6 +10,7 @@
 
 ## Active Features
 
+- **Slide `subtitle`** — optional on all layouts that have **`title`**; rendered below the heading with **80%** of the title font size (CSS **`0.8em`** on **`header.slide-heading-stack`**); rich text / inline math like **`title`**
 - **`transcribe_to_html`** — transcript decks: dense left-aligned body text via `flavor: transcript`
 - **`md_to_yaml`** — pedagogical decks with `explanatory`, `implementation`, `tutorial` flavors (content tone; standard presentation metadata)
 - **`create_figure_captions`** — from any slide-deck YAML, propose 3–4 figures and Nano Banana–style image captions → `suggested_figures.md` (no API; prompt-native)
@@ -52,6 +53,8 @@ md_to_yaml/
 ```
 
 ## Recent Changes
+
+- **2026-04-22**: **Optional `subtitle`** on every slide layout — **`SlideBase.subtitle`** in **`skills/deck-compile/schema/models.py`**, shared heading templates + **`0.8em`** subtitle in **`base.html.j2`**; **`engine.py`** renders subtitle for all slides; **`deck.schema.json`** regenerated.
 
 - **2026-04-22**: **[`CSS_CONTROLS.md`](CSS_CONTROLS.md)** — **Figure scale adjustments** section (per-layout, Mermaid/JS, two-column `vh` caps); template path **`skills/deck-compile/compiler/templates/base.html.j2`**.
 

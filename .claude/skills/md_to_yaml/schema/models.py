@@ -20,6 +20,7 @@ class SlideBase(BaseModel):
 
     layout: str
     title: str
+    subtitle: str | None = None
     notes: str | None = None
     skip: bool = False  # If True, slide is validated but excluded from compiled HTML
     body: str | None = Field(None, exclude=True)  # Markdown body, excluded from JSON Schema
@@ -32,7 +33,6 @@ class SlideBase(BaseModel):
 class TitleSlide(SlideBase):
     """Deck opener: big title + optional subtitle + optional author."""
     layout: Literal['title']
-    subtitle: str | None = None
     author: str | None = None
 
 

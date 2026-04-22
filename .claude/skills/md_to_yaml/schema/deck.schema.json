@@ -13,6 +13,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -24,6 +36,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -123,6 +140,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -134,6 +163,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -168,6 +202,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -179,6 +225,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -202,7 +253,7 @@
     },
     "DeckMetadata": {
       "additionalProperties": false,
-      "description": "Deck-level metadata from the first frontmatter block.\n\nAttributes:\n    flavor: When set to ``\"transcript\"``, HTML output applies dense\n        left-aligned styling to ``content`` and ``table`` slides\n        (``/transcribe_to_html``). Omitted for standard presentation decks.",
+      "description": "Deck-level metadata from the first frontmatter block.\n\nAttributes:\n    flavor: If ``'transcript'``, HTML uses dense left-aligned styling for\n        ``content`` and ``table`` slides (transcript / transcribe_to_html).\n        Omitted for standard presentation decks.",
       "properties": {
         "title": {
           "title": "Title",
@@ -258,6 +309,18 @@
           "title": "Font",
           "type": "string"
         },
+        "macros": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Macros"
+        },
         "title_font_size": {
           "default": "2.4rem",
           "title": "Title Font Size",
@@ -301,6 +364,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -312,6 +387,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -351,6 +431,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -362,6 +454,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -385,7 +482,7 @@
     },
     "FigureSlide": {
       "additionalProperties": false,
-      "description": "Raster image slide (JPEG/PNG). alt_text is required for ADA compliance.",
+      "description": "Image/diagram slide. Extension determines rendering: .jpg/.png/.gif/.webp \u2192 <img>, .svg \u2192 inline SVG, .mmd \u2192 Mermaid. alt_text required.",
       "properties": {
         "layout": {
           "const": "figure",
@@ -395,6 +492,18 @@
         "title": {
           "title": "Title",
           "type": "string"
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
         },
         "notes": {
           "anyOf": [
@@ -407,6 +516,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -438,6 +552,100 @@
       "title": "FigureSlide",
       "type": "object"
     },
+    "FigureWideSlide": {
+      "additionalProperties": false,
+      "description": "Wide-figure layout: full-width figure + two text columns below.\n\nFront matter holds figure metadata only (src, alt_text, caption, proportion).\nBody Markdown is parsed by the engine into summary, left-column, and\nright-column sections delimited by level-2 headings.",
+      "properties": {
+        "layout": {
+          "const": "figure-wide",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "src": {
+          "title": "Src",
+          "type": "string"
+        },
+        "alt_text": {
+          "title": "Alt Text",
+          "type": "string"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Caption"
+        },
+        "proportion": {
+          "default": "50/50",
+          "enum": [
+            "50/50",
+            "40/60",
+            "60/40"
+          ],
+          "title": "Proportion",
+          "type": "string"
+        }
+      },
+      "required": [
+        "layout",
+        "title",
+        "src",
+        "alt_text"
+      ],
+      "title": "FigureWideSlide",
+      "type": "object"
+    },
     "HeroSlide": {
       "additionalProperties": false,
       "description": "Section opener within a deck: section title + optional description.",
@@ -451,6 +659,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -462,6 +682,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -495,6 +720,68 @@
       "title": "HeroSlide",
       "type": "object"
     },
+    "ProofSlide": {
+      "additionalProperties": false,
+      "description": "Proof or derivation slide (Mathematical flavor).\n\nIdentical rendering to ContentSlide; distinguished layout type for\nfuture visual differentiation and slide-count statistics.",
+      "properties": {
+        "layout": {
+          "const": "proof",
+          "title": "Layout",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        }
+      },
+      "required": [
+        "layout",
+        "title"
+      ],
+      "title": "ProofSlide",
+      "type": "object"
+    },
     "QuoteSlide": {
       "additionalProperties": false,
       "description": "Pull-quote slide: title (the quote) + optional attribution.",
@@ -508,6 +795,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -519,6 +818,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -565,6 +869,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -576,6 +892,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -610,6 +931,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -621,6 +954,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -642,6 +980,26 @@
       "title": "SummarySlide",
       "type": "object"
     },
+    "TableCell": {
+      "additionalProperties": false,
+      "description": "A table cell with optional colspan (for spanning header rows).",
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "colspan": {
+          "default": 1,
+          "title": "Colspan",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "TableCell",
+      "type": "object"
+    },
     "TableSlide": {
       "additionalProperties": false,
       "description": "Data table with accessible markup.",
@@ -655,6 +1013,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -666,6 +1036,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -701,7 +1076,14 @@
         "rows": {
           "items": {
             "items": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/TableCell"
+                }
+              ]
             },
             "type": "array"
           },
@@ -734,6 +1116,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -746,6 +1140,11 @@
           "default": null,
           "title": "Notes"
         },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
+        },
         "body": {
           "anyOf": [
             {
@@ -757,18 +1156,6 @@
           ],
           "default": null,
           "title": "Body"
-        },
-        "subtitle": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Subtitle"
         },
         "author": {
           "anyOf": [
@@ -803,6 +1190,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -814,6 +1213,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -848,6 +1252,18 @@
           "title": "Title",
           "type": "string"
         },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        },
         "notes": {
           "anyOf": [
             {
@@ -859,6 +1275,11 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "skip": {
+          "default": false,
+          "title": "Skip",
+          "type": "boolean"
         },
         "body": {
           "anyOf": [
@@ -928,7 +1349,9 @@
             "diagram": "#/$defs/DiagramSlide",
             "divider": "#/$defs/DividerSlide",
             "figure": "#/$defs/FigureSlide",
+            "figure-wide": "#/$defs/FigureWideSlide",
             "hero": "#/$defs/HeroSlide",
+            "proof": "#/$defs/ProofSlide",
             "quote": "#/$defs/QuoteSlide",
             "steps": "#/$defs/StepsSlide",
             "summary": "#/$defs/SummarySlide",
@@ -959,6 +1382,9 @@
             "$ref": "#/$defs/FigureSlide"
           },
           {
+            "$ref": "#/$defs/FigureWideSlide"
+          },
+          {
             "$ref": "#/$defs/DiagramSlide"
           },
           {
@@ -981,6 +1407,9 @@
           },
           {
             "$ref": "#/$defs/TableSlide"
+          },
+          {
+            "$ref": "#/$defs/ProofSlide"
           }
         ]
       },

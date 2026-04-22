@@ -242,16 +242,15 @@ def _render(
             extract_and_render_math(str(slide.title), macros=macros)
         )
         rendered_subtitle = None
+        if getattr(slide, "subtitle", None):
+            rendered_subtitle = strip_math_display_inline_from_heading_html(
+                extract_and_render_math(str(slide.subtitle), macros=macros)
+            )
         rendered_author_line = None
-        if slide.layout == "title":
-            if getattr(slide, "subtitle", None):
-                rendered_subtitle = strip_math_display_inline_from_heading_html(
-                    extract_and_render_math(str(slide.subtitle), macros=macros)
-                )
-            if getattr(slide, "author", None):
-                rendered_author_line = strip_math_display_inline_from_heading_html(
-                    extract_and_render_math(str(slide.author), macros=macros)
-                )
+        if slide.layout == "title" and getattr(slide, "author", None):
+            rendered_author_line = strip_math_display_inline_from_heading_html(
+                extract_and_render_math(str(slide.author), macros=macros)
+            )
 
         _math_marker = "<math"
         title_has_math = _math_marker in rendered_title or (

@@ -19,7 +19,7 @@ import re
 from pathlib import Path
 
 import yaml
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from schema.models import AnySlide, Deck, DeckMetadata
 
@@ -32,6 +32,49 @@ def _strip_comments(text: str) -> str:
     return _COMMENT_LINE.sub('', text)
 
 _slide_adapter: TypeAdapter[AnySlide] = TypeAdapter(AnySlide)
+
+
+def _fence_line_numbers(text: str) -> list[int]:
+    """1-based line numbers of ``---`` fence rows."""
+    lines: list[int] = []
+    for i, line in enumerate(text.splitlines(), start=1):
+        if FENCE_RE.match(line):
+            lines.append(i)
+    return lines
+
+
+def _slide_frontmatter_start_line(fence_lines: list[int], slide_index: int) -> int | None:
+    """First 1-based line of slide ``slide_index`` YAML (0 = first content slide)."""
+    k = 2 + 2 * slide_index
+    if k >= len(fence_lines):
+        return None
+    return fence_lines[k] + 1
+
+
+def _append_slide_location_note(
+    path: str | Path,
+    raw_text: str,
+    slide_index: int,
+    exc: ValidationError,
+) -> None:
+    """Attach a source location note to a slide ``ValidationError``."""
+    fence_lines = _fence_line_numbers(raw_text)
+    start = _slide_frontmatter_start_line(fence_lines, slide_index)
+    resolved = Path(path).resolve()
+    slide_no = slide_index + 1
+    if start is not None:
+        msg = (
+            f"{resolved}: slide {slide_no} (content slide index {slide_index}) — "
+            f"frontmatter starts near line {start}"
+        )
+    else:
+        msg = (
+            f"{resolved}: slide {slide_no} (content slide index {slide_index}) — "
+            "could not map to a line number (check ``---`` fences)"
+        )
+    exc.add_note(msg)
+
+
 
 
 def parse_deck_file(path: str | Path) -> Deck:
@@ -47,7 +90,8 @@ def parse_deck_file(path: str | Path) -> Deck:
         ValueError: If the file is empty or metadata is malformed.
         pydantic.ValidationError: If any slide fails Pydantic validation.
     """
-    text = Path(path).read_text(encoding='utf-8').strip()
+    raw_text = Path(path).read_text(encoding='utf-8')
+    text = raw_text.strip()
 
     # Split on --- lines; the leading --- means the first part is empty
     parts = FENCE_RE.split(text)
@@ -108,7 +152,12 @@ def parse_deck_file(path: str | Path) -> Deck:
             i += 2  # advance by 2 (consumed frontmatter + body)
 
         frontmatter['body'] = body
-        slide = _slide_adapter.validate_python(frontmatter)
+        slide_idx = len(slides)
+        try:
+            slide = _slide_adapter.validate_python(frontmatter)
+        except ValidationError as exc:
+            _append_slide_location_note(path, raw_text, slide_idx, exc)
+            raise
         slides.append(slide)
 
     return Deck(metadata=metadata, slides=slides)
