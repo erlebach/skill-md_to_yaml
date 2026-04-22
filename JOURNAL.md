@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-04-22 - Deck HTML: centered counter (correct path: md_to_yaml skill)
+
+### Completed Tasks ✅
+- [x] **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`** — Bottom-**center** `.slide-footer-nav` (replaces `#slide-counter { right: 1rem }`); **`G`** / **`#`** go-to slide; print CSS hides `.slide-footer-nav`; nav **last** in **`<main>`** for tab order
+- [x] **Note** — Earlier edits under **`skills/deck-compile/`** were the wrong target for decks compiled from the **md_to_yaml** skill; that folder may not match the user’s workflow
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2` (patched via shell; path may be `.cursorignore` in the IDE), `JOURNAL.md`
+
+---
+
+## 2026-04-22 - Deck HTML: centered slide counter + go-to-slide (G / #) — superseded path note
+
+### Completed Tasks ✅
+- [x] **`base.html.j2`** — Fixed **bottom-center** footer bar (counter + compact controls); **`G`** toggles go-to **number** input; **`#`** button for mouse; **Enter** jumps, **Escape** cancels; nav at end of **`<main>`** for sensible tab order
+
+### Files Created/Modified
+- `skills/deck-compile/compiler/templates/base.html.j2`, `JOURNAL.md`
+
+---
+
 ## 2026-04-22 - Polylog plots: `--format png` and `--dpi`
 
 ### Completed Tasks ✅

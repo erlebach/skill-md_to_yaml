@@ -56,6 +56,8 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-04-22**: **Deck HTML** — slide chrome (centered counter + **`G`** / **`#`** go-to) lives in **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`** for decks built from that skill. (**`skills/deck-compile/`** is a separate vendored copy and may not be what you compile.)
+
 - **2026-04-22**: **`polylog/`** — matplotlib scripts **`plot_scaling_families.py`** / **`plot_attention_contrast.py`** (Agg) with **`--format svg|png`**, **`--dpi`** for PNG, default output name picks the extension; helper **`plot_export.py`**; optional deps **`polylog/requirements-plots.txt`**; illustrates **`polylog.md`** scalings.
 
 - **2026-04-22**: **[`CSS_CONTROLS.md`](CSS_CONTROLS.md)** — new **Display math (block `$$...$$`)** section (YAML + **`--math-display-scale` / `--math-display-color`**, center/start classes, template search); intro clarifies **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`** as the maintained template; summary table updated.

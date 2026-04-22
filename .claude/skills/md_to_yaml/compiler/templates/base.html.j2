@@ -13,7 +13,7 @@
 
     :root {
       /* Global multiplier applied to every content font-size (titles, body, captions,
-         tables, transcripts). UI chrome (#slide-counter, code-language-label) is
+         tables, transcripts). UI chrome (.slide-footer-nav, code-language-label) is
          intentionally excluded. Adjust to scale all text at once. */
       --font-scale: 1.35;
     }
@@ -67,13 +67,81 @@
     }
     .skip-link:focus { left: 0; }
 
-    #slide-counter {
+    /* Bottom-centered counter + go-to (fixed; no slide height cost). */
+    .slide-footer-nav {
       position: fixed;
       bottom: 1rem;
-      right: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
       font-size: 0.875rem;
       color: var(--muted);
-      z-index: 100;
+      padding: 0.2rem 0.55rem 0.25rem;
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      box-shadow: 0 1px 8px color-mix(in srgb, var(--bg) 40%, #000 60%);
+      backdrop-filter: blur(6px);
+    }
+
+    #slide-counter {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .slide-goto-open {
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1;
+      padding: 0.2rem 0.45rem;
+      color: var(--accent);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .slide-goto-open:hover,
+    .slide-goto-open:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .slide-goto-form {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0;
+    }
+
+    .slide-goto-form[hidden] {
+      display: none !important;
+    }
+
+    .slide-goto-input {
+      width: 4.5ch;
+      min-width: 3rem;
+      max-width: 6rem;
+      font: inherit;
+      font-size: 0.875rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.35rem;
+    }
+
+    .slide-goto-input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
     }
 
     main {
@@ -694,7 +762,7 @@
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      #slide-counter { display: none !important; }
+      .slide-footer-nav { display: none !important; }
     }
 
     .visually-hidden {
@@ -838,7 +906,6 @@
 <body>
   <a href="#main-content" class="skip-link">Skip to content</a>
   <main id="main-content" role="region" aria-roledescription="carousel" aria-label="{{ deck.metadata.title | e }}"{% if deck.metadata.flavor == 'transcript' %} class="deck-flavor-transcript"{% endif %}>
-    <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / {{ total }}</div>
     {% for s in slides %}
     {% set slide = s.slide %}
     {% set slide_id = s.slide_id %}
@@ -871,12 +938,58 @@
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}
+    <nav id="slide-footer-nav" class="slide-footer-nav" aria-label="Slide position and go to slide">
+      <span id="slide-counter" aria-live="polite" aria-atomic="true">1 / {{ total }}</span>
+      <form id="slide-goto-form" class="slide-goto-form" hidden>
+        <label for="slide-goto-input" class="visually-hidden">Go to slide number (1 to {{ total }})</label>
+        <input id="slide-goto-input" class="slide-goto-input" type="number" min="1" max="{{ total }}" step="1" inputmode="numeric" autocomplete="off" aria-label="Slide number, then press Enter" />
+      </form>
+      <button type="button" id="slide-goto-open" class="slide-goto-open" aria-expanded="false" aria-controls="slide-goto-form" title="Go to slide (keyboard: G)">#</button>
+    </nav>
   </main>
   <script>
   (function() {
     var slides = Array.from(document.querySelectorAll('[role="group"]'));
     var idx = 0;
     var counter = document.getElementById('slide-counter');
+    var gotoForm = document.getElementById('slide-goto-form');
+    var gotoInput = document.getElementById('slide-goto-input');
+    var gotoOpen = document.getElementById('slide-goto-open');
+
+    function isTypingInField(el) {
+      if (!el || !el.tagName) return false;
+      var tag = el.tagName.toLowerCase();
+      if (tag === 'textarea') return true;
+      if (tag === 'input') {
+        var t = (el.type || '').toLowerCase();
+        if (t === 'button' || t === 'submit' || t === 'checkbox' || t === 'radio') return false;
+        return true;
+      }
+      return el.isContentEditable;
+    }
+
+    function openGoto() {
+      gotoForm.hidden = false;
+      gotoOpen.hidden = true;
+      gotoOpen.setAttribute('aria-expanded', 'true');
+      gotoInput.value = String(idx + 1);
+      gotoInput.focus();
+      gotoInput.select();
+    }
+
+    function closeGoto() {
+      gotoForm.hidden = true;
+      gotoOpen.hidden = false;
+      gotoOpen.setAttribute('aria-expanded', 'false');
+    }
+
+    function submitGoto() {
+      var n = parseInt(gotoInput.value, 10);
+      if (!isFinite(n)) return;
+      n = Math.max(1, Math.min(slides.length, n));
+      goTo(n - 1);
+      closeGoto();
+    }
 
     // Keep idx in sync with the visible slide (handles find-in-page, direct scroll, etc.)
     var observer = new IntersectionObserver(function(entries) {
@@ -894,8 +1007,47 @@
       slides[idx].scrollIntoView({behavior: 'instant', block: 'start'});
       counter.textContent = (idx + 1) + ' / ' + slides.length;
     }
+
+    gotoOpen.addEventListener('click', function() { openGoto(); });
+
+    gotoForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      submitGoto();
+    });
+
+    gotoInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeGoto();
+        gotoOpen.focus();
+      }
+    });
+
+    gotoInput.addEventListener('blur', function() {
+      window.setTimeout(function() {
+        if (document.activeElement === gotoInput) return;
+        if (!gotoForm.hidden) closeGoto();
+      }, 120);
+    });
+
     document.addEventListener('keydown', function(e) {
-      if (e.target.closest('[role="region"]')) return; // let table scroll handle its own keys
+      if (e.key === 'g' || e.key === 'G') {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.repeat) return;
+        if (isTypingInField(e.target) && e.target !== gotoInput) return;
+        e.preventDefault();
+        if (!gotoForm.hidden) {
+          closeGoto();
+          return;
+        }
+        openGoto();
+        return;
+      }
+
+      if (document.activeElement === gotoInput) return;
+
+      if (e.target.closest('[role="region"]')) return;
+
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
         e.preventDefault(); goTo(idx + 1);
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
