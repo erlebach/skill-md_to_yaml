@@ -566,16 +566,32 @@
       border: 0;
     }
     {{ pygments_css | safe }}
-    /* ── figure-wide layout ────────────────────────────────────────────── */
+    /* ── figure-wide layout: smart figure — flex under 1in slide padding;
+       figure area flexes; media scales (max 100% / object-fit) so footer fits. ─ */
+    section.slide-figure-wide {
+      height: 100vh;
+      max-height: 100vh;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    section.slide-figure-wide > h2 {
+      flex-shrink: 0;
+    }
     .slide-figure-wide .slide-content-area {
       justify-content: flex-start;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
     }
     .figure-wide-layout {
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      flex: 1 1 auto;
+      min-height: 0;
     }
     .figure-wide-summary {
+      flex: 0 0 auto;
       text-align: left;
       max-width: 64em;
       font-size: calc(clamp(18px, 2vw, 24px) * var(--font-scale));
@@ -583,18 +599,76 @@
       margin-bottom: 0.25rem;
     }
     .figure-wide-figure-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 0.75rem;
       padding: 1rem 1.25rem;
     }
-    .figure-wide-figure { margin: 0; }
-    .figure-wide-figure img,
-    .slide-figure-wide .diagram-container svg {
+    .figure-wide-figure {
+      margin: 0;
+      min-width: 0;
+      min-height: 0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+    }
+    .figure-wide-media {
+      flex: 1 1 auto;
+      min-height: 0;
+      min-width: 0;
+      width: 100%;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .figure-wide-media .diagram-container {
+      flex: 1 1 auto;
+      min-height: 0;
+      min-width: 0;
+      width: 100%;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: auto;
+    }
+    .figure-wide-media .diagram-container svg,
+    .slide-figure-wide .figure-wide-media .diagram-container svg {
       max-width: 100%;
-      max-height: 55vh;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+    .figure-wide-media .diagram-container pre.mermaid {
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .figure-wide-figure > .figure-wide-media > img,
+    .figure-wide-media img {
+      flex: 0 1 auto;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
       margin: 0 auto;
       display: block;
+    }
+    .figure-wide-below {
+      flex: 0 0 auto;
     }
     .figure-wide-columns {
       align-items: start;
@@ -612,6 +686,7 @@
       width: 100%;
     }
     .slide-figure-wide figcaption {
+      flex: 0 0 auto;
       margin-top: 0.75rem;
       text-align: left;
     }
@@ -839,6 +914,22 @@
       const colW = container.getBoundingClientRect().width || (document.documentElement.clientWidth / 2);
       const availW = colW - PANEL_INSET;
       const availH = window.innerHeight - SLIDE_PAD * 2 - titleH - PANEL_INSET;
+      pickSizer(svg)(svg, availW, availH);
+    });
+
+    // Figure-wide: Mermaid in the flex panel — size to the wrap box (summary + footer
+    // already reduced the available region via flex layout).
+    const FW_INSET = 40;
+    document.querySelectorAll('.slide-figure-wide .figure-wide-figure-wrap .diagram-container svg[id^="mermaid"]').forEach(svg => {
+      const wrap = svg.closest('.figure-wide-figure-wrap');
+      if (!wrap) return;
+      const b = wrap.getBoundingClientRect();
+      const fig = svg.closest('.figure-wide-figure');
+      const cap = fig && fig.querySelector('figcaption');
+      const capH = (cap && cap.getBoundingClientRect().height) || 0;
+      const gap  = cap ? 12 : 0;
+      const availW = Math.max(40, b.width - FW_INSET);
+      const availH = Math.max(60, b.height - FW_INSET - capH - gap);
       pickSizer(svg)(svg, availW, availH);
     });
   </script>
