@@ -320,11 +320,14 @@ title: Why More Ancilla Qubits? Three Concrete Reasons
 - **Cost metric:** $\alpha$ controls computational cost — circuit repetitions and QSVT overhead
 
 ---
-layout: figure
+layout: figure-wide
 title: "Block-Encoding Circuit: Low-Level Gates and the Unitary Embedding"
 src: _page_3_Picture_0.jpeg
 alt_text: "Two-panel diagram. Left: three-qubit low-level fault-tolerant circuit with Hadamard on q0, CNOT between q0 and q1, Hadamard on q1, and Toffoli gate on all three qubits. Legend: CNOT requires O(n-squared) gates; native fault-tolerant gate set is T, CNOT, H. Right: block-encoding abstraction — ancilla register (a qubits, ket-zero) and system register (n qubits, ket-psi) feed into U_A; ancilla wires post-selected to ket-zero. Caption: if A is N-by-N then U_A is 2N-by-2N for one ancilla qubit; total qubits equals n plus a where a equals log base 2 of one over alpha."
 ---
+## Summary
+We are moving past the need to talk in terms of individual gates (S, Z, CNOT). Instead, discuss matrix components 
+via block embedding. 
 
 ---
 layout: divider
@@ -349,24 +352,12 @@ src: _page_11_Figure_0.jpeg
 alt_text: "Two-column diagram comparing NISQ era (left) and FTQC era (right). NISQ: salmon box for noise mitigation shots (gate errors, readout errors, cross-talk; overhead 10x to 1000x) plus purple box for statistical estimation shots (quantum measurement is probabilistic, fundamental and unavoidable). FTQC: noise mitigation box is crossed out (logical error rate approximately 10 to the minus 15, overhead eliminated); statistical estimation box remains active. Equations: total NISQ shots equals stats times noise overhead; total FTQC shots approximately statistical floor only."
 ---
 
----
-layout: content
-title: The Statistical Floor — Hoeffding Bound
----
-- For a $k$-qubit system, estimating output probabilities to precision $\varepsilon$ with confidence $1-\delta$:
-
-$$S \geq \frac{1}{2\varepsilon^2} \ln\!\left(\frac{2}{\delta}\right)$$
-
-- **Independent of qubit count** — asking "did the 64-qubit algorithm output the right answer?" costs the same shots as a 1-qubit experiment asking the same binary question
-- For $\varepsilon = 0.03$, $\delta = 0.01$: $S \approx 2{,}800$ shots regardless of system size
-- **Full state tomography** is the exception: recovering all $2^k$ amplitudes costs $O(2^k / \varepsilon^2)$ — exponential and infeasible at scale
-
----
-layout: figure
-title: "Hoeffding Bound: Shots Scale with the Question, Not the System"
-src: _page_12_Figure_0.jpeg
-alt_text: "Two-panel diagram. Left: purple box showing Hoeffding bound S greater than or equal to ln(2 over delta) divided by 2 epsilon squared; epsilon is desired precision; delta is failure probability; bound is independent of qubit count n for binary questions. Green box: key insight, shots scale with question precision not Hilbert space size 2-to-the-n; full tomography does not equal running an algorithm. Right: table for epsilon 0.03, delta 0.01 — 1 qubit, 4 qubits, and 64 qubits asking binary questions all require approximately 2800 shots; 64 qubits full state tomography is labeled Impossible."
----
+# ---
+#layout: figure
+#title: "Hoeffding Bound: Shots Scale with the Question, Not the System"
+#src: _page_12_Figure_0.jpeg
+#alt_text: "Two-panel diagram. Left: purple box showing Hoeffding bound S greater than or equal to ln(2 over delta) divided by 2 epsilon squared; epsilon is desired precision; delta is failure probability; bound is independent of qubit count n for binary questions. Green box: key insight, shots scale with question precision not Hilbert space size 2-to-the-n; full tomography does not equal running an algorithm. Right: table for epsilon 0.03, delta 0.01 — 1 qubit, 4 qubits, and 64 qubits asking binary questions all require approximately 2800 shots; 64 qubits full state tomography is labeled Impossible."
+# ---
 
 ---
 layout: content
@@ -380,6 +371,7 @@ title: "Shots in Practice: NISQ Explodes, FTQC Stays Flat"
 ---
 layout: figure
 title: "NISQ vs FTQC Shot Counts: Three Concrete Examples"
+skip: true
 src: _page_11_Figure_2.jpeg
 alt_text: "Bar chart with logarithmic y-axis (10 to 10 million) comparing NISQ and FTQC shot counts for 1 qubit, 4 qubits, and 64 qubits. For 1 qubit: NISQ approximately 5 thousand, FTQC approximately 3 thousand. For 4 qubits: NISQ approximately 50 thousand, FTQC approximately 2 thousand. For 64 qubits: NISQ bar extends to intractable region; FTQC bar shows approximately 40 shots for algorithm output. The purple statistical floor sub-bar inside NISQ bars stays roughly constant while NISQ overhead explodes with qubit count."
 ---
@@ -389,11 +381,13 @@ layout: figure
 title: "The NISQ Wall: Tractability in the Depth vs Qubit Count Plane"
 src: _page_12_Figure_2.jpeg
 alt_text: "Scatter plot with logarithmic x-axis (qubit count 1 to 1000 plus) and y-axis (circuit depth shallow to deep). Lower-left triangle shaded green labeled NISQ tractable. Salmon region labeled NISQ intractable, noise overwhelms signal. Upper-right green box labeled FTQC tractable, entire plane accessible via error correction. Three data points: 1 qubit shallow (NISQ 5K, FTQC 3K); 4 qubits medium depth (NISQ 50K, FTQC 2K); 64 qubits deep (NISQ intractable, FTQC approximately 40 shots). Dashed diagonal line separates NISQ tractable from intractable."
+skip: true
 ---
 
 ---
 layout: table
 title: FTQC Shot Regimes
+skip: true
 caption: "Shot requirements in FTQC depend on what the algorithm outputs, not on system size."
 headers: ['Algorithm type', 'Example', 'FTQC shots', 'Governed by']
 rows:
@@ -421,11 +415,21 @@ $$A = U \Sigma V^\dagger$$
 - **Why target singular values?** Low-rank approximation, pseudoinverse, and attention scores are all functions of $\{\sigma_i\}$
 
 ---
-layout: figure
+layout: figure-wide
 title: "SVD as Three Geometric Stages: Rotate, Stretch, Rotate"
-src: _page_20_Figure_0.jpeg
+# src: _page_20_Figure_0.jpeg
+src: svd_interpretation.png
 alt_text: "Four-stage geometric diagram with a consistent 35-degree rotation carried through all stages. Stage 1 (blue circle): standard basis vectors e1 horizontal and e2 vertical in R-n. After V-dagger (rotate): stage 2 (green circle) axes rotated 35 degrees to right singular vectors v1 and v2, perpendicular. After Sigma (stretch): stage 3 (gold ellipse) circle stretched to ellipse with long axis sigma-1 times v1 and short axis sigma-2 times v2, tilted at the rotation angle. After U (rotate): stage 4 (red ellipse) rotated to output space R-m with axes u1 and u2. Caption: v1 direction is consistent across stages 2 and 3; ellipse long axis is exactly where the rotated arrow points."
 ---
+## Summary
+- Every matrix $A \in \mathbb{C}^{m \times n}$ admits: $A = U \Sigma V^\dagger$
+
+## Properties
+- $U$, $V$ unitary (rotations); $\Sigma$ diagonal with singular values $\sigma_1 \geq \sigma_2 \geq \cdots \geq \sigma_r \geq 0$
+- **Geometric reading:** $V^\dagger$ rotates input to right singular vector basis; $\Sigma$ stretches along those axes; $U$ rotates result to output basis
+- **Key insight:** the singular values $\{\sigma_i\}$ are the intrinsic amplitudes of the transformation — basis-independent and encoding all scaling information
+- **Why target singular values?** Low-rank approximation, pseudoinverse, and attention scores are all functions of $\{\sigma_i\}$
+
 
 ---
 layout: content
