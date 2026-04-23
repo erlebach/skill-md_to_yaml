@@ -10,6 +10,7 @@
 
 ## Active Features
 
+- **In-page view scale** — **`view_scale`** (default **1.0**, range **0.25–4**) and optional **`remember_view_scale`** on **`DeckMetadata`**; HTML **`#deck-app-root`** applies **`--deck-view-scale`** (**`zoom`**, **`transform`** fallback). Footer at **`bottom: 1in`**: **`−` / `+` / `↺`**, live **`%`** readout, keys **`+`/`=`**, **`−`**, **`0`** (reset when go-to closed), **`?viewScale=`** URL override, **`localStorage`** key **`mdToYamlDeckViewScale`** when persistence is on (see **`HANDOFF_ZOOM.md`**).
 - **Display math tuning** — deck metadata and per-slide frontmatter: **`math_display_scale`** (**0.75–2.0**, default **1.0**), **`math_display_center`** (default **true**), and optional **`math_display_color`** (e.g. **`cyan`**, hex, **`hsl(...)`**) for **`$$...$$`** block MathML in body, hero, and table cells; HTML sets **`--math-display-scale`**, optional **`--math-display-color`**, and **`math-display-eq-center`** / **`math-display-eq-start`** on each **`<section>`** (under **`.claude/skills/md_to_yaml`**). When centering is on, block MathML also uses **`width: fit-content; max-width: 100%`** with **`margin: auto`** so bare **`<math>`** between paragraphs still centers.
 - **Slide `subtitle`** — optional on all layouts that have **`title`**; rendered below the heading with **80%** of the title font size (CSS **`0.8em`** on **`header.slide-heading-stack`**); rich text / inline math like **`title`**
 - **`transcribe_to_html`** — transcript decks: dense left-aligned body text via `flavor: transcript`
@@ -55,6 +56,10 @@ md_to_yaml/
 ```
 
 ## Recent Changes
+
+- **2026-04-22**: **View scale in compiled decks** — **`base.html.j2`**: **`#deck-app-root`**, footer zoom cluster at **1in** bottom margin, keyboard shortcuts, URL/localStorage per **`HANDOFF_ZOOM.md`**; **`schema/models.py`** + **`deck.schema.json`** for **`view_scale`** / **`remember_view_scale`**.
+
+- **2026-04-22**: **[`HANDOFF_ZOOM.md`](HANDOFF_ZOOM.md)** — resume handoff: in-page view scale, browser zoom limits, **`.claude/skills/md_to_yaml/`** compiler path, `DeckMetadata` vs `engine.py`, `macros`, YAML escaped-LaTeX gotchas.
 
 - **2026-04-22**: **Deck HTML** — slide chrome (centered counter + **`G`** / **`#`** go-to) lives in **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`** for decks built from that skill. (**`skills/deck-compile/`** is a separate vendored copy and may not be what you compile.)
 

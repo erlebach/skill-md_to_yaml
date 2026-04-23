@@ -2,6 +2,31 @@
 
 ---
 
+## 2026-04-22 - In-page view scale (zoom +/−/reset, footer + keyboard)
+
+### Completed Tasks ✅
+- [x] **`#deck-app-root`** wraps slide **`<section>`**s only; **`--deck-view-scale`** via **`zoom`** with **`@supports not (zoom: …)`** **`transform: scale(...)`** fallback
+- [x] **Footer** — **`−` / `%` / `+` / `↺`** cluster in **`bottom: 1in`** margin band; **`mdToYamlDeckViewScale`** localStorage when **`remember_view_scale: true`**
+- [x] **Keyboard** — **`+`** / **`=`** zoom in, **`−`** / **`_`** out, **`0`** reset (when go-to form closed); **`?viewScale=`** URL override
+- [x] **`DeckMetadata`** — **`view_scale`** (0.25–4), **`remember_view_scale`**; **`deck.schema.json`** regenerated
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+- `.claude/skills/md_to_yaml/schema/models.py`, `schema/deck.schema.json`
+- `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
+## 2026-04-22 - HANDOFF_ZOOM.md (resume after chat clear)
+
+### Completed Tasks ✅
+- [x] **`HANDOFF_ZOOM.md`** — In-page view scale vs browser zoom, canonical **`.claude/skills/md_to_yaml/`** path, `DeckMetadata` / `engine.py` sync note, `macros`, YAML `\\gg` in captions, links to `CSS_CONTROLS.md` / `HANDOFF_CENTER.md`
+
+### Files Created/Modified
+- `HANDOFF_ZOOM.md`, `JOURNAL.md`
+
+---
+
 ## 2026-04-22 - Deck HTML: centered counter (correct path: md_to_yaml skill)
 
 ### Completed Tasks ✅

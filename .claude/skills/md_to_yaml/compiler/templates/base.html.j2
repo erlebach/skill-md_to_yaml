@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ deck.metadata.theme }}">
+<html lang="en" data-theme="{{ deck.metadata.theme }}" data-deck-default-view-scale="{{ deck.metadata.view_scale }}" data-deck-remember-view-scale="{{ 'true' if deck.metadata.remember_view_scale else 'false' }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,10 +67,23 @@
     }
     .skip-link:focus { left: 0; }
 
-    /* Bottom-centered counter + go-to (fixed; no slide height cost). */
+    /* Slide content wrapper: in-page view scale (see HANDOFF_ZOOM.md). Nav stays a
+       sibling so position:fixed in the footer is not broken by transform fallbacks. */
+    #deck-app-root {
+      --deck-view-scale: 1;
+      zoom: var(--deck-view-scale);
+    }
+    @supports not (zoom: 0.5) {
+      #deck-app-root {
+        transform-origin: top center;
+        transform: scale(var(--deck-view-scale));
+      }
+    }
+
+    /* Bottom-centered counter + go-to + view scale (fixed; 1in margin band). */
     .slide-footer-nav {
       position: fixed;
-      bottom: 1rem;
+      bottom: 1in;
       left: 50%;
       transform: translateX(-50%);
       z-index: 100;
@@ -112,6 +125,44 @@
     .slide-goto-open:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 1px;
+    }
+
+    .deck-view-scale-cluster {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding-right: 0.45rem;
+      margin-right: 0.35rem;
+      border-right: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+    }
+
+    .deck-view-scale-btn {
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1;
+      min-width: 1.65rem;
+      padding: 0.15rem 0.35rem;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .deck-view-scale-btn:hover,
+    .deck-view-scale-btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    #deck-view-scale-pct {
+      font-variant-numeric: tabular-nums;
+      font-size: 0.78rem;
+      color: var(--muted);
+      min-width: 2.75rem;
+      text-align: center;
+      user-select: none;
     }
 
     .slide-goto-form {
@@ -906,6 +957,7 @@
 <body>
   <a href="#main-content" class="skip-link">Skip to content</a>
   <main id="main-content" role="region" aria-roledescription="carousel" aria-label="{{ deck.metadata.title | e }}"{% if deck.metadata.flavor == 'transcript' %} class="deck-flavor-transcript"{% endif %}>
+    <div id="deck-app-root">
     {% for s in slides %}
     {% set slide = s.slide %}
     {% set slide_id = s.slide_id %}
@@ -938,7 +990,14 @@
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}
-    <nav id="slide-footer-nav" class="slide-footer-nav" aria-label="Slide position and go to slide">
+    </div>
+    <nav id="slide-footer-nav" class="slide-footer-nav" aria-label="Slide position, view scale, and go to slide">
+      <span class="deck-view-scale-cluster" role="group" aria-label="View scale">
+        <button type="button" id="deck-view-zoom-out" class="deck-view-scale-btn" title="Zoom out (keyboard −)" aria-keyshortcuts="-">−</button>
+        <span id="deck-view-scale-pct" aria-live="polite">100%</span>
+        <button type="button" id="deck-view-zoom-in" class="deck-view-scale-btn" title="Zoom in (keyboard + or =)" aria-keyshortcuts="+ Shift+=">+</button>
+        <button type="button" id="deck-view-zoom-reset" class="deck-view-scale-btn" title="Reset view scale (keyboard 0)" aria-keyshortcuts="0">↺</button>
+      </span>
       <span id="slide-counter" aria-live="polite" aria-atomic="true">1 / {{ total }}</span>
       <form id="slide-goto-form" class="slide-goto-form" hidden>
         <label for="slide-goto-input" class="visually-hidden">Go to slide number (1 to {{ total }})</label>
@@ -949,12 +1008,89 @@
   </main>
   <script>
   (function() {
-    var slides = Array.from(document.querySelectorAll('[role="group"]'));
+    var deckRoot = document.getElementById('deck-app-root');
+    var slides = Array.from(document.querySelectorAll('#deck-app-root [role="group"]'));
     var idx = 0;
     var counter = document.getElementById('slide-counter');
     var gotoForm = document.getElementById('slide-goto-form');
     var gotoInput = document.getElementById('slide-goto-input');
     var gotoOpen = document.getElementById('slide-goto-open');
+    var zoomOutBtn = document.getElementById('deck-view-zoom-out');
+    var zoomInBtn = document.getElementById('deck-view-zoom-in');
+    var zoomResetBtn = document.getElementById('deck-view-zoom-reset');
+    var scalePctEl = document.getElementById('deck-view-scale-pct');
+
+    var htmlEl = document.documentElement;
+    var defaultViewScale = parseFloat(htmlEl.getAttribute('data-deck-default-view-scale') || '1', 10);
+    if (!isFinite(defaultViewScale) || defaultViewScale <= 0) defaultViewScale = 1;
+    var rememberViewScale = htmlEl.getAttribute('data-deck-remember-view-scale') === 'true';
+    var VIEW_SCALE_LS = 'mdToYamlDeckViewScale';
+    var VIEW_SCALE_MIN = 0.25;
+    var VIEW_SCALE_MAX = 4;
+    var VIEW_SCALE_STEP = 1.1;
+
+    function clampViewScale(x) {
+      return Math.max(VIEW_SCALE_MIN, Math.min(VIEW_SCALE_MAX, x));
+    }
+
+    function parseViewScaleParam(raw) {
+      if (raw == null || raw === '') return null;
+      var s = String(raw).trim();
+      if (s.endsWith('%')) {
+        var n = parseFloat(s.slice(0, -1), 10);
+        return isFinite(n) ? n / 100 : null;
+      }
+      var f = parseFloat(s, 10);
+      return isFinite(f) ? f : null;
+    }
+
+    function readInitialViewScale() {
+      var params = new URLSearchParams(window.location.search);
+      var fromUrl = parseViewScaleParam(params.get('viewScale'));
+      if (fromUrl != null) return clampViewScale(fromUrl);
+      if (rememberViewScale) {
+        try {
+          var st = localStorage.getItem(VIEW_SCALE_LS);
+          if (st != null) {
+            var v = parseFloat(st, 10);
+            if (isFinite(v)) return clampViewScale(v);
+          }
+        } catch (err) {}
+      }
+      return clampViewScale(defaultViewScale);
+    }
+
+    var viewScale = readInitialViewScale();
+
+    function persistViewScale() {
+      if (!rememberViewScale) return;
+      try {
+        localStorage.setItem(VIEW_SCALE_LS, String(viewScale));
+      } catch (err) {}
+    }
+
+    function formatScalePct(x) {
+      return Math.round(x * 100) + '%';
+    }
+
+    function applyViewScale(next) {
+      viewScale = clampViewScale(next);
+      if (deckRoot) {
+        deckRoot.style.setProperty('--deck-view-scale', String(viewScale));
+      }
+      if (scalePctEl) scalePctEl.textContent = formatScalePct(viewScale);
+      persistViewScale();
+    }
+
+    applyViewScale(viewScale);
+
+    function bumpViewScale(factor) {
+      applyViewScale(viewScale * factor);
+    }
+
+    if (zoomOutBtn) zoomOutBtn.addEventListener('click', function() { bumpViewScale(1 / VIEW_SCALE_STEP); });
+    if (zoomInBtn) zoomInBtn.addEventListener('click', function() { bumpViewScale(VIEW_SCALE_STEP); });
+    if (zoomResetBtn) zoomResetBtn.addEventListener('click', function() { applyViewScale(defaultViewScale); });
 
     function isTypingInField(el) {
       if (!el || !el.tagName) return false;
@@ -1045,6 +1181,24 @@
       }
 
       if (document.activeElement === gotoInput) return;
+
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (e.key === '+' || e.key === '=') {
+          e.preventDefault();
+          bumpViewScale(VIEW_SCALE_STEP);
+          return;
+        }
+        if (e.key === '-' || e.key === '_') {
+          e.preventDefault();
+          bumpViewScale(1 / VIEW_SCALE_STEP);
+          return;
+        }
+        if (e.key === '0' && gotoForm.hidden) {
+          e.preventDefault();
+          applyViewScale(defaultViewScale);
+          return;
+        }
+      }
 
       if (e.target.closest('[role="region"]')) return;
 

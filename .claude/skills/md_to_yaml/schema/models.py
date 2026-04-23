@@ -259,6 +259,16 @@ class DeckMetadata(BaseModel):
         default=None,
         description='Optional CSS color for $$...$$ (display / block) math in slide bodies and tables.',
     )
+    view_scale: float = Field(
+        1.0,
+        ge=0.25,
+        le=4.0,
+        description='Default in-page view scale for slide content (not the browser tab zoom).',
+    )
+    remember_view_scale: bool = Field(
+        False,
+        description='If True, persist view-scale adjustments in localStorage.',
+    )
 
     @field_validator('math_display_color')
     @classmethod

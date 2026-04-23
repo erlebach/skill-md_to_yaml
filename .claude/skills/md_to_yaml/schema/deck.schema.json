@@ -493,6 +493,20 @@
           "default": null,
           "description": "Optional CSS color for $$...$$ (display / block) math in slide bodies and tables.",
           "title": "Math Display Color"
+        },
+        "view_scale": {
+          "default": 1.0,
+          "description": "Default in-page view scale for slide content (not the browser tab zoom).",
+          "maximum": 4.0,
+          "minimum": 0.25,
+          "title": "View Scale",
+          "type": "number"
+        },
+        "remember_view_scale": {
+          "default": false,
+          "description": "If True, persist view-scale adjustments in localStorage.",
+          "title": "Remember View Scale",
+          "type": "boolean"
         }
       },
       "required": [
