@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-04-24 - layout: figure — Mermaid actually fills the box (higher vh/width caps)
+
+### Completed Tasks ✅
+- [x] **Mermaid (layout: figure)** — Stopped using **`.figure-asset` getBoundingClientRect** (pre-layout ~0) and **pickSizer** / **`sizeSvg`** (tight 20–24pt font band blocks large `fitScale`). **sizeSvgFit** with **viewport**-derived **`availW`** / **`availH`**: **88%|95% × figure_scale** width (minus padding), **min(72|78 vh×scale, space below h2)** height; **JS** **`wFrac` / `vhFrac`** match **CSS** caps
+- [x] **CSS** — Broader use of slide: **88%|95%** (was 80%|90%) and **72vh|78vh** (was 62vh|68vh) times **`figure_scale`** for **img** / **inline SVG**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+- `JOURNAL.md`, `SNAPSHOT.md`
+
+### Key Changes
+- At **`figure_scale` 1, 2, 4**, Mermaid flowcharts and similar diagrams can grow to the intended cap instead of staying tiny; **.25, .5** still shrink as before.
+
+---
+
 ## 2026-04-23 - layout: figure — proportional media, fit-content panel, Mermaid sizer
 
 ### Completed Tasks ✅

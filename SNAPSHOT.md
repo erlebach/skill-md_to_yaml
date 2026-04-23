@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-23
+# Project Snapshot — 2026-04-24
 
 ## Current Architecture
 
@@ -57,7 +57,8 @@ md_to_yaml/
 
 ## Recent Changes
 
-- **2026-04-23**: **layout: figure** — **`.claude/skills/md_to_yaml`**: templates **`figure-asset-wrap`** / **`figure-asset`**, panel **`width: fit-content`**, **`max-height: calc(62vh * figure_scale)`** (and figure-only **68vh**) with **`max-width: 100%`** on media, **`figure_layout_debug`** outlines updated; Mermaid on figure slides uses **`pickSizer`** against the **`.figure-asset`** rect (same family as diagram / two-column / figure-wide).
+- **2026-04-24**: **layout: figure (Mermaid)** — **`sizeSvgFit`** + **viewport** caps aligned with **88%|95%** and **72vh|78vh** (×**`figure_scale`**), **not** a near-zero **`.figure-asset` BCR** and **not** the **`sizeSvg` font band**; image/SVG **CSS** caps raised so scales **1, 2, 4** use the slide.
+- **2026-04-23**: **layout: figure** — **`.claude/skills/md_to_yaml`**: templates **`figure-asset-wrap`** / **`figure-asset`**, panel **`width: fit-content`**, **`figure_layout_debug`** on wrap vs media.
 - **2026-04-22**: **View scale in compiled decks** — **`base.html.j2`**: **`#deck-app-root`**, footer zoom cluster at **1in** bottom margin, keyboard shortcuts, URL/localStorage per **`HANDOFF_ZOOM.md`**; **`schema/models.py`** + **`deck.schema.json`** for **`view_scale`** / **`remember_view_scale`**.
 
 - **2026-04-22**: **[`HANDOFF_ZOOM.md`](HANDOFF_ZOOM.md)** — resume handoff: in-page view scale, browser zoom limits, **`.claude/skills/md_to_yaml/`** compiler path, `DeckMetadata` vs `engine.py`, `macros`, YAML escaped-LaTeX gotchas.

@@ -645,7 +645,7 @@
     .figure-asset-wrap {
       display: block;
       width: fit-content;
-      max-width: min(100%, calc(80% * var(--figure-scale, 1)));
+      max-width: min(100%, calc(88% * var(--figure-scale, 1)));
       margin-left: auto;
       margin-right: auto;
       box-sizing: border-box;
@@ -656,10 +656,10 @@
     }
     .figure-only .figure-asset-wrap { padding: 2rem 2.5rem 1.25rem; }
     .slide-figure .figure-asset-wrap {
-      max-width: min(100%, calc(80% * var(--figure-scale, 1)));
+      max-width: min(100%, calc(88% * var(--figure-scale, 1)));
     }
     .slide-figure.figure-only .figure-asset-wrap {
-      max-width: min(100%, calc(90% * var(--figure-scale, 1)));
+      max-width: min(100%, calc(95% * var(--figure-scale, 1)));
     }
     .figure-asset {
       display: block;
@@ -669,7 +669,7 @@
     .figure-asset > img,
     .figure-asset .diagram-container img {
       max-width: 100%;
-      max-height: calc(62vh * var(--figure-scale, 1));
+      max-height: calc(72vh * var(--figure-scale, 1));
       width: auto;
       height: auto;
       object-fit: contain;
@@ -678,7 +678,7 @@
     }
     .slide-figure.figure-only .figure-asset > img,
     .slide-figure.figure-only .figure-asset .diagram-container img {
-      max-height: calc(68vh * var(--figure-scale, 1));
+      max-height: calc(78vh * var(--figure-scale, 1));
     }
     .slide-figure .figure-asset .diagram-container {
       text-align: center;
@@ -687,7 +687,7 @@
     }
     .slide-figure .figure-asset .diagram-container svg {
       max-width: 100%;
-      max-height: calc(62vh * var(--figure-scale, 1));
+      max-height: calc(72vh * var(--figure-scale, 1));
       width: auto;
       height: auto;
       object-fit: contain;
@@ -695,7 +695,7 @@
       margin: 0 auto;
     }
     .slide-figure.figure-only .figure-asset .diagram-container svg {
-      max-height: calc(68vh * var(--figure-scale, 1));
+      max-height: calc(78vh * var(--figure-scale, 1));
     }
     .slide-figure .figure-asset .diagram-container pre.mermaid {
       max-width: 100%;
@@ -1444,15 +1444,28 @@
       pickSizer(svg)(svg, availW, availH);
     });
 
-    // layout: figure — Mermaid fits the .figure-asset box (same proportional behavior as
-    // raster/SVG: available width/height from CSS, aspect preserved by pickSizer).
+    // layout: figure — Mermaid: do NOT use .figure-asset getBoundingClientRect (often ~0
+    // before layout); do NOT use pickSizer’s sizeSvg (20–24pt font band clamps large fits).
+    // Match the CSS max-width and max-height: calc(…vh * --figure-scale) caps.
+    const FIG_WRAP_INSET = 80;  // ~horizontal padding 2rem*2 + border
+    const FIG_V_PAD = 48;  // top/bottom padding slack inside wrap vs SVG box
     document.querySelectorAll('.slide-figure .figure-asset .diagram-container svg[id^="mermaid"]').forEach(svg => {
-      const asset = svg.closest('.figure-asset');
-      if (!asset) return;
-      const b = asset.getBoundingClientRect();
-      const availW = Math.max(40, b.width);
-      const availH = Math.max(40, b.height);
-      pickSizer(svg)(svg, availW, availH);
+      const section = svg.closest('section.slide-figure');
+      if (!section) return;
+      const isOnly = section.classList.contains('figure-only');
+      const wFrac = isOnly ? 0.95 : 0.88;  // match .figure-asset-wrap max-width caps
+      const vhFrac = isOnly ? 0.78 : 0.72;  // match img/svg max-height: calc(…vh * scale)
+      const raw = (getComputedStyle(section).getPropertyValue('--figure-scale') || '1').trim();
+      const fscale = Math.max(0.25, Math.min(4, parseFloat(raw) || 1));
+      const titleBlock = section.querySelector('header.slide-heading-stack') || section.querySelector('h2');
+      const titleBottom = titleBlock ? titleBlock.getBoundingClientRect().bottom : 0;
+      const maxBelowTitle = window.innerHeight - titleBottom - SLIDE_PAD;
+      const cw = document.documentElement.clientWidth - 2 * SLIDE_PAD;
+      const maxWrapW = Math.min(cw, cw * wFrac * fscale);
+      const availW = Math.max(40, maxWrapW - FIG_WRAP_INSET);
+      const fromVh = window.innerHeight * vhFrac * fscale;
+      const availH = Math.max(60, Math.min(fromVh, maxBelowTitle) - FIG_V_PAD);
+      sizeSvgFit(svg, availW, availH);
     });
 
     // Figure-wide: Mermaid in the flex panel — size to the wrap box (summary + footer
