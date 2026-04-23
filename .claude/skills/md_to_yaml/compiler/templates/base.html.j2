@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ deck.metadata.theme }}" data-deck-default-view-scale="{{ deck.metadata.view_scale }}" data-deck-remember-view-scale="{{ 'true' if deck.metadata.remember_view_scale else 'false' }}">
+<html lang="en" data-theme="{{ deck.metadata.theme }}" data-deck-default-view-scale="{{ deck.metadata.view_scale }}" data-deck-remember-view-scale="{{ 'true' if deck.metadata.remember_view_scale else 'false' }}" data-deck-figure-layout-debug="{{ 'true' if figure_layout_debug else 'false' }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,9 +12,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      /* Global multiplier applied to every content font-size (titles, body, captions,
-         tables, transcripts). UI chrome (.slide-footer-nav, code-language-label) is
-         intentionally excluded. Adjust to scale all text at once. */
+      /* Baseline zoom; per-slide --title-scale / --content-scale set on each section. */
       --font-scale: 1.35;
     }
 
@@ -210,6 +208,8 @@
       padding: 1in;
       scroll-snap-align: start;
       border: 2px solid var(--slide-frame);
+      --title-font-mul: calc(var(--font-scale) * var(--title-scale));
+      --content-font-mul: calc(var(--font-scale) * var(--content-scale));
     }
     /* Title and divider slides: centered (presentation default) */
     section[role="group"].slide-title,
@@ -248,7 +248,7 @@
 
     /* Title slide (h1) — ADA projection scale */
     h1 {
-      font-size: calc(clamp(48px, 10vw, 96px) * var(--font-scale));
+      font-size: calc(clamp(48px, 10vw, 96px) * var(--title-font-mul));
       font-weight: 700;
       line-height: 1.0;
       text-wrap: balance;
@@ -262,7 +262,7 @@
       margin-bottom: 1rem;
     }
     .slide-heading-stack--title {
-      font-size: calc(clamp(48px, 10vw, 96px) * var(--font-scale));
+      font-size: calc(clamp(48px, 10vw, 96px) * var(--title-font-mul));
       margin-bottom: 1rem;
     }
     .slide-heading-stack--title h1 {
@@ -280,7 +280,7 @@
       text-wrap: balance;
     }
     .slide-heading-stack--standard {
-      font-size: calc(clamp(32px, 5vw, 52px) * var(--font-scale));
+      font-size: calc(clamp(32px, 5vw, 52px) * var(--title-font-mul));
     }
     .slide-heading-stack--standard h2 {
       font-size: 1em;
@@ -297,7 +297,7 @@
       text-wrap: balance;
     }
     .slide-heading-stack--divider {
-      font-size: calc(clamp(48px, 8vw, 80px) * var(--font-scale));
+      font-size: calc(clamp(48px, 8vw, 80px) * var(--title-font-mul));
     }
     .slide-heading-stack--divider h2 {
       font-size: 1em;
@@ -314,7 +314,7 @@
       text-wrap: balance;
     }
     .slide-quote-block {
-      font-size: calc(clamp(28px, 3.5vw, 44px) * var(--font-scale));
+      font-size: calc(clamp(28px, 3.5vw, 44px) * var(--title-font-mul));
     }
     section.slide-quote .slide-quote-block blockquote {
       font-size: 1em;
@@ -329,13 +329,13 @@
       text-wrap: balance;
     }
     .slide-title .author {
-      font-size: calc(clamp(20px, 2.2vw, 28px) * var(--font-scale));
+      font-size: calc(clamp(20px, 2.2vw, 28px) * var(--content-font-mul));
       text-align: center;
       color: var(--muted);
     }
 
     h2 {
-      font-size: calc(clamp(32px, 5vw, 52px) * var(--font-scale));
+      font-size: calc(clamp(32px, 5vw, 52px) * var(--title-font-mul));
       font-weight: 700;
       line-height: 1.1;
       text-wrap: balance;
@@ -354,12 +354,12 @@
       color: var(--accent);
     }
     h3 {
-      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--font-scale));
+      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--title-font-mul));
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
     .slide-body {
-      font-size: calc(clamp(20px, 2.2vw, 28px) * var(--font-scale));
+      font-size: calc(clamp(20px, 2.2vw, 28px) * var(--content-font-mul));
       line-height: 1.6;
       text-align: left;
     }
@@ -475,12 +475,12 @@
     }
 
     .hero-description {
-      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--font-scale));
+      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--title-font-mul));
       color: var(--muted);
       text-align: center;
     }
     .hero-body {
-      font-size: calc(clamp(20px, 2.4vw, 30px) * var(--font-scale));
+      font-size: calc(clamp(20px, 2.4vw, 30px) * var(--title-font-mul));
       color: var(--muted);
       text-align: center;
       max-width: 50em;
@@ -489,7 +489,7 @@
     }
 
     figcaption {
-      font-size: calc(clamp(18px, 1.8vw, 24px) * var(--font-scale));
+      font-size: calc(clamp(18px, 1.8vw, 24px) * var(--content-font-mul));
       color: var(--muted);
       margin-top: 0.75rem;
     }
@@ -535,7 +535,7 @@
       margin-bottom: 1rem;
     }
     section.slide-comparison .two-col-50-50 > .slide-body > p:first-of-type strong {
-      font-size: calc(clamp(24px, 2.9vw, 36px) * var(--font-scale));
+      font-size: calc(clamp(24px, 2.9vw, 36px) * var(--title-font-mul));
       font-weight: 700;
       color: var(--accent);
       line-height: 1.25;
@@ -548,7 +548,7 @@
     .two-col-both img { max-height: var(--two-col-both-fig-max-height); }
 
     blockquote {
-      font-size: calc(clamp(28px, 3.5vw, 44px) * var(--font-scale));
+      font-size: calc(clamp(28px, 3.5vw, 44px) * var(--content-font-mul));
       font-style: italic;
       border-left: 4px solid var(--accent);
       padding-left: 1.5rem;
@@ -563,11 +563,11 @@
       overflow-x: auto;
       overflow-y: auto;
       max-height: 70vh;
-      font-size: calc(clamp(15px, 1.6vw, 20px) * var(--font-scale));
+      font-size: calc(clamp(15px, 1.6vw, 20px) * var(--content-font-mul));
       line-height: 1.6;
     }
     pre:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-    code { font-family: 'IBM Plex Mono', monospace; font-size: calc(clamp(15px, 1.6vw, 20px) * var(--font-scale)); }
+    code { font-family: 'IBM Plex Mono', monospace; font-size: calc(clamp(15px, 1.6vw, 20px) * var(--content-font-mul)); }
 
     .slide-code { overflow: auto; max-height: 75vh; border-radius: 0.5rem; }
     .slide-codetable { width: 100%; border-collapse: collapse; }
@@ -623,19 +623,83 @@
       text-align: center;
     }
 
-    .figure-container { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    /* layout: figure — panel (.figure-asset-wrap) is width: fit-content + max-width so it hugs the
+       graphic; img/SVG get matching max-width & max-height caps (figure_scale) for proportional scale. */
+    .figure-container {
+      text-align: center;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
     .figure-container figure {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 100%;
+      width: 100%;
+    }
+    .figure-asset-wrap {
+      display: block;
+      width: fit-content;
+      max-width: min(100%, calc(80% * var(--figure-scale, 1)));
+      margin-left: auto;
+      margin-right: auto;
+      box-sizing: border-box;
       background: var(--fig-panel);
       border: 1px solid var(--fig-panel-border);
       border-radius: 10px;
       padding: 1.5rem 2rem 1rem;
-      display: inline-block;
+    }
+    .figure-only .figure-asset-wrap { padding: 2rem 2.5rem 1.25rem; }
+    .slide-figure .figure-asset-wrap {
+      max-width: min(100%, calc(80% * var(--figure-scale, 1)));
+    }
+    .slide-figure.figure-only .figure-asset-wrap {
+      max-width: min(100%, calc(90% * var(--figure-scale, 1)));
+    }
+    .figure-asset {
+      display: block;
+      width: 100%;
       max-width: 100%;
     }
-    .figure-container img { max-width: 80%; max-height: 62vh; margin: 0 auto; display: block; }
-    /* Single figure slide (no body text): figure dominates */
-    .figure-only .figure-container figure { padding: 2rem 2.5rem 1.25rem; }
-    .figure-only .figure-container img { max-width: 90%; max-height: 68vh; }
+    .figure-asset > img,
+    .figure-asset .diagram-container img {
+      max-width: 100%;
+      max-height: calc(62vh * var(--figure-scale, 1));
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    .slide-figure.figure-only .figure-asset > img,
+    .slide-figure.figure-only .figure-asset .diagram-container img {
+      max-height: calc(68vh * var(--figure-scale, 1));
+    }
+    .slide-figure .figure-asset .diagram-container {
+      text-align: center;
+      max-width: 100%;
+      overflow: visible;
+    }
+    .slide-figure .figure-asset .diagram-container svg {
+      max-width: 100%;
+      max-height: calc(62vh * var(--figure-scale, 1));
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    .slide-figure.figure-only .figure-asset .diagram-container svg {
+      max-height: calc(68vh * var(--figure-scale, 1));
+    }
+    .slide-figure .figure-asset .diagram-container pre.mermaid {
+      max-width: 100%;
+    }
     /* Single diagram slide: diagram dominates */
     .diagram-only .diagram-container { max-height: 80vh; }
     .diagram-only .diagram-container svg { max-height: 75vh; }
@@ -651,7 +715,7 @@
       justify-content: flex-start;
     }
     section.slide-transcribe h2 {
-      font-size: calc(16pt * var(--font-scale));
+      font-size: calc(16pt * var(--title-font-mul));
       font-weight: 600;
       line-height: 1.35;
       text-wrap: balance;
@@ -664,13 +728,13 @@
       text-wrap: wrap;
     }
     section.slide-transcribe .slide-heading-stack--standard {
-      font-size: calc(16pt * var(--font-scale));
+      font-size: calc(16pt * var(--title-font-mul));
     }
     section.slide-transcribe .slide-heading-stack--standard .slide-subtitle {
       text-align: left;
     }
     section.slide-transcribe .slide-body {
-      font-size: calc(14pt * var(--font-scale));
+      font-size: calc(14pt * var(--content-font-mul));
       line-height: 1.45;
       text-align: left;
     }
@@ -700,7 +764,7 @@
     }
     main.deck-flavor-transcript section.slide-content h2,
     main.deck-flavor-transcript section.slide-table h2 {
-      font-size: calc(16pt * var(--font-scale));
+      font-size: calc(16pt * var(--title-font-mul));
       font-weight: 600;
       line-height: 1.35;
       text-wrap: balance;
@@ -715,14 +779,14 @@
     }
     main.deck-flavor-transcript section.slide-content .slide-heading-stack--standard,
     main.deck-flavor-transcript section.slide-table .slide-heading-stack--standard {
-      font-size: calc(16pt * var(--font-scale));
+      font-size: calc(16pt * var(--title-font-mul));
     }
     main.deck-flavor-transcript section.slide-content .slide-heading-stack--standard .slide-subtitle,
     main.deck-flavor-transcript section.slide-table .slide-heading-stack--standard .slide-subtitle {
       text-align: left;
     }
     main.deck-flavor-transcript section.slide-content .slide-body {
-      font-size: calc(14pt * var(--font-scale));
+      font-size: calc(14pt * var(--content-font-mul));
       line-height: 1.45;
       text-align: left;
     }
@@ -741,12 +805,12 @@
       font-weight: 700;
     }
     main.deck-flavor-transcript section.slide-table .table-scroll-wrapper {
-      font-size: calc(14pt * var(--font-scale));
+      font-size: calc(14pt * var(--content-font-mul));
       line-height: 1.45;
     }
     main.deck-flavor-transcript section.slide-table .table-caption {
       text-align: left;
-      font-size: calc(14pt * var(--font-scale));
+      font-size: calc(14pt * var(--content-font-mul));
       caption-side: top;
     }
 
@@ -775,18 +839,18 @@
     .table-scroll-wrapper { overflow-x: auto; max-width: 100%; background: var(--fig-panel); border: 1px solid var(--fig-panel-border); border-radius: 10px; padding: 1rem 1.5rem; }
     .table-scroll-wrapper:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     .table-scroll-wrapper table { width: 100%; border-collapse: collapse; }
-    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; font-size: calc(clamp(18px, 1.9vw, 26px) * var(--font-scale)); }
+    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; font-size: calc(clamp(18px, 1.9vw, 26px) * var(--content-font-mul)); }
     .table-scroll-wrapper tr.span-row td {
       color: var(--muted);
       font-style: italic;
-      font-size: calc(clamp(15px, 1.5vw, 20px) * var(--font-scale));
+      font-size: calc(clamp(15px, 1.5vw, 20px) * var(--content-font-mul));
       border-top: 2px solid var(--accent);
       border-left: none;
       border-right: none;
       padding-top: 0.6em;
     }
     .table-scroll-wrapper caption {
-      font-size: calc(clamp(18px, 1.8vw, 24px) * var(--font-scale));
+      font-size: calc(clamp(18px, 1.8vw, 24px) * var(--content-font-mul));
       font-weight: bold;
       caption-side: bottom;
       margin-top: 0.75em;
@@ -827,6 +891,19 @@
       white-space: nowrap;
       border: 0;
     }
+
+    /* —— layout: figure — debug box model (deck YAML: figure_layout_debug: true) —— */
+    html[data-deck-figure-layout-debug="true"] section.slide-figure .figure-asset-wrap {
+      border: 3px solid #cc0000 !important;
+      margin: 14px;
+      box-sizing: border-box;
+    }
+    html[data-deck-figure-layout-debug="true"] section.slide-figure .figure-asset > img,
+    html[data-deck-figure-layout-debug="true"] section.slide-figure .figure-asset .diagram-container {
+      border: 3px solid #cc0000 !important;
+      box-sizing: border-box;
+    }
+
     {{ pygments_css | safe }}
     /* ── figure-wide layout: smart figure — flex under 1in slide padding;
        figure area flexes; media scales (max 100% / object-fit) so footer fits. ─ */
@@ -856,7 +933,7 @@
       flex: 0 0 auto;
       text-align: left;
       max-width: 64em;
-      font-size: calc(clamp(18px, 2vw, 24px) * var(--font-scale));
+      font-size: calc(clamp(18px, 2vw, 24px) * var(--content-font-mul));
       color: var(--muted);
       margin-bottom: 0.25rem;
     }
@@ -986,7 +1063,7 @@
     {% if slide.layout == 'diagram' and not slide.body %}{% set extra_class = ' diagram-only' %}{% endif %}
     {% if title_has_math %}{% set extra_class = extra_class ~ ' slide-heading-math' %}{% endif %}
     {% if s.math_display_center|default(true) %}{% set extra_class = extra_class ~ ' math-display-eq-center' %}{% else %}{% set extra_class = extra_class ~ ' math-display-eq-start' %}{% endif %}
-    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" style="--math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
+    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" style="--title-scale: {{ s.title_scale }}; --content-scale: {{ s.content_scale }}; --math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}{% if slide.layout == 'figure' and s.figure_scale is not none %} --figure-scale: {{ s.figure_scale }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}
@@ -1364,6 +1441,17 @@
       const colW = container.getBoundingClientRect().width || (document.documentElement.clientWidth / 2);
       const availW = colW - PANEL_INSET;
       const availH = window.innerHeight - SLIDE_PAD * 2 - titleH - PANEL_INSET;
+      pickSizer(svg)(svg, availW, availH);
+    });
+
+    // layout: figure — Mermaid fits the .figure-asset box (same proportional behavior as
+    // raster/SVG: available width/height from CSS, aspect preserved by pickSizer).
+    document.querySelectorAll('.slide-figure .figure-asset .diagram-container svg[id^="mermaid"]').forEach(svg => {
+      const asset = svg.closest('.figure-asset');
+      if (!asset) return;
+      const b = asset.getBoundingClientRect();
+      const availW = Math.max(40, b.width);
+      const availH = Math.max(40, b.height);
       pickSizer(svg)(svg, availW, availH);
     });
 

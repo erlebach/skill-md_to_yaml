@@ -2,6 +2,8 @@
 <div class="slide-content-area">
 <div class="figure-container">
   <figure>
+    <div class="figure-asset-wrap">
+      <div class="figure-asset">
     {% if rendered_mermaid %}
       <div class="diagram-container">{{ rendered_mermaid | safe }}</div>
     {% elif rendered_svg %}
@@ -11,6 +13,8 @@
     {% else %}
       <img src="{{ slide.src | e }}" alt="{{ slide.alt_text | e }}">
     {% endif %}
+      </div>
+    </div>
     {% if slide.caption %}<figcaption id="{{ slide_id }}-caption">{{ slide.caption | e }}</figcaption>{% endif %}
   </figure>
 </div>

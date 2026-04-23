@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-04-23 - layout: figure — proportional media, fit-content panel, Mermaid sizer
+
+### Completed Tasks ✅
+- [x] **`figure.html.j2`** — Wrap graphic in **`.figure-asset-wrap`** (panel) + **`.figure-asset`** (media region); caption stays in **`<figure>`**
+- [x] **`base.html.j2` CSS** — Panel **`width: fit-content`**, **`max-width: min(100%, 80%|90% × figure_scale)`**, centered; **img/SVG** use **`max-width: 100%`** and **`max-height: calc(62vh * figure_scale)`** (figure-only: **68vh**), **`object-fit: contain`** on rasters; **`figure_layout_debug`** borders target wrap vs inner **img** / **`.diagram-container`**
+- [x] **Mermaid** — After **`mermaid.run()`**, **`pickSizer`** on **`.slide-figure .figure-asset .diagram-container svg[id^=mermaid]`** using the **`.figure-asset`** box (aligns with diagram / two-col / figure-wide)
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/figure.html.j2`
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+- `JOURNAL.md`, `SNAPSHOT.md`
+- **Also edited locally (not in the same commit):** `.claude/skills/md_to_yaml/schema/deck.schema.json`, `schema/models.py` — **`figure_scale`** / **`figure_layout_debug`** descriptions to match the layout change (stage with the rest of deck-metadata work)
+
+### Key Changes
+- The figure panel no longer stays as wide as the slide when the asset is narrow; the outer chrome tracks the laid-out media size (up to the width cap), preserving aspect ratio via consistent caps and **`object-fit: contain`** on rasters.
+
+### Notes
+- **`uv run pytest`** in this environment still fails at collection with **`No module named 'schema'`** (path/layout vs **`pyproject` pythonpath**); unchanged by this work.
+
+---
+
 ## 2026-04-22 - In-page view scale (zoom +/−/reset, footer + keyboard)
 
 ### Completed Tasks ✅
