@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-23 (e)
+# Project Snapshot — 2026-04-23 (g)
 
 ## Current Architecture
 
@@ -57,6 +57,8 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-04-23 (g)**: **`layout: figure`** **--fill** **panel** is **1** **in** **wider** than the **content** **column** (**`calc(100% + 1in)`**, **`margin: 0 -0.5in`**) — **½in** into each **slide** **side** **padding** — for **raster** / **file** **SVG** **slides** **(not** **Mermaid**).
+- **2026-04-23 (f)**: **--fill** file **SVG**: template uses **`width: auto; max-width: 100%`** (not full column width) for horizontal centering; **`quantum_circuit_ancilla.svg`** **`viewBox`** tightened to **`100 0 780 500`** to balance art in user space. See [CSS_CONTROLS.md](CSS_CONTROLS.md) **figure** / **`viewBox` note.
 - **2026-04-23 (e)**: **layout: figure (`--fill`)** — **Wrappers** **`overflow: visible`** (not **`hidden`**) so **`zoom` / `transform: scale`** is not **clipped**; **removed** **`max-height: 100%`** on the **slide-figure** **asset-wrap / figure** chain; **media** **`80vh` / `85vh`** only (no **`min(..., 100%)`**). **`section.slide-figure`** still **`overflow: hidden`** + **extra** **bottom** **padding** for **`.slide-footer-nav`**. **Refs:** `final_talk1.yaml` **Polylog** PNG, **Embedding** SVG.
 - **2026-04-23 (d)**: **layout: figure** — **`section.slide-figure`**: one **`100vh`** **screen**, **flex** **`min-height: 0`** chain, **`padding-bottom: calc(1in + var(--slide-footer-ui-clearance))`** so content stays out of the **fixed** **bottom** **nav** band. **`:root`**: `--slide-footer-ui-clearance: 2.75rem` (tunable).
 - **2026-04-23 (c)**: **layout: figure (`.figure-asset-wrap--fill`)** — Browsers with **`@supports (zoom: 1)`** use **`zoom: var(--figure-scale)`** on rasters and file **`<svg>`** (replacing **`transform: scale`**) so the **laid-out** size tracks **`figure_scale`**; **Firefox** / no-zoom: keep **`transform`** + **flex** centering. Fixes **vertical centering** for **file SVG** at e.g. **`0.8`**; JPEGs already appeared acceptable.

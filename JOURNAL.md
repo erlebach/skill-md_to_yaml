@@ -2,6 +2,28 @@
 
 ---
 
+## 2026-04-23 (g) - layout: figure **--fill** panel: +½in left and right (1in total width)
+
+### Completed Tasks ✅
+- [x] **`section.slide-figure` → `.figure-asset-wrap--fill`**: `width: calc(100% + 1in); max-width: calc(100% + 1in); margin-left: -0.5in; margin-right: -0.5in;` so the **fig panel** extends **½in** into each **slide** **padding** band (wider **panel** for rasters / file SVG, not Mermaid)
+- [x] **`CSS_CONTROLS.md`**: documented the **rule**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `CSS_CONTROLS.md`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
+## 2026-04-23 (f) - layout: figure `--fill` file SVG: center in panel; `quantum_circuit_ancilla.svg` viewBox
+
+### Completed Tasks ✅
+- [x] **CSS** — **`.figure-asset-wrap--fill .figure-asset .diagram-container svg`**: **`width: auto; max-width: 100%`** (and same inside **`@supports (zoom: 1)`**) instead of **`width: 100%`**, with **`margin: 0 auto`**, so the **SVG** **element** is not **forced** to the **full** **column** when **intrinsic** **ratio** is **narrower**; **asymmetric** **art** in **`viewBox`** is **still** a **source** **fix** via **`viewBox`**
+- [x] **`quantum_circuit_ancilla.svg`**: **`viewBox="0 0 880 500"`** → **`"100 0 780 500"`** to **drop** **~100px** of **excess** **left** **margin** in user space (content ran **~x=108**–**834**; the **0–100** band was **mostly** **empty**)
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `conversion/.../quantum_circuit_ancilla.svg`, `CSS_CONTROLS.md`, `JOURNAL.md`
+
+---
+
 ## 2026-04-23 (e) - layout: figure — stop clipping PNG/SVG (--fill) under `zoom` / `transform: scale`
 
 ### Completed Tasks ✅
