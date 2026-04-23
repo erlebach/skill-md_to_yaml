@@ -635,25 +635,24 @@
       overflow: hidden;
       padding: 1in 1in calc(1in + var(--slide-footer-ui-clearance, 2.75rem)) 1in;
     }
+    /* overflow: visible here — zoom / transform:scale on media can paint past the
+       unscaled box; hidden was clipping the figure (left/bottom). Section clips to 100vh. */
     .slide-figure .slide-content-area {
       min-height: 0;
       flex: 1 1 0;
-      overflow: hidden;
+      overflow: visible;
     }
     .slide-figure .figure-container {
       min-height: 0;
       flex: 1 1 0;
-      max-height: 100%;
-      overflow: hidden;
+      overflow: visible;
     }
     .slide-figure .figure-asset-wrap {
       min-height: 0;
-      max-height: 100%;
     }
     .slide-figure .figure-container > figure {
       min-height: 0;
-      max-height: 100%;
-      overflow: hidden;
+      overflow: visible;
     }
     .slide-figure .figure-asset-wrap--fill {
       min-height: 0;
@@ -743,9 +742,8 @@
     .figure-asset-wrap.figure-asset-wrap--fill {
       width: 100%;
       max-width: 100%;
-      max-height: 100%;
       box-sizing: border-box;
-      overflow: hidden;
+      overflow: visible;
     }
     .slide-figure .figure-asset-wrap.figure-asset-wrap--fill {
       max-width: 100%;
@@ -765,7 +763,7 @@
     .figure-asset-wrap--fill .figure-asset img {
       width: 100%;
       max-width: 100%;
-      max-height: min(80vh, 100%);
+      max-height: 80vh;
       height: auto;
       object-fit: contain;
       display: block;
@@ -775,7 +773,7 @@
     }
     .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset > img,
     .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset img {
-      max-height: min(85vh, 100%);
+      max-height: 85vh;
     }
     .figure-asset-wrap--fill .figure-asset .diagram-container {
       display: flex;
@@ -788,7 +786,7 @@
     .figure-asset-wrap--fill .figure-asset .diagram-container svg {
       width: 100%;
       max-width: 100%;
-      max-height: min(80vh, 100%);
+      max-height: 80vh;
       height: auto;
       object-fit: contain;
       display: block;
@@ -797,28 +795,28 @@
       transform-origin: center center;
     }
     .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset .diagram-container svg {
-      max-height: min(85vh, 100%);
+      max-height: 85vh;
     }
     @supports (zoom: 1) {
       .figure-asset-wrap--fill .figure-asset > img,
       .figure-asset-wrap--fill .figure-asset img {
-        max-height: min(80vh, 100%);
+        max-height: 80vh;
         transform: none;
         transform-origin: unset;
         zoom: var(--figure-scale, 1);
       }
       .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset > img,
       .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset img {
-        max-height: min(85vh, 100%);
+        max-height: 85vh;
       }
       .figure-asset-wrap--fill .figure-asset .diagram-container svg {
-        max-height: min(80vh, 100%);
+        max-height: 80vh;
         transform: none;
         transform-origin: unset;
         zoom: var(--figure-scale, 1);
       }
       .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset .diagram-container svg {
-        max-height: min(85vh, 100%);
+        max-height: 85vh;
       }
     }
     /* Single diagram slide: diagram dominates */

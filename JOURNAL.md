@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-04-23 (e) - layout: figure — stop clipping PNG/SVG (--fill) under `zoom` / `transform: scale`
+
+### Completed Tasks ✅
+- [x] **Root cause:** **`overflow: hidden`** on **`.slide-content-area`**, **`.figure-container`**, **`<figure>`**, and **`.figure-asset-wrap--fill`** **+** **`min(80vh, 100%)`** on **media** (indefinite **`100%`** in nested flex) **clipped** **axes** and **bottoms** of **PNGs** and **file SVGs** after **`figure_scale`** / **`zoom`** / **`transform`**
+- [x] **Fix:** **`overflow: visible`** on those **wrappers** (only **`section.slide-figure`** keeps **`overflow: hidden`** for the **one-screen** cap); **--fill** **panel** **`overflow: visible`**; **remove** **`max-height: 100%`** on **`.slide-figure .figure-asset-wrap`** / **figure** chain; **--fill** **media** back to **`max-height: 80vh` / `85vh`** (drop **`min(..., 100%)`**)
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `CSS_CONTROLS.md`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
 ## 2026-04-23 (d) - layout: figure — do not cover fixed `.slide-footer-nav` (1in margin band)
 
 ### Completed Tasks ✅
