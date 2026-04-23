@@ -623,8 +623,7 @@
       text-align: center;
     }
 
-    /* layout: figure — panel (.figure-asset-wrap) is width: fit-content + max-width so it hugs the
-       graphic; img/SVG get matching max-width & max-height caps (figure_scale) for proportional scale. */
+    /* layout: figure — Mermaid: fit-content panel. JPEG/PNG/SVG: .figure-asset-wrap--fill + width:100% img. */
     .figure-container {
       text-align: center;
       flex: 1;
@@ -676,8 +675,8 @@
       display: block;
       margin: 0 auto;
     }
-    .slide-figure.figure-only .figure-asset > img,
-    .slide-figure.figure-only .figure-asset .diagram-container img {
+    .slide-figure.figure-only .figure-asset-wrap:not(.figure-asset-wrap--fill) .figure-asset > img,
+    .slide-figure.figure-only .figure-asset-wrap:not(.figure-asset-wrap--fill) .figure-asset .diagram-container img {
       max-height: calc(78vh * var(--figure-scale, 1));
     }
     .slide-figure .figure-asset .diagram-container {
@@ -699,6 +698,47 @@
     }
     .slide-figure .figure-asset .diagram-container pre.mermaid {
       max-width: 100%;
+    }
+    /* layout: figure — rasters (JPEG/PNG) & file SVG (not Mermaid).
+       Mermaid: no .figure-asset-wrap--fill. Rasters: full-width column, then
+       pre-shrink + transform: scale(--figure-scale) so landscape images grow with
+       figure_scale (plain vh×scale was width-saturated; scale had no effect). */
+    .figure-asset-wrap.figure-asset-wrap--fill {
+      width: 100%;
+      max-width: 100%;
+    }
+    .slide-figure .figure-asset-wrap.figure-asset-wrap--fill {
+      max-width: 100%;
+    }
+    .slide-figure.figure-only .figure-asset-wrap.figure-asset-wrap--fill {
+      max-width: 100%;
+    }
+    .figure-asset-wrap--fill .figure-asset > img,
+    .figure-asset-wrap--fill .figure-asset img {
+      width: 100%;
+      max-width: 100%;
+      max-height: 80vh;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+      transform: scale(var(--figure-scale, 1));
+      transform-origin: center center;
+    }
+    .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset > img,
+    .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset img {
+      max-height: 85vh;
+    }
+    .figure-asset-wrap--fill .figure-asset .diagram-container svg {
+      width: 100%;
+      max-width: 100%;
+      max-height: 80vh;
+      height: auto;
+      transform: scale(var(--figure-scale, 1));
+      transform-origin: center center;
+    }
+    .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset .diagram-container svg {
+      max-height: 85vh;
     }
     /* Single diagram slide: diagram dominates */
     .diagram-only .diagram-container { max-height: 80vh; }

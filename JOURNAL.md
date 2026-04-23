@@ -2,18 +2,30 @@
 
 ---
 
-## 2026-04-24 - layout: figure — Mermaid actually fills the box (higher vh/width caps)
+## 2026-04-24 (b) - layout: figure — `final_talk1.yaml` JPEG + `figure_scale: 4` (landscape + scale)
 
 ### Completed Tasks ✅
-- [x] **Mermaid (layout: figure)** — Stopped using **`.figure-asset` getBoundingClientRect** (pre-layout ~0) and **pickSizer** / **`sizeSvg`** (tight 20–24pt font band blocks large `fitScale`). **sizeSvgFit** with **viewport**-derived **`availW`** / **`availH`**: **88%|95% × figure_scale** width (minus padding), **min(72|78 vh×scale, space below h2)** height; **JS** **`wFrac` / `vhFrac`** match **CSS** caps
-- [x] **CSS** — Broader use of slide: **88%|95%** (was 80%|90%) and **72vh|78vh** (was 62vh|68vh) times **`figure_scale`** for **img** / **inline SVG**
+- [x] **Checked** `conversion/.../final_talk1.yaml` — **QSVT** slide: **`layout: figure`**, **`figure_scale: 4.0`**, **`src: _page_22_Figure_1.jpeg`**; **parser** returns **`figure_scale: 4.0`**; compiled **HTML** has **`--figure-scale: 4.0`**, **`figure-asset-wrap--fill`**, **`<img`** **correct** (YAML was not the bug)
+- [x] **Root cause (landscape):** **`max-width`** was **saturated** near **scale 1**, so **only** **`max-height: vh×scale`** had little effect; **`figure_scale` 2** and **4** did **not** **widen** the photo
+- [x] **CSS** — **--fill** **panel** **`max-width: 100%`**; **figure-only** **+78vh** on **img** only when **`:not(.figure-asset-wrap--fill)`**; **raster** **img** / file **svg**: **`max-height: 80vh|85vh`** (not × scale) + **`transform: scale(var(--figure-scale, 1))`** on **media** (avoids a **400%** **layout** **box** for **scale 0.25**)
 
 ### Files Created/Modified
-- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
-- `JOURNAL.md`, `SNAPSHOT.md`
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
+## 2026-04-24 - layout: figure — Mermaid `sizeSvgFit` + rasters `figure-asset-wrap--fill` (JPEG)
+
+### Completed Tasks ✅
+- [x] **Mermaid (layout: figure)** — **sizeSvgFit** + **viewport** caps (not tiny **`.figure-asset` BCR**; not **sizeSvg** font band)
+- [x] **Base CSS** — **88%|95%** and **72vh|78vh** (×**`figure_scale`**) for **non-fill** (e.g. Mermaid) **img/SVG** rules
+- [x] **JPEG / PNG / file SVG (not Mermaid)** — **`figure.html.j2`**: **`figure-asset-wrap--fill`** when **`not rendered_mermaid`**. **CSS:** panel **`width: 100%`**, cap **92%|96%**; **`img`**: **`width: 100%`**, **`max-height: 80vh|85vh` ×** **`figure_scale`**
 
 ### Key Changes
-- At **`figure_scale` 1, 2, 4**, Mermaid flowcharts and similar diagrams can grow to the intended cap instead of staying tiny; **.25, .5** still shrink as before.
+- **Mermaid** and **rasters** are split: Mermaid **hugs** (fit-content panel) + **JS** sizer; **rasters** **fill** the max-width cap with **`width: 100%` on the **`<img>`** so **landscape** photos use horizontal **room**; **`figure_scale`** still scales the **vh** cap.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/figure.html.j2`, `.../base.html.j2`, `JOURNAL.md`, `SNAPSHOT.md`
 
 ---
 
