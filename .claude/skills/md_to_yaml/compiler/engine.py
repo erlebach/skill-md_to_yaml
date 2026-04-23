@@ -136,6 +136,7 @@ def compile_deck(
     output_path: str,
     embed_images: bool = False,
     include_skipped: bool = False,
+    figure_layout_debug: bool = False,
 ) -> None:
     """Validate deck and render to a self-contained HTML file.
 
@@ -144,6 +145,10 @@ def compile_deck(
 
     Slides with ``skip: true`` are always validated but excluded from the
     rendered HTML unless ``include_skipped=True`` is passed.
+
+    If ``figure_layout_debug`` is True (CLI ``--figure-layout-debug``) or
+    ``deck.metadata.figure_layout_debug`` is True, layout figure debug borders
+    are enabled in the HTML output.
     """
     yaml_dir = str(Path(output_path).parent)
     errors, warnings = validate_deck(deck, base_dir=yaml_dir)
@@ -170,6 +175,8 @@ def compile_deck(
         embed_images=embed_images,
         include_skipped=include_skipped,
         macros=macros,
+        figure_layout_debug=bool(figure_layout_debug)
+        or bool(deck.metadata.figure_layout_debug),
     )
     Path(output_path).write_text(html, encoding="utf-8")
 
@@ -180,6 +187,7 @@ def _render(
     embed_images: bool = False,
     include_skipped: bool = False,
     macros: dict[str, str] | None = None,
+    figure_layout_debug: bool = False,
 ) -> str:
     """Render deck to HTML string using Jinja2 templates."""
     template = _env.get_template("base.html.j2")
@@ -386,6 +394,27 @@ def _render(
         if eff_math_color is not None and not str(eff_math_color).strip():
             eff_math_color = None
 
+        slide_title_scale = getattr(slide, "title_scale", None)
+        eff_title_scale = float(
+            slide_title_scale
+            if slide_title_scale is not None
+            else deck.metadata.title_scale
+        )
+        slide_content_scale = getattr(slide, "content_scale", None)
+        eff_content_scale = float(
+            slide_content_scale
+            if slide_content_scale is not None
+            else deck.metadata.content_scale
+        )
+        eff_figure_scale = None
+        if slide.layout == "figure":
+            slide_fig_scale = getattr(slide, "figure_scale", None)
+            eff_figure_scale = float(
+                slide_fig_scale
+                if slide_fig_scale is not None
+                else deck.metadata.figure_scale
+            )
+
         slides_context.append(
             {
                 "slide": slide,
@@ -413,6 +442,9 @@ def _render(
                 "math_display_scale": eff_math_scale,
                 "math_display_center": eff_math_center,
                 "math_display_color": eff_math_color,
+                "title_scale": eff_title_scale,
+                "content_scale": eff_content_scale,
+                "figure_scale": eff_figure_scale,
             }
         )
 
@@ -436,4 +468,5 @@ def _render(
         pygments_css=pygments_css,
         has_mermaid=has_mermaid,
         mermaid_theme=mermaid_theme,
+        figure_layout_debug=figure_layout_debug,
     )

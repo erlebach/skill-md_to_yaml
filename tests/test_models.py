@@ -235,6 +235,42 @@ def test_content_slide_inherits_math_display_color_override():
     assert slide.math_display_color == 'hsl(180, 80%, 60%)'
 
 
+def test_slide_optional_title_and_content_scale():
+    """Per-slide title_scale / content_scale override deck when set."""
+    slide = ContentSlide(
+        layout='content',
+        title='T',
+        title_scale=1.5,
+        content_scale=1.25,
+    )
+    assert slide.title_scale == 1.5
+    assert slide.content_scale == 1.25
+    slide2 = ContentSlide(layout='content', title='T')
+    assert slide2.title_scale is None
+    assert slide2.content_scale is None
+
+
+def test_figure_slide_optional_figure_scale():
+    fig = FigureSlide(
+        layout='figure',
+        title='F',
+        src='a.png',
+        alt_text='x',
+        figure_scale=0.8,
+    )
+    assert fig.figure_scale == 0.8
+
+
+def test_deck_metadata_figure_scale_default():
+    meta = DeckMetadata(title='D')
+    assert meta.figure_scale == 1.0
+
+
+def test_deck_metadata_figure_layout_debug_default():
+    meta = DeckMetadata(title='D')
+    assert meta.figure_layout_debug is False
+
+
 # ---------------------------------------------------------------------------
 # AnySlide discriminated union
 # ---------------------------------------------------------------------------

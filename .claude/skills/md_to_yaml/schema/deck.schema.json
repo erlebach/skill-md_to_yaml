@@ -83,6 +83,36 @@
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
         },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -251,6 +281,36 @@
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
         },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -353,6 +413,36 @@
           "default": null,
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
+        },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
         },
         "body": {
           "anyOf": [
@@ -507,6 +597,36 @@
           "description": "If True, persist view-scale adjustments in localStorage.",
           "title": "Remember View Scale",
           "type": "boolean"
+        },
+        "title_scale": {
+          "default": 1.0,
+          "description": "Multiplier for slide titles, heading stacks, and hero text (combined with --font-scale).",
+          "maximum": 4.0,
+          "minimum": 0.75,
+          "title": "Title Scale",
+          "type": "number"
+        },
+        "content_scale": {
+          "default": 1.0,
+          "description": "Multiplier for body, captions, tables, code, and non-title prose (combined with --font-scale).",
+          "maximum": 4.0,
+          "minimum": 0.75,
+          "title": "Content Scale",
+          "type": "number"
+        },
+        "figure_scale": {
+          "default": 1.0,
+          "description": "Default scale for layout: figure — multiplies the width cap and matching max-height (vh) so media scales proportionally; the panel uses width: fit-content up to the cap.",
+          "maximum": 4.0,
+          "minimum": 0.25,
+          "title": "Figure Scale",
+          "type": "number"
+        },
+        "figure_layout_debug": {
+          "default": false,
+          "description": "If True, draw red debug borders on layout figure panel (figure) and inner graphic (img / .diagram-container).",
+          "title": "Figure Layout Debug",
+          "type": "boolean"
         }
       },
       "required": [
@@ -597,6 +717,36 @@
           "default": null,
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
+        },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
         },
         "body": {
           "anyOf": [
@@ -706,6 +856,36 @@
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
         },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -809,6 +989,36 @@
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
         },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -828,6 +1038,21 @@
         "alt_text": {
           "title": "Alt Text",
           "type": "string"
+        },
+        "figure_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck figure_scale for this slide (None = use deck default).",
+          "title": "Figure Scale"
         }
       },
       "required": [
@@ -921,6 +1146,36 @@
           "default": null,
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
+        },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
         },
         "body": {
           "anyOf": [
@@ -1057,6 +1312,36 @@
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
         },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -1172,6 +1457,36 @@
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
         },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -1274,6 +1589,36 @@
           "default": null,
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
+        },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
         },
         "body": {
           "anyOf": [
@@ -1390,6 +1735,36 @@
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
         },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -1492,6 +1867,36 @@
           "default": null,
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
+        },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
         },
         "body": {
           "anyOf": [
@@ -1615,6 +2020,36 @@
           "default": null,
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
+        },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
         },
         "body": {
           "anyOf": [
@@ -1760,6 +2195,36 @@
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
         },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -1875,6 +2340,36 @@
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
         },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -1977,6 +2472,36 @@
           "default": null,
           "description": "Override deck math_display_color for this slide (None = inherit).",
           "title": "Math Display Color"
+        },
+        "title_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck title_scale for this slide (None = use deck default).",
+          "title": "Title Scale"
+        },
+        "content_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.75,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck content_scale for this slide (None = use deck default).",
+          "title": "Content Scale"
         },
         "body": {
           "anyOf": [

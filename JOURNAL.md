@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-04-23 (d) - layout: figure — do not cover fixed `.slide-footer-nav` (1in margin band)
+
+### Completed Tasks ✅
+- [x] **`section.slide-figure`**: `height` / `max-height: 100vh`, `overflow: hidden` (like two-column) so the slide does not grow past the viewport; flex chain `min-height: 0` on **`.slide-content-area`**, **`.figure-container`**, **`<figure>`**, **`.figure-asset-wrap`**
+- [x] **Bottom padding** on figure slides: `padding: 1in 1in calc(1in + var(--slide-footer-ui-clearance, 2.75rem)) 1in` so **panel/figure** does not sit under **`position: fixed; bottom: 1in; z-index: 100`** **`.slide-footer-nav`** (page `13/35`, view scale, etc.)
+- [x] **--fill** panel: **`max-height: 100%`** (not `92vh`); **media** `max-height: min(80vh, 100%)` (and 85 figure-only) in base + `@supports (zoom: 1)` blocks
+- [x] **`:root`**: `--slide-footer-ui-clearance: 2.75rem` (tunable)
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `CSS_CONTROLS.md`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
 ## 2026-04-23 (c) - layout: figure — file SVG at `figure_scale` 0.8: centering + panel cap
 
 ### Completed Tasks ✅

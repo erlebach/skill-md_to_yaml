@@ -21,6 +21,12 @@ def main() -> None:
         default=False,
         help="Render slides marked skip: true (omitted by default)",
     )
+    parser.add_argument(
+        "--figure-layout-debug",
+        action="store_true",
+        default=False,
+        help="Draw red debug borders on layout figure panel vs graphic (also: YAML figure_layout_debug: true)",
+    )
     args = parser.parse_args()
 
     from schema.parser import parse_deck_file
@@ -32,6 +38,7 @@ def main() -> None:
         args.output,
         embed_images=args.embed_images,
         include_skipped=args.include_skipped,
+        figure_layout_debug=args.figure_layout_debug,
     )
 
 

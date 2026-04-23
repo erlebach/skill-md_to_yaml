@@ -53,6 +53,18 @@ class SlideBase(BaseModel):
         default=None,
         description='Override deck math_display_color for this slide (None = inherit).',
     )
+    title_scale: float | None = Field(
+        default=None,
+        ge=0.75,
+        le=4.0,
+        description='Override deck title_scale for this slide (None = use deck default).',
+    )
+    content_scale: float | None = Field(
+        default=None,
+        ge=0.75,
+        le=4.0,
+        description='Override deck content_scale for this slide (None = use deck default).',
+    )
     body: str | None = Field(None, exclude=True)  # Markdown body, excluded from JSON Schema
 
     @field_validator('math_display_color')
@@ -98,6 +110,12 @@ class FigureSlide(SlideBase):
     layout: Literal['figure']
     src: str
     alt_text: str
+    figure_scale: float | None = Field(
+        default=None,
+        ge=0.25,
+        le=4.0,
+        description='Override deck figure_scale for this slide (None = use deck default).',
+    )
 
 
 class FigureWideSlide(SlideBase):
@@ -268,6 +286,41 @@ class DeckMetadata(BaseModel):
     remember_view_scale: bool = Field(
         False,
         description='If True, persist view-scale adjustments in localStorage.',
+    )
+    title_scale: float = Field(
+        1.0,
+        ge=0.75,
+        le=4.0,
+        description=(
+            'Multiplier for slide titles, heading stacks, and hero text '
+            '(combined with --font-scale).'
+        ),
+    )
+    content_scale: float = Field(
+        1.0,
+        ge=0.75,
+        le=4.0,
+        description=(
+            'Multiplier for body, captions, tables, code, and non-title prose '
+            '(combined with --font-scale).'
+        ),
+    )
+    figure_scale: float = Field(
+        1.0,
+        ge=0.25,
+        le=4.0,
+        description=(
+            'Default scale for layout: figure — multiplies the width cap and matching '
+            'max-height (vh) so media scales proportionally; the panel uses width: '
+            'fit-content up to the cap.'
+        ),
+    )
+    figure_layout_debug: bool = Field(
+        False,
+        description=(
+            'If True, draw red debug borders on layout: figure .figure-asset-wrap '
+            '(panel) and inner graphic (img / .diagram-container).'
+        ),
     )
 
     @field_validator('math_display_color')
