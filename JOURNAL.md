@@ -12,6 +12,9 @@
 ### Files Created/Modified
 - `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `JOURNAL.md`, `SNAPSHOT.md`
 
+### Notes
+- **`figure.html.j2`** with **`figure-asset-wrap--fill`** had been **uncommitted** on disk — **`--fill`** **CSS** had **no** **effect** in **git** **until** commit **`ac85698`**.
+
 ---
 
 ## 2026-04-24 - layout: figure — Mermaid `sizeSvgFit` + rasters `figure-asset-wrap--fill` (JPEG)
