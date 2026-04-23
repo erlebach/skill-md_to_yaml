@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-24
+# Project Snapshot — 2026-04-23
 
 ## Current Architecture
 
@@ -57,6 +57,7 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-04-23 (c)**: **layout: figure (`.figure-asset-wrap--fill`)** — Browsers with **`@supports (zoom: 1)`** use **`zoom: var(--figure-scale)`** on rasters and file **`<svg>`** (replacing **`transform: scale`**) so the **laid-out** size tracks **`figure_scale`**; panel **`max-height: 92vh`**, **`overflow: hidden`**. **Firefox** / no-zoom: keep **`transform`** + **flex** centering on **`.figure-asset`**, **`.diagram-container`**, and **block** file SVG. Fixes **vertical centering** for **file SVG** at e.g. **`0.8`**; JPEGs already appeared acceptable.
 - **2026-04-24 (b)**: **layout: figure (raster)** — **`.figure-asset-wrap--fill`**: panel **`max-width: 100%`**; **`img` / `svg`**: base **`max-height: 80vh|85vh`** and **`transform: scale(var(--figure-scale))`** so **landscape** images respond to per-slide **`figure_scale`** (e.g. **`4.0`** in **`final_talk1.yaml`**) without width saturating at scale 1. **Mermaid** unchanged.
 - **2026-04-24**: **Mermaid (layout: figure)**: **`sizeSvgFit`**, rasters: **`--fill`**, Mermaid: no **`--fill`**.
 - **2026-04-23**: **layout: figure** — **`.claude/skills/md_to_yaml`**: templates **`figure-asset-wrap`** / **`figure-asset`**, panel **`width: fit-content`**, **`figure_layout_debug`** on wrap vs media.

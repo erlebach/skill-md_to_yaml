@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-04-23 (c) - layout: figure — file SVG at `figure_scale` 0.8: centering + panel cap
+
+### Completed Tasks ✅
+- [x] **--fill (JPEG + file SVG):** `transform: scale()` does not affect layout, so the panel stayed as tall as the unscaled box and **inline/file SVG in `.diagram-container` looked mis-centered vertically** relative to the slide (JPEG often looked fine as a single replaced element).
+- [x] **`@supports (zoom: 1)`** — use **`zoom: var(--figure-scale)`** on **`<img>`** and **`.diagram-container svg`**, with **`transform: none`**, so **layout size matches visible scale** in Chromium / Safari. **`.figure-asset-wrap--fill`**: **`max-height: 92vh`**, **`overflow: hidden`**, so the chrome does not grow past a viewport-scale cap when **`figure_scale` > 1**.
+- [x] **Fallback (e.g. Firefox, no `zoom` on the element):** keep **`transform: scale`**; add **`display: flex`** on **`.figure-asset`**, flex centering + **`line-height: 0`** on **`.diagram-container`**, **`display: block` / `object-fit: contain` / `margin: 0 auto`** on **file SVG** for stable centering.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
 ## 2026-04-24 (b) - layout: figure — `final_talk1.yaml` JPEG + `figure_scale: 4` (landscape + scale)
 
 ### Completed Tasks ✅

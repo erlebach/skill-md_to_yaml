@@ -2,7 +2,7 @@
 
 The **actively maintained** slide template for the **`md_to_yaml`** compiler is [`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`](.claude/skills/md_to_yaml/compiler/templates/base.html.j2). A mirror may also exist as [`skills/deck-compile/compiler/templates/base.html.j2`](skills/deck-compile/compiler/templates/base.html.j2); if the two differ, treat the **`.claude/skills/md_to_yaml/`** file as source of truth for display-math, YAML-driven knobs, and recent layout fixes.
 
-Most **figure scaling** is plain CSS in the `<style>` block (not only `:root` variables). Color tokens are defined in `:root[data-theme="dark" | "light"]`. A prose mirror (if present) is under `skills/deck-compile/compiler/templates/md/base.html.j2.md`; keep it in sync when you edit the template.
+Most **figure scaling** is plain CSS in the `<style>` block (not only `:root` variables). For **`layout: figure`**, the template uses **two paths**: **Mermaid** (`.mmd` / diagram in **`.diagram-container`**) keeps a **shrink-wrapped** panel (`width: fit-content` on **`.figure-asset-wrap`**) and **JavaScript** fits the SVG; **rasters and file SVG** (`.jpg`, `.png`, `.svg` file, etc., not Mermaid) add **`figure-asset-wrap--fill`** in [`figure.html.j2`](.claude/skills/md_to_yaml/compiler/templates/figure.html.j2) and use **full column width**. In browsers that support it (`@supports (zoom: 1)`), **`<img>`** and file **`.diagram-container svg`** use **`zoom: var(--figure-scale)`** (layout tracks the visible size). Otherwise (e.g. Firefox), the template falls back to **`transform: scale(var(--figure-scale))`** plus **flex** centering on **`.figure-asset`** and **`.diagram-container`**. The **fill** panel is capped with **`max-height: 92vh`** and **`overflow: hidden`**. Color tokens are defined in `:root[data-theme="dark" | "light"]`. A prose mirror (if present) is under `skills/deck-compile/compiler/templates/md/base.html.j2.md`; keep it in sync when you edit the template.
 
 ---
 
@@ -46,6 +46,100 @@ title: My Deck
 theme: dark
 accent_color: "#3b82f6"   # any CSS color
 ```
+
+---
+
+## Title vs content typography (`title_scale` / `content_scale`)
+
+Split **heading-band** text from **body-band** text without editing CSS. **Deck defaults** live in the **first** YAML metadata block; optional **per-slide** keys **replace** the deck value on that slide only (they do **not** multiply together).
+
+### YAML (deck metadata — defaults)
+
+| Key | Default | What it does |
+|-----|--------|--------------|
+| `title_scale` | `1.0` | `float` **0.75–4.0** — multiplier for titles, heading stacks, `h2`/`h3`, quote-block heading scale, comparison column headings, transcribe/transcript **headings**, and **hero** text (`.hero-description`, `.hero-body`). Combined with baseline `--font-scale` in the template. |
+| `content_scale` | `1.0` | `float` **0.75–4.0** — multiplier for body prose, title-slide **author** line, `figcaption`, `blockquote`, `pre`/`code`, table panel text, figure-wide **summary**, transcribe/transcript **body**, and transcript-flavor table text. Combined with `--font-scale`. |
+
+### YAML (slide frontmatter — optional overrides)
+
+| Key | Default | What it does |
+|-----|--------|--------------|
+| `title_scale` | *(omit)* | If set, **replaces** deck `title_scale` for this slide only. |
+| `content_scale` | *(omit)* | If set, **replaces** deck `content_scale` for this slide only. |
+
+Use **top-level** keys (same indent as `layout:` / `title:`).
+
+```yaml
+---
+title: My Deck
+theme: dark
+title_scale: 1.2
+content_scale: 1.1
+---
+```
+
+```yaml
+---
+layout: content
+title: "Dense slide"
+content_scale: 0.95
+---
+```
+
+### CSS (`base.html.j2`)
+
+| Variable | Source | Purpose |
+|----------|--------|---------|
+| `--font-scale` | Hard-coded in `:root` (`1.35`) | Global baseline for slide typography. |
+| `--title-scale` / `--content-scale` | Inline on each **`<section>`** (compiler: effective deck-or-slide value) | Per-slide resolved multipliers. |
+| `--title-font-mul` | On **`section[role="group"]`**: `calc(var(--font-scale) * var(--title-scale))` | Applied to **title** selectors. |
+| `--content-font-mul` | On **`section[role="group"]`**: `calc(var(--font-scale) * var(--content-scale))` | Applied to **content** selectors. |
+
+Typography rules use `font-size: calc(<clamp> * var(--title-font-mul))` or `var(--content-font-mul)`.
+
+### Interaction with display math
+
+Block `$$...$$` uses `font-size: calc(1em * var(--math-display-scale, 1))` relative to the parent. Body math therefore tracks **`content_scale`** (via `.slide-body` / table cell `em`). Hero math tracks **`title_scale`** when it sits under `.hero-body` / `.hero-description`. Tune **`math_display_scale`** if the combined effect is too large or small.
+
+---
+
+## Figure slide scale (`figure_scale`)
+
+For **`layout: figure`** only. The compiler sets **`--figure-scale`** on the slide **`<section>`** (deck default **0.25–4.0**, optional per-slide override). **Behavior depends on media type** (see below). Does **not** apply to **`layout: figure-wide`**, two-column figures, or bare **`layout: diagram`** (edit CSS for those).
+
+### YAML
+
+| Where | Key | Default | What it does |
+|-------|-----|--------|--------------|
+| Deck metadata | `figure_scale` | `1.0` | `float` **0.25–4.0** — default for figure layout. |
+| `layout: figure` frontmatter | `figure_scale` | *(omit)* | If set, **replaces** deck `figure_scale` for that slide. |
+
+### Non-Mermaid rasters and file SVG (`figure-asset-wrap--fill`)
+
+When the slide is **not** rendered as Mermaid (e.g. **`.jpeg`**, **`.png`**, **`.svg`** file), [`figure.html.j2`](.claude/skills/md_to_yaml/compiler/templates/figure.html.j2) adds **`figure-asset-wrap--fill`** on **`.figure-asset-wrap`**. The **panel** uses the same **`--fig-panel`** / **`--fig-panel-border`** tokens as other figure chrome, with **`max-width: 100%`** of the figure column so more of the dark panel is visible than with a narrow shrink-wrapped strip.
+
+**`<img>`** and file **`.diagram-container svg`** under **`--fill`** use **`max-height: 80vh`** (or **`85vh`** on **figure-only**). Where **`@supports (zoom: 1)`** is true, they use **`zoom: var(--figure-scale, 1)`** and **`transform: none`** so **layout and painting** both respect **`figure_scale`** (unlike **`transform: scale`**, which does not shrink the **box**, which caused **file SVG** to look off-center and the **panel** to stay oversized for `< 1` scales). The **`.figure-asset-wrap--fill`** **panel** also has **`max-height: 92vh`** and **`overflow: hidden`**. In Firefox (no **element** `zoom` in this pattern), the template keeps **`transform: scale`** and **flex**-centers the **image** and **`.diagram-container`**.
+
+### Mermaid and inline non-file SVG (no `figure-asset-wrap--fill`)
+
+**Mermaid** slides use **`width: fit-content`** (and **max-width** `min(100%, calc(88% * var(--figure-scale, 1)))` on **`.figure-asset-wrap`**) so the **panel** hugs the diagram. **`.diagram-container svg`** (and generic img rules **without** **`--fill`**) still use **`calc(72vh * var(--figure-scale, 1))`** (or **`78vh`** for **figure-only** when the **`img`** is **not** under **`--fill`**). After **`mermaid.run()`**, a script in **`base.html.j2`** calls **`sizeSvgFit`** (not the font-clamped **`sizeSvg`**) for **`layout: figure`**, using **viewport**-derived **width/height** and **`--figure-scale`**, not a near-zero **`.figure-asset`** box.
+
+### CSS variable
+
+**`--figure-scale`** is set on **`<section>`** only for **`layout: figure`**. All **`var(--figure-scale, 1))`** fallbacks in the stylesheet are for safety on other layouts.
+
+### Debug: panel vs graphic box model
+
+Set **`figure_layout_debug: true`** in **deck** metadata (first YAML block). The compiled HTML sets **`data-deck-figure-layout-debug="true"`** on **`<html>`** and adds CSS only in that mode:
+
+| Outline | Element | Notes |
+|--------|---------|--------|
+| **Outer red border** | **`section.slide-figure .figure-asset-wrap`** | **Panel** (same element that carries **`--fig-panel`** background); **`margin: 14px`**, **`box-sizing: border-box`**. |
+| **Inner red border** | **`.figure-asset > img`**, or **`.figure-asset .diagram-container`** (Mermaid / SVG) | The **graphic** (raster or diagram box). |
+
+Turn debug off for normal output: remove **`figure_layout_debug`** from YAML (or set **`false`**) **and** do not pass **`--figure-layout-debug`** on the compiler CLI.
+
+**CLI (no YAML edit):** `python3 -m compiler deck.yaml out.html --figure-layout-debug` — same red borders; combines with OR against YAML (`true` if either is on).
 
 ---
 
@@ -109,21 +203,23 @@ To change **thickness**, edit that `border` line in the canonical `base.html.j2`
 
 ## Typography scale (clamp values)
 
-All font sizes use `clamp(min, fluid, max)`. Edit in the canonical `base.html.j2` (path at top of this doc):
+All slide font sizes use `clamp(min, fluid, max)` **multiplied** by **`var(--title-font-mul)`** or **`var(--content-font-mul)`** (see [Title vs content typography](#title-vs-content-typography-title_scale--content_scale)). The table below is the **base clamp** before those multipliers. Edit the clamps and the `--font-scale` baseline in the canonical `base.html.j2` (path at top of this doc).
 
-| Selector | Size range | Used for |
-|---|---|---|
-| `h1` | `clamp(48px, 10vw, 96px)` | Title slide main heading |
-| `h2` | `clamp(32px, 5vw, 52px)` | Content slide heading |
-| `h3` | `clamp(22px, 2.8vw, 34px)` | Sub-heading |
-| `.divider-slide h2` | `clamp(48px, 8vw, 80px)` | Section divider heading |
-| `.slide-body` | `clamp(20px, 2.2vw, 28px)` | Bullet text / body |
-| `.hero-description` | `clamp(22px, 2.8vw, 34px)` | Hero slide subtitle |
-| `.hero-body` | `clamp(20px, 2.4vw, 30px)` | Hero slide body hook |
-| `figcaption` | `clamp(18px, 1.8vw, 24px)` | Figure caption |
-| `.table-scroll-wrapper th/td` | `clamp(18px, 1.9vw, 26px)` | Table cell text |
-| `blockquote` | `clamp(28px, 3.5vw, 44px)` | Quote text |
-| `pre`, `code` | `clamp(15px, 1.6vw, 20px)` | Code block text |
+| Selector | Size range | Used for | Band |
+|---|---|---|---|
+| `h1` | `clamp(48px, 10vw, 96px)` | Title slide main heading | title |
+| `h2` | `clamp(32px, 5vw, 52px)` | Content slide heading | title |
+| `h3` | `clamp(22px, 2.8vw, 34px)` | Sub-heading | title |
+| `.divider-slide h2` (via stack) | `clamp(48px, 8vw, 80px)` | Section divider heading | title |
+| `.slide-body` | `clamp(20px, 2.2vw, 28px)` | Bullet text / body | content |
+| `.hero-description` | `clamp(22px, 2.8vw, 34px)` | Hero band (grouped with titles) | title |
+| `.hero-body` | `clamp(20px, 2.4vw, 30px)` | Hero band (grouped with titles) | title |
+| `figcaption` | `clamp(18px, 1.8vw, 24px)` | Figure caption | content |
+| `.table-scroll-wrapper th/td` | `clamp(18px, 1.9vw, 26px)` | Table cell text | content |
+| `blockquote` | `clamp(28px, 3.5vw, 44px)` | Quote text | content |
+| `pre`, `code` | `clamp(15px, 1.6vw, 20px)` | Code block text | content |
+
+Heading stacks (`.slide-heading-stack--title` / `--standard` / `--divider`), quote block chrome, comparison **strong** headings, transcribe/transcript modes, and figure-wide summary use the same pattern; search **`base.html.j2`** for **`--title-font-mul`** and **`--content-font-mul`**.
 
 ---
 
@@ -147,7 +243,7 @@ For **how large the graphic is drawn** (scaling), read [Figure scale adjustments
 
 ## Figure scale adjustments
 
-The deck template does not expose a single “`--figure-scale`” variable. **Scale** is **layout-specific**: the browser combines **`max-width` / `max-height`**, **`object-fit: contain`**, and (for Mermaid) **JavaScript** that fits SVG to an available box. You control it by **editing the relevant rules in `base.html.j2`**, or by adding a **downstream** `<style>` block in a post-processing step. Below is what is **controllable** in the stock template, grouped by slide layout.
+**`layout: figure`** exposes YAML **`figure_scale`** (deck default + optional per-slide override), which sets **`--figure-scale`** on the slide **`<section>`** and scales the **max-width** / **max-height** caps for raster images and for **SVG** inside that layout’s `.figure-container` (see [Figure slide scale](#figure-slide-scale-figure_scale)). Other layouts remain **layout-specific**: the browser combines **`max-width` / `max-height`**, **`object-fit: contain`**, and (for Mermaid) **JavaScript** that fits SVG to an available box. You can still edit **`base.html.j2`** or add a downstream `<style>` block. Below is what is **controllable** in the stock template, grouped by slide layout.
 
 ### Common ideas
 
@@ -160,8 +256,10 @@ The deck template does not expose a single “`--figure-scale`” variable. **Sc
 
 | Control | Default (typical) | What to change |
 |--------:|------------------|------------------|
-| Image max width / height | `max-width: 80%`, `max-height: 62vh` on `.figure-container img` | Tighten or relax caps; or use `max-width: 100%` to favor width until height wins. |
-| **Figure-only** (no `body` on the slide) | `.figure-only .figure-container img` uses **`90%` / `68vh`**; figure padding is larger | Edit `.figure-only` rules. |
+| **YAML `figure_scale`** | `1.0` at deck; optional per-slide override | Scales the **effective** `%` / `vh` caps via **`--figure-scale`** (see [Figure slide scale](#figure-slide-scale-figure_scale)). |
+| Image max width / height | `max-width: 80%`, `max-height: 62vh` × scale on `.slide-figure .figure-container img` | Edit base percentages in `base.html.j2` or tune YAML `figure_scale`. |
+| **Figure-only** (no `body` on the slide) | `.figure-only` uses **`90%` / `68vh`** × scale | Edit `.slide-figure.figure-only` rules or YAML. |
+| Diagram **SVG** in figure | `max-height: 52vh` × scale under `.slide-figure .figure-container .diagram-container svg` | Same. |
 | Inline `figure` box | `figure` has `display: inline-block` and `max-width: 100%` | Affects how the light panel shrinks; rarely needs tuning. |
 
 ### `layout: figure-wide` (summary + panel + bottom columns, smart flex)
@@ -268,6 +366,11 @@ Print styles force landscape layout with each slide on its own page. Controlled 
 
 | What you want to change | File | What to search for |
 |---|---|---|
+| **Title / content** typography (YAML) | deck metadata + optional slide frontmatter | `title_scale`, `content_scale` (slide values **replace** deck) |
+| **Title / content** (CSS) | `base.html.j2` | `--title-scale`, `--content-scale` on `<section>`; `--title-font-mul`, `--content-font-mul` |
+| **`layout: figure` scale (YAML)** | deck metadata + optional `layout: figure` slide | `figure_scale` (slide value **replaces** deck) |
+| **`layout: figure` scale (CSS)** | `base.html.j2` | `--figure-scale`, `.slide-figure .figure-container` |
+| **Figure panel vs graphic debug borders** | deck `.yaml` metadata | `figure_layout_debug: true` → `data-deck-figure-layout-debug` on `<html>` |
 | **Display math** scale / center / color (YAML) | deck or slide `.yaml` | `math_display_scale`, `math_display_center`, `math_display_color` |
 | **Display math** (CSS / HTML) | `.claude/skills/md_to_yaml/compiler/templates/base.html.j2` | `Display equations ($$...$$)`, `--math-display-scale`, `--math-display-color`, `math-display-eq-center`, `math[display="block"]` |
 | Slide frame (color) | `base.html.j2` | `--border` on `section[role="group"]` |
@@ -276,7 +379,8 @@ Print styles force landscape layout with each slide on its own page. Controlled 
 | Theme (dark/light) | deck `.yaml` metadata | `theme:` |
 | Font | deck `.yaml` metadata | `font:` |
 | Figure panel **colors** | same | `--fig-panel`, `--fig-panel-border` |
-| Body font size | same | `.slide-body` clamp |
+| Body font size | same | `.slide-body` clamp × `--content-font-mul`; YAML `content_scale` |
+| Heading / hero band size | same | `h1`–`h3`, stacks, hero × `--title-font-mul`; YAML `title_scale` |
 | Slide padding (incl. bottom **1in** “margin”) | same | `section[role="group"] { padding` |
 | **Figure / image / SVG scale** | same | [Figure scale adjustments](#figure-scale-adjustments), or search: `.figure-container img`, `figure-wide`, `.two-col img`, `diagram-container`, `mermaid.run` |
 | Two-column **column widths** | same | `two-col-50-50` / `40-60` / `60-40` and YAML `proportion:` |
