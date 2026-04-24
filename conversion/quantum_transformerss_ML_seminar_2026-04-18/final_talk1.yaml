@@ -1,0 +1,317 @@
+---
+title: Quantum Transformers
+author: ML Seminar — May 1, 2026
+date: 2026-05-01
+theme: dark
+font: IBM Plex Sans
+math_display_scale: 1.35
+math_display_center: true
+math_display_color: cyan
+content_scale: 1.2
+title_scale: 1.2
+footer_scale: 2
+---
+
+---
+layout: title
+title: Quantum Transformers
+subtitle: "Fault-Tolerant Attention via Quantum Singular Value Transformation"
+---
+
+---
+layout: hero
+title: The Central Question
+description: "Can quantum computers accelerate transformer attention — and at what cost to QRAM, shots, and circuit depth?"
+---
+
+---
+layout: content
+title: Seminar Roadmap
+---
+- **Classical** transformer cost (attention FLOPs)
+- **NISQ vs FTQC** and **block encodings** (ancilla, α)
+- **Shots** and **SVD → QSP → QSVT**
+- **Polylog depth** (ε, analyticity) + **polylog in $n$** (QLA) + NISQ depth/width context
+- **GUO** pipeline and a **synthesis** (assumptions, limits)
+
+---
+layout: divider
+title: "Part 1 — The Classical Transformer"
+---
+
+---
+layout: two-column
+title: "Transformer: Decoder-Only Architecture - Vaswani et al. (2017)"
+proportion: 50/50
+right:
+  type: figure
+  src: _page_0_decoder_Figure_2.jpg
+  alt_text: "Block diagram of the Transformer decoder-only architecture. The decoder stack (Nx) adds Masked Multi-Head Attention, cross Multi-Head Attention attending to encoder output, then Feed Forward, Linear, and Softmax to produce output probabilities."
+---
+- Most large language models (GPT, Gemini, Claude) are **decoder-only** Transformers
+- Each **block**: LayerNorm → MHA → LayerNorm → FFN, with **residuals** around sub-blocks
+- We assume a **single attention head** for clarity
+
+---
+layout: content
+title: Notation
+---
+- $S$ — context length; $d$ — embedding dimension; $L$ — number of blocks
+- $W^Q, W^K, W^V, W^O \in \mathbb{R}^{d \times d}$; FFN: $W_1 \in \mathbb{R}^{4d \times d}$, $W_2 \in \mathbb{R}^{d \times 4d}$
+- Memory per block: $O(S^2 d + S d^2)$ for attention; $O(d^2)$ for FFN weights
+
+---
+layout: table
+title: Classical FLOPs Summary
+caption: 'Per-layer cost for one block; crossover when $S \gg d$ (long context).'
+headers: ['Operation', 'FLOPs', 'Dominant when']
+rows:
+  - ['Q, K, V projections', '$3Sd^2$', '$d$ large']
+  - ['Score matrix $QK^T$ + context', '$2S^2d$', '$S$ large']
+  - ['Attention sub-block', '$4Sd^2 + 2S^2d$', 'crossover at $S = 2d$']
+  - ['FFN sub-block', '$8Sd^2$', '$d$ large']
+  - ['Full block', '$12Sd^2 + 2S^2d$', 'modern long-context: $S^2d$ heavy']
+
+---
+layout: content
+title: "Two Regimes: Attention vs FFN"
+---
+$$\text{FLOPs}_{\text{attn}} = O(Sd^2 + S^2d), \qquad \text{FLOPs}_{\text{FFN}} = 8Sd^2$$
+- **$Sd^2$** vs **$S^2d$** in attention: for GPT-3 ($d \approx 12{,}288$) crossover near $S \approx 2d$; **$128$k+** contexts are deep in the **$S^2d$** regime
+- **FFN** has **no** $S^2$; it dominates only when $d \gg S$ — **not** typical for long-context LLMs
+
+---
+layout: divider
+title: "Part 2 — Quantum Computing Eras"
+---
+
+---
+layout: figure-wide
+title: "The Gap between Today and Fault-Tolerance"
+src: ./_page_xx_NISQ_FTQC_targets.png
+alt_text: "Infographic contrasting NISQ and FTQC eras: NISQ on the order of tens to a thousand qubits, percent-level error rates, limited depth, mitigation-heavy; fault-tolerant future targeting much larger systems with very low logical error and deep circuits."
+proportion: 50/50
+figure_scale: 1.20
+---
+## Summary
+Physical qubit counts are rising — but useful FTQC needs >100,000 high-fidelity qubits
+
+## 2016-Today (NISQ)
+- Circuit **depth** limited.
+//- Qubits: $50–1{,}000$ physical; $0.5–1%$ per 2Q gate; **depth** limited; mitigation-heavy
+
+## 2028+ (FTQC)
+- **Logical** error $\sim 10^{-15}$; **deep** circuits
+
+---
+layout: divider
+title: "Part 3 — Block Encoding: Embedding Non-Unitary Matrices"
+---
+
+---
+layout: content
+title: "Block encodings, ancillae, and subnormalization"
+---
+- **Unitary constraint:** $U_A$ on $n{+}a$ qubits; attention / weight matrices are **not** unitary; embed $A$ in a corner and **post-select** ancillae
+- **Embedding:** $(\langle 0|^{\otimes a} \otimes I) U_A (|0\rangle^{\otimes a} \otimes I) = A/\alpha$ with **$\alpha \ge \|A\|$** (singular values in $[0,1]$ in the block)
+- **Hilbert space:** each ancilla **doubles** book-keeping; $A/\alpha$ sits in a **$2^n \times 2^n$** block inside $2^{n+a}\times2^{n+a}$ unitary
+- **Post-selection:** success $\sim 1/\alpha^2$; amplitude amplification can restore $O(1)$ at **$O(\alpha)$** extra cost
+
+---
+layout: figure
+figure_scale: 0.75
+title: "Embedding a Non-Unitary Matrix in a larger Unitary Matrix"
+src: quantum_circuit_ancilla.svg
+alt_text: "Quantum circuit labeled Case a = 1, one ancilla qubit. One ancilla wire (ket-zero) and three system qubits (n plus 1 qubits total) pass through U_A (blue box). Inside U_A the matrix is partitioned into a 2-by-2 block structure: A over alpha (red border) top-left, B top-right, C bottom-left, D bottom-right. Post-selecting the ancilla on ket-zero extracts A over alpha on the system register."
+---
+
+---
+layout: content
+title: Why more ancillae? (reality)
+---
+- **LCU:** a sum of $L$ unitaries needs $\lceil \log_2 L \rceil$ **indexing** ancillae (e.g. 100 terms → 7)
+- **Tighter $\alpha$** often **costs depth and ancillae**; **sparse** oracles: $O(\log N + \log d)$ address ancillae
+- **Practical $a$:** often **5–15**; watch **width vs depth** tradeoffs (NISQ: noise vs routing)
+
+---
+layout: divider
+title: "Part 4 — Shots: Sampling Quantum Outputs"
+---
+
+---
+layout: content
+title: "Why shots, and NISQ vs FTQC in one picture"
+---
+- Measurement is **probabilistic**; states are **destroyed**; **repetition** is not a hardware quirk
+- $S_{\text{NISQ}} = S_{\text{stats}} \times S_{\text{mit}}$, while **FTQC** removes mitigation overhead: $S_{\text{FTQC}} \approx S_{\text{stats}}$
+- Examples (order-of-magnitude): simple 1Q circuits $\sim$ thousands of shots; **NISQ** on tens of qubits can demand **$10^4$+**; **FTQC** trends toward the **statistical** floor; **very deep** NISQ can become intractable
+
+---
+layout: divider
+title: "Part 5 — From Classical SVD to QSVT"
+---
+
+---
+layout: content
+title: SVD, singular values, and the quantum target
+---
+- **SVD:** $A = U \Sigma V^\dagger$; singular values $\sigma_i$ 
+- **Use cases:** low-rank truncation, attention on $QK^T$; goal is to apply a **function** to $\Sigma$ without forming dense $A$
+- **Quantum target:** $p(\Sigma)$ via **QSP/QSVT** in **$O(d_{\text{poly}})$** calls to a **block-encoded** $A/\alpha$ — not $O(N^2)$ classical linear algebra
+- **Block encoding** gives $U_A$; **QSP** interleaves $U_A$ with **$Z$-rotations**; **QSVT** implements $p(\Sigma)$ on two registers
+
+---
+layout: content
+title: "QSP / QSVT — what you compile"
+---
+$$(\langle 0|^{\otimes a} \otimes I_n)\; U_A\; (|0\rangle^{\otimes a} \otimes I_n) = \frac{A}{\alpha}$$
+
+- **QSP:** phases $\{e^{i\phi_k Z}\}$ with $U_A$ realize **bounded** polynomials $p(\sigma)$ on $[-1,1]$, degree $d$ $\Rightarrow$ $O(d)$ **oracle** depth
+- **Classical** phase solving (QSPPACK, pyqsp) + **FTQC T-count** for sparse $A$: often **$O(d\,\text{poly}\log N)$** vs $N^2$ dense work
+
+$$\text{QSVT of degree } d \text{ uses } O(d) \text{ block-encoded } U_A \text{ applications}$$
+
+---
+layout: figure
+# figure_scale: 1.0
+title: "QSVT Circuit: Phase Rotations Interleaved with U_A"
+src: _page_22_Figure_1.jpeg
+alt_text: "Quantum circuit with ancilla register (top) and system register (bottom). Alternating orange phase rotation gates e-to-the-i-phi-k-Z and large blue boxes U_A and green U_A-dagger boxes span both wires across d circuit layers. Output of ancilla wire is labeled p(Sigma) poly on sigma-i, indicating a degree-d polynomial applied simultaneously to all singular values."
+---
+
+---
+layout: figure
+title: "QSVD and the GUO Dependency Chain"
+src: guo_dependency_chain.png
+alt_text: "Guo’s quantum-transformer framework as a left-to-right conceptual pipeline showing how classical spectral ideas lead into quantum linear-algebra machinery and then into transformer components. The diagram emphasizes that the approach begins from the spectral viewpoint of SVD, moves through block encoding of A/α in a unitary, applies polynomial transformations through QSP and QSVT, and uses those transformations to build QSVD-style matrix-function primitives that ultimately support the Guo Quantum Transformer, including attention, normalization, and feed-forward network (FFN) layers. Supporting annotations indicate that block encoding assumes a matrix access model, while QSP and QSVT together form the core machinery for polynomial singular-value transformations. A bottom panel labeled “Application to Attention” highlights the target transformer operation, softmax((QK^T)/sqrt(d_k)) V, and explains that in this framework it is approximated via Chebyshev or polynomial layers rather than implemented directly in the usual classical way."
+---
+// - **SVD** $\to$ **block encoding** $A/\alpha$ $\to$ **QSP** (polynomial in $\sigma$) $\to$ **QSVT** $\to$ **QSVD-style** maps $\to$ **GUO** softmax/attention on $QK^T/\sqrt{d_k}$ (Chebyshev / polynomial layers)
+
+---
+layout: divider
+title: "Part 6 — Poly-Logarithmic Depth and Polylog in $n$"
+---
+
+---
+layout: content
+title: "What $O(\\text{poly}\\log(1/\\varepsilon))$ buys you"
+---
+- **QSVT** targets **precision** $\varepsilon$ with **degree** $d = O(\log^k(1/\varepsilon))$ for **analytic** $f$ on $[-1,1]$
+- Contrast: $O(1/\varepsilon^2)$ and $O(1/\varepsilon)$ are **huge** at $\varepsilon=10^{-6}$; **$\log$**-scaling is the feasible regime
+- **Depth = degree** in standard QSP counting (up to constant factors in oracle and amplification)
+
+---
+layout: content
+title: "Chebyshev, analyticity, and solving for degree"
+---
+- **Analytic** $f$ (strip in $\mathbb{C}$) $\Rightarrow$ **exponential** Chebyshev decay: error $\le C r^{-d}$, $r>1$
+- Solving $C r^{-d} \le \varepsilon$ gives **$d = O(\log(1/\varepsilon))$**; **GELU / softmax** (entire) are friendly; **ReLU** (non-analytic at 0) is **not**
+- **Hidden** factors: subnormalization **$\alpha$** and oracle costs often dominate in practice
+
+---
+layout: table
+title: "Practical Consequence: Depth vs Precision for $\\varepsilon = 10^{-6}$"
+caption: "Analyticity determines whether the algorithm is computationally feasible."
+headers: ['Scaling', 'Depth at $\varepsilon = 10^{-6}$', 'Feasible?', 'Applies to']
+rows:
+  - ['$O(1/\varepsilon^2)$', '$10^{12}$', 'No', '—']
+  - ['$O(1/\varepsilon)$', '$10^{6}$', 'No', 'Lipschitz-only / worst cases']
+  - ['$O(\log(1/\varepsilon))$', '$\approx 14$', 'Yes', 'Analytic: GELU, softmax, $e^x$']
+
+---
+layout: content
+title: "Activations: not cosmetic for QSVT"
+---
+- **GELU, softmax** (entire) $\Rightarrow$ $d = O(\log(1/\varepsilon))$ targets
+- **ReLU** $\Rightarrow$ $d = O(1/\varepsilon)$ in worst **uniform** approximations — can erase asymptotic advantage for small $\varepsilon$
+
+---
+layout: content
+title: Polylog depth in sequence length (QLA view)
+---
+- **Doubling** $n$ can leave depth **$(\log n)^k$**-like under **encoding + oracle** models — **not** $n$ or $n^2$ for the *idealized* pipeline
+- **Classical** attention is typically **$O(n^2)$** (often $O(n^2 d)$) work
+- **Caveat:** these claims are **assumption-heavy** (access, **FTQC**, **bounded** subnormalization)
+
+---
+layout: figure
+title: "Polylog Scalings with Context Length"
+figure_scale: 0.75
+src: "../../polylog/attention.png"
+alt_text: "Log-log chart of cost or depth versus sequence length n in tokens from about 2 to 10,000, titled Classical n squared attention versus polylog-depth targets, illustrative. A steep golden line is classical attention-style n squared, rising to about 10 to the eighth at the largest n. A teal line is polylog depth as log base 2 of n, squared, growing slowly to roughly a few hundred. A dashed purple line is log base 2 of n, cubed, ending around a few thousand. The widening gap illustrates the deck’s contrast between classical O of n squared attention cost and idealized polylog-depth QLA-style targets."
+---
+
+---
+layout: table
+title: Attention operations at a glance
+caption: "Symbolic classical vs QLA-style targets (assumption-heavy)"
+headers: [Object, Classical typical focus, QLA-style quantum target]
+rows:
+  - ["Pairwise attention structure", "$O(n^2)$ (and often $n^2 d$ work)", "Avoid full $n\\times n$ matrix; depth polylog in $n,d$"]
+  - ["Linear ops on encoded data", "Explicit dense linear algebra", "QSVT / block-encoding pipelines"]
+  - ["Qubit count", "Not applicable", "$O(\\log n + \\log d)$ qubits for amplitude-style encodings"]
+
+---
+layout: figure
+figure_scale: 1.0
+title: "Gate Count vs Circuit Depth on 16 Qubits."
+src: "./Gate Count vs Circuit Depth on 16 Qubits.png"
+alt_text: "Gate count vs circuit depth on 16 qubits. Two 16-line quantum circuits (q0–q15) compare a serial, low-parallelism schedule with yellow entangling (XX) gates staggered in time, 24 total entangling gates, depth 12 time layers, versus a parallel, high-occupancy schedule with the same 24 entangling gates packed into only 3 time layers. Legend defines gate count as total operations and depth as sequential layers, notes that more parallelism cuts depth without changing total work, and states that on NISQ hardware shallower circuits are preferred because noise grows with depth."
+---
+
+---
+layout: figure
+figure_scale: 1.0
+title: "Ancillas Width and Depth on a 16-Qubit Device"
+src: "./Ancillas, Width, and Depth on a 16-Qubit Device.png"
+alt_text: "Ancillas, width, and depth on a 16-qubit device. Side-by-side circuits on 16 qubits: left, ancilla-light design with 14 data qubits and 2 ancillas, total width 16, depth 12 layers; right, ancilla-assisted design with 10 data qubits and 6 ancillas (q10–q15 highlighted), same width 16, depth 6 layers. Takeaways: ancilla can reduce depth but eat width; use them when depth savings justify the qubit cost. Footer: NISQ goal—short depth, realistic parallelism, modest ancilla overhead."
+---
+
+---
+layout: divider
+title: "Part 7 — GUO Pipeline (Sketch)"
+---
+
+---
+layout: two-column
+title: "Classical vs Quantum Attention at a Glance"
+proportion: 50/50
+left:
+  type: figure
+  src: classical_vs_quantum_attention.svg
+  alt_text: "Side-by-side flowchart contrasting classical and quantum attention computation. Classical path (blue header, O(S-squared d)): compute QK-transpose (S-squared d FLOPs), apply softmax (S-squared FLOPs), multiply by V (S-squared d FLOPs). Quantum path (green header, O(polylog Sd)): block-encode QK-transpose in O(d polylog S), apply QSVT softmax in O(log 1/epsilon), multiply by V via QSVT in O(log 1/epsilon)."
+---
+- Classical **$O(S^2 d)$** vs idealized **polylog**-depth under **QRAM + sparsity + FTQC** stories
+- **QRAM** is the usual **read-in** assumption; without it, loading can **erase** the headline speedup
+- **Pipeline:** block-encode $QK^T/\sqrt{d_k}$, **QSVT** softmax, then multiply by $V$; **shots** for readout vs **coherent** layer stacking (time vs coherence tradeoff)
+
+---
+layout: diagram
+title: GUO Quantum Transformer Pipeline
+alt_text: "Left-to-right flowchart of the GUO Quantum Transformer pipeline with five stages. Stage 1 (data loading via QRAM): Q, K, V matrices loaded in O(log d) per query if QRAM available. Stage 2 (block-encode QK-transpose): O(d poly-log S) T-gates for d-sparse attention. Stage 3 (QSVT softmax): depth O(log 1 over epsilon) via Chebyshev polynomial approximation of the exponential function. Stage 4 (multiply by V): second QSVT circuit, further poly-log depth. Stage 5 (measurement): O(S over epsilon-squared) shots for full output, or coherent pass to next layer to avoid measurement. The QRAM loading stage is highlighted as the dominant assumption."
+---
+graph LR
+  A["Q, K, V in R^(S x d)"] --> B["Stage 1: QRAM Loading\nO(log d) per query\nDominant assumption"]
+  B --> C["Stage 2: Block-Encode QK^T\nd-sparse: O(d polylog S) T-gates"]
+  C --> D["Stage 3: QSVT Softmax\ndepth O(log 1/eps)\nChebyshev poly of exp"]
+  D --> E["Stage 4: Multiply by V\nsecond QSVT circuit"]
+  E --> F["Stage 5: Measure or\ncoherent pass to layer l+1"]
+  style B fill:#a06000,color:#ffffff
+  style D fill:#1a7a1a,color:#ffffff
+
+---
+layout: summary
+title: "Summary — Quantum Transformers"
+subtitle: "What to remember"
+content_scale: 0.9
+---
+- **Classical:** attention is **$O(S^2 d)$** in the long-context regime; FFN is **$O(Sd^2)$**
+- **FTQC+QSVT:** **analytic** activations and spectra enable **$O(\log(1/\varepsilon))$**-degree / depth targets 
+    - **$\alpha$** and **oracle T-count** matter
+- **Polylog in $n$** is a **separate** story from **$\varepsilon$**; 
+    - both need **QRAM/structured access** and honest **NISQ** (depth/width/ancilla) accounting
+- **Reality check:** **QRAM**, **LayerNorm**, **shot budgets**, and **dequantization**-style limits can **invalidate** a polylog claim in practice
+- **Polylog scaling:** costs like **$(\log n)^k$** in idealized QLA writeups; 
+    - **caveat:** strongest statements are **theoretical** and long-run **hardware**-dependent
+
+

@@ -233,6 +233,19 @@ section[role="group"] {
 
 ---
 
+## Fixed footer — page counter + view scale (`footer_scale` / `footer_inset`)
+
+The bottom bar ( **`−` / `%` / `+` / `↺`**, slide **counter**, **`#`** go-to) is **`.slide-footer-nav`**, `position: fixed`, **horizontally** centered with **`left: 50%`** + **`translateX(-50%)`**.
+
+| YAML (deck first block) | Default | What it does |
+|---------------------------|--------|---------------|
+| **`footer_inset`** | **`0.5in`** | CSS **length** for **`bottom`**: distance from the **viewport** base to the footer bar. **`1in`** sat the bar **higher** (farther from the **bottom edge** of the **window**). **`0.5in`** (default now) **lowers** the bar to **half** of that former offset — still in the **margin** area. Validated: short `in`/`rem`/`px`/`vh` (no `;` / `url()`). |
+| **`footer_scale`** | **`1.0`** | Multiplier **`0.5`–`2.5`**: sets **`--footer-scale`** on **`<html>`** and scales **font-size**, **padding**, **gaps**, and **`--slide-footer-ui-clearance`** (**`calc(2.75rem * var(--footer-scale, 1))`**) so **figure** slides keep clearance above the **larger** bar. |
+
+**`:root`** in **`base.html.j2`** defines fallbacks for **`--footer-scale`**, **`--slide-footer-inset`**, and **`--slide-footer-ui-clearance`**. The compiler adds **`style="--footer-scale: …; --slide-footer-inset: …"`** on **`<html>`** from `DeckMetadata` so decks can tune without forking the template.
+
+---
+
 ## Figure / diagram panels (chrome only)
 
 Panels (the rounded box behind figures and diagrams) use **color** tokens. **Edge radii and padding** are hard‑coded in `base.html.j2` (varies by layout — e.g. `layout: figure` vs `layout: figure-wide` vs diagram columns). Search the template for `figure-container`, `figure-wide-figure-wrap`, and `slide-diagram`.

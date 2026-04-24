@@ -627,6 +627,20 @@
           "description": "If True, draw red debug borders on layout: figure .figure-asset-wrap (panel) and inner graphic (img / .diagram-container).",
           "title": "Figure Layout Debug",
           "type": "boolean"
+        },
+        "footer_scale": {
+          "default": 1.0,
+          "description": "Multiplies the fixed bottom bar (page counter, view-scale, go-to) font sizes and padding; set on the root as CSS --footer-scale.",
+          "maximum": 2.5,
+          "minimum": 0.5,
+          "title": "Footer Scale",
+          "type": "number"
+        },
+        "footer_inset": {
+          "default": "0.5in",
+          "description": "CSS length for the fixed footer nav distance from the viewport bottom (e.g. 0.5in \u2014 half a inch margin above the screen edge; default 0.5in was 1in).",
+          "title": "Footer Inset",
+          "type": "string"
         }
       },
       "required": [

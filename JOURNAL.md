@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-04-24 (a) - Deck **footer** — **`footer_scale`**, **`footer_inset`**, default **`bottom: 0.5in`**
+
+### Completed Tasks ✅
+- [x] **`DeckMetadata`**: **`footer_scale`** (**0.5–2.5**, default **1.0**), **`footer_inset`** (CSS length, default **`0.5in`**) with **`_check_footer_inset`**
+- [x] **`base.html.j2`**: **`<html style="--footer-scale: …; --slide-footer-inset: …">`**; **`:root`** — **`--slide-footer-ui-clearance: calc(2.75rem * var(--footer-scale, 1))`**; **`.slide-footer-nav`** `bottom: var(--slide-footer-inset)`; scale **gaps** / **font-size** / **padding** for **#slide-counter**, **.deck-view-***, **#deck-view-scale-pct**, **.slide-goto-***
+- [x] **`schema/deck.schema.json`** regenerated, **`CSS_CONTROLS.md`**, **`SNAPSHOT.md`**, tests in **`test_models.py`**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/schema/models.py`, `schema/deck.schema.json`, `compiler/templates/base.html.j2`, `CSS_CONTROLS.md`, `SNAPSHOT.md`, `tests/test_models.py`, `JOURNAL.md`
+
+---
+
 ## 2026-04-23 (m) - Docs: **`FIGURE_WIDE.md`** + links from **`CSS_CONTROLS.md`** / **`SKILL.md`**
 
 ### Completed Tasks ✅

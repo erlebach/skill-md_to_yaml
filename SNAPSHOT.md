@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-23 (m)
+# Project Snapshot — 2026-04-24 (a)
 
 ## Current Architecture
 
@@ -10,7 +10,7 @@
 
 ## Active Features
 
-- **In-page view scale** — **`view_scale`** (default **1.0**, range **0.25–4**) and optional **`remember_view_scale`** on **`DeckMetadata`**; HTML **`#deck-app-root`** applies **`--deck-view-scale`** (**`zoom`**, **`transform`** fallback). Footer at **`bottom: 1in`**: **`−` / `+` / `↺`**, live **`%`** readout, keys **`+`/`=`**, **`−`**, **`0`** (reset when go-to closed), **`?viewScale=`** URL override, **`localStorage`** key **`mdToYamlDeckViewScale`** when persistence is on (see **`HANDOFF_ZOOM.md`**).
+- **In-page view scale** — **`view_scale`** (default **1.0**, range **0.25–4**) and optional **`remember_view_scale`** on **`DeckMetadata`**; HTML **`#deck-app-root`** applies **`--deck-view-scale`** (**`zoom`**, **`transform`** fallback). **Fixed bottom bar** (slide counter, view-scale, go-to): **`footer_inset`** (default **`0.5in`**) = CSS **`bottom`**; **`footer_scale`** (**0.5–2.5**, default **1.0**) = **`--footer-scale`** on **`<html>`** for larger/smaller control chrome; **`--slide-footer-ui-clearance`** scales with **`footer_scale`**. See **`CSS_CONTROLS.md`** (Fixed footer). Keys **`+`/`=`**, **`−`**, **`0`**, **`?viewScale=`**, **`localStorage`** **`mdToYamlDeckViewScale`** (see **`HANDOFF_ZOOM.md`**).
 - **Display math tuning** — deck metadata and per-slide frontmatter: **`math_display_scale`** (**0.75–2.0**, default **1.0**), **`math_display_center`** (default **true**), and optional **`math_display_color`** (e.g. **`cyan`**, hex, **`hsl(...)`**) for **`$$...$$`** block MathML in body, hero, and table cells; HTML sets **`--math-display-scale`**, optional **`--math-display-color`**, and **`math-display-eq-center`** / **`math-display-eq-start`** on each **`<section>`** (under **`.claude/skills/md_to_yaml`**). When centering is on, block MathML also uses **`width: fit-content; max-width: 100%`** with **`margin: auto`** so bare **`<math>`** between paragraphs still centers.
 - **Slide `subtitle`** — optional on all layouts that have **`title`**; rendered below the heading with **80%** of the title font size (CSS **`0.8em`** on **`header.slide-heading-stack`**); rich text / inline math like **`title`**
 - **`transcribe_to_html`** — transcript decks: dense left-aligned body text via `flavor: transcript`
@@ -61,7 +61,8 @@ md_to_yaml/
 
 ## Recent Changes
 
-- **2026-04-23 (m)**: **[`FIGURE_WIDE.md`](.claude/skills/md_to_yaml/FIGURE_WIDE.md)** — full **`layout: figure-wide`** reference (band **CSS**, **`figure_scale`**, Mermaid, history table); links from [`CSS_CONTROLS.md`](CSS_CONTROLS.md) and [`.claude/skills/md_to_yaml/SKILL.md`](.claude/skills/md_to_yaml/SKILL.md).
+- **2026-04-24 (a)**: **Fixed slide footer** — deck keys **`footer_inset`** (CSS **`bottom`**, default **`0.5in`**, was **`1in`** in template only) and **`footer_scale`** (**0.5–2.5**); **`<html>`** sets **`--footer-scale`**, **`--slide-footer-inset`**; **`--slide-footer-ui-clearance`** scales with **`footer_scale`**. See [`CSS_CONTROLS.md`](CSS_CONTROLS.md) section **Fixed footer**.
+- **2026-04-23 (m)**: **[`FIGURE_WIDE.md`](.claude/skills/md_to_yaml/FIGURE_WIDE.md)** — full **`layout: figure-wide`** reference; links from [`CSS_CONTROLS.md`](CSS_CONTROLS.md) and [`.claude/skills/md_to_yaml/SKILL.md`](.claude/skills/md_to_yaml/SKILL.md).
 - **2026-04-23 (l)**: **`layout: figure-wide` / `figure_scale`** — apply scale with **`zoom` / `transform: scale`**, like **figure** **`--fill`**, not **`calc(100% * --figure-scale)`** on **img** **`max-height`** (unreliable when **%** height is indefinite).
 - **2026-04-23 (k)**: (superseded) **`calc(100% * scale)`** attempt on **figure-wide** **img** **max** bounds.
 - **2026-04-23 (j)**: **`layout: figure-wide`** — **taller** default **`.figure-wide-figure-wrap`** (**`min-height: clamp(12rem, 36vh, 62vh)`**); rasters / SVG use **`min(100%, 58vh×scale)`**-style caps so the graphic can **fill** a **tall** panel.

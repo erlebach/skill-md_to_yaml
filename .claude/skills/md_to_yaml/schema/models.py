@@ -27,6 +27,22 @@ def _check_math_display_color(v: str | None) -> str | None:
     return s
 
 # ---------------------------------------------------------------------------
+
+
+def _check_footer_inset(v: str) -> str:
+    """Validate CSS length for fixed footer `bottom` (viewport inset)."""
+    s = str(v).strip()
+    if not s:
+        return '0.5in'
+    if len(s) > 80:
+        raise ValueError('footer_inset: max 80 characters')
+    if ';' in s or '{' in s or '}' in s or '<' in s or 'url(' in s.lower():
+        raise ValueError(
+            'footer_inset: use a short CSS length (e.g. 0.5in, 1rem, 12px);'
+            ' semicolons, angle brackets, and url() are not allowed.'
+        )
+    return s
+
 # Base slide model
 # ---------------------------------------------------------------------------
 
@@ -328,6 +344,27 @@ class DeckMetadata(BaseModel):
             '(panel) and inner graphic (img / .diagram-container).'
         ),
     )
+    footer_scale: float = Field(
+        1.0,
+        ge=0.5,
+        le=2.5,
+        description=(
+            'Multiplies the fixed bottom bar (page counter, view-scale, go-to) font sizes '
+            'and padding; set on the root as CSS --footer-scale.'
+        ),
+    )
+    footer_inset: str = Field(
+        '0.5in',
+        description=(
+            'CSS length for the fixed footer nav distance from the viewport bottom '
+            '(e.g. 0.5in — half a inch margin above the screen edge; default 0.5in was 1in).'
+        ),
+    )
+
+    @field_validator('footer_inset')
+    @classmethod
+    def _v_footer_inset(cls, v: str) -> str:
+        return _check_footer_inset(v)
 
     @field_validator('math_display_color')
     @classmethod

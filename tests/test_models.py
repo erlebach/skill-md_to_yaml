@@ -271,6 +271,27 @@ def test_deck_metadata_figure_layout_debug_default():
     assert meta.figure_layout_debug is False
 
 
+def test_deck_metadata_footer_scale_and_inset_default():
+    meta = DeckMetadata(title='D')
+    assert meta.footer_scale == 1.0
+    assert meta.footer_inset == '0.5in'
+
+
+def test_deck_metadata_footer_inset_rejects_injection():
+    with pytest.raises(ValidationError):
+        DeckMetadata(title='D', footer_inset='0; {')
+
+
+def test_deck_metadata_footer_scale_bounds():
+    with pytest.raises(ValidationError):
+        DeckMetadata(title='D', footer_scale=0.1)
+    with pytest.raises(ValidationError):
+        DeckMetadata(title='D', footer_scale=3.0)
+    m = DeckMetadata(title='D', footer_scale=1.5, footer_inset='12px')
+    assert m.footer_scale == 1.5
+    assert m.footer_inset == '12px'
+
+
 # ---------------------------------------------------------------------------
 # AnySlide discriminated union
 # ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ deck.metadata.theme }}" data-deck-default-view-scale="{{ deck.metadata.view_scale }}" data-deck-remember-view-scale="{{ 'true' if deck.metadata.remember_view_scale else 'false' }}" data-deck-figure-layout-debug="{{ 'true' if figure_layout_debug else 'false' }}">
+<html lang="en" data-theme="{{ deck.metadata.theme }}" data-deck-default-view-scale="{{ deck.metadata.view_scale }}" data-deck-remember-view-scale="{{ 'true' if deck.metadata.remember_view_scale else 'false' }}" data-deck-figure-layout-debug="{{ 'true' if figure_layout_debug else 'false' }}" style="--footer-scale: {{ deck.metadata.footer_scale }}; --slide-footer-inset: {{ deck.metadata.footer_inset | e }};">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,9 +14,11 @@
     :root {
       /* Baseline zoom; per-slide --title-scale / --content-scale set on each section. */
       --font-scale: 1.35;
-      /* clear fixed .slide-footer-nav (z-index) — figure slides only adjust bottom padding.
-         Tunable: raise if bottom UI grows. */
-      --slide-footer-ui-clearance: 2.75rem;
+      /* Fixed footer: deck metadata `footer_scale` / `footer_inset` on <html> override these. */
+      --footer-scale: 1;
+      --slide-footer-inset: 0.5in;
+      /* clear fixed .slide-footer-nav (z-index) — figure slides only adjust bottom padding. */
+      --slide-footer-ui-clearance: calc(2.75rem * var(--footer-scale, 1));
     }
 
     :root[data-theme="dark"] {
@@ -84,7 +86,7 @@
     /* Bottom-centered counter + go-to + view scale (fixed; 1in margin band). */
     .slide-footer-nav {
       position: fixed;
-      bottom: 1in;
+      bottom: var(--slide-footer-inset, 0.5in);
       left: 50%;
       transform: translateX(-50%);
       z-index: 100;
@@ -92,11 +94,11 @@
       flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
+      gap: calc(0.5rem * var(--footer-scale, 1));
+      font-size: calc(0.875rem * var(--footer-scale, 1));
       color: var(--muted);
-      padding: 0.2rem 0.55rem 0.25rem;
-      border-radius: 8px;
+      padding: calc(0.2rem * var(--footer-scale, 1)) calc(0.55rem * var(--footer-scale, 1)) calc(0.25rem * var(--footer-scale, 1)) calc(0.55rem * var(--footer-scale, 1));
+      border-radius: calc(8px * var(--footer-scale, 1));
       background: color-mix(in srgb, var(--bg) 88%, transparent);
       border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
       box-shadow: 0 1px 8px color-mix(in srgb, var(--bg) 40%, #000 60%);
@@ -104,6 +106,8 @@
     }
 
     #slide-counter {
+      font: inherit;
+      font-size: calc(0.9rem * var(--footer-scale, 1));
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
       user-select: none;
@@ -111,10 +115,10 @@
 
     .slide-goto-open {
       font: inherit;
-      font-size: 0.8rem;
+      font-size: calc(0.8rem * var(--footer-scale, 1));
       font-weight: 600;
       line-height: 1;
-      padding: 0.2rem 0.45rem;
+      padding: calc(0.2rem * var(--footer-scale, 1)) calc(0.45rem * var(--footer-scale, 1));
       color: var(--accent);
       background: transparent;
       border: 1px solid var(--border);
@@ -131,19 +135,19 @@
     .deck-view-scale-cluster {
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
-      padding-right: 0.45rem;
-      margin-right: 0.35rem;
+      gap: calc(0.25rem * var(--footer-scale, 1));
+      padding-right: calc(0.45rem * var(--footer-scale, 1));
+      margin-right: calc(0.35rem * var(--footer-scale, 1));
       border-right: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
     }
 
     .deck-view-scale-btn {
       font: inherit;
-      font-size: 0.95rem;
+      font-size: calc(0.95rem * var(--footer-scale, 1));
       font-weight: 700;
       line-height: 1;
-      min-width: 1.65rem;
-      padding: 0.15rem 0.35rem;
+      min-width: calc(1.65rem * var(--footer-scale, 1));
+      padding: calc(0.15rem * var(--footer-scale, 1)) calc(0.35rem * var(--footer-scale, 1));
       color: var(--text);
       background: transparent;
       border: 1px solid var(--border);
@@ -159,9 +163,9 @@
 
     #deck-view-scale-pct {
       font-variant-numeric: tabular-nums;
-      font-size: 0.78rem;
+      font-size: calc(0.78rem * var(--footer-scale, 1));
       color: var(--muted);
-      min-width: 2.75rem;
+      min-width: calc(2.75rem * var(--footer-scale, 1));
       text-align: center;
       user-select: none;
     }
@@ -169,7 +173,7 @@
     .slide-goto-form {
       display: flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: calc(0.35rem * var(--footer-scale, 1));
       margin: 0;
     }
 
@@ -179,16 +183,16 @@
 
     .slide-goto-input {
       width: 4.5ch;
-      min-width: 3rem;
+      min-width: calc(3rem * var(--footer-scale, 1));
       max-width: 6rem;
       font: inherit;
-      font-size: 0.875rem;
+      font-size: calc(0.875rem * var(--footer-scale, 1));
       font-variant-numeric: tabular-nums;
       color: var(--text);
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 4px;
-      padding: 0.15rem 0.35rem;
+      padding: calc(0.15rem * var(--footer-scale, 1)) calc(0.35rem * var(--footer-scale, 1));
     }
 
     .slide-goto-input:focus {
