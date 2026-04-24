@@ -375,6 +375,11 @@
     .slide-body ol { padding-left: 2.5rem; }
     .slide-body ol li { padding-left: 0.5rem; }
     .slide-body li { margin-bottom: 0.75em; }
+    /* Nested lists: space after the parent line matches gap between top-level bullets */
+    .slide-body li > ul,
+    .slide-body li > ol {
+      margin-top: 0.75em;
+    }
 
     /* Display equations ($$...$$): scale via --math-display-scale; center vs start via section class */
     .slide-body math[display="block"],
