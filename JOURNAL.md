@@ -2,6 +2,41 @@
 
 ---
 
+## 2026-04-23 - **`PRESENTER_NOTES.md`** for **`final_talk1`** (slide 1 → summary)
+
+### Completed Tasks ✅
+- [x] Added **`conversion/quantum_transformerss_ML_seminar_2026-04-18/PRESENTER_NOTES.md`** — per-slide talking points, explicit **Transition** lines between slides, **Part 7** / four-factor / GUO / closing guidance, pacing tips
+
+### Files Created/Modified
+- `conversion/quantum_transformerss_ML_seminar_2026-04-18/PRESENTER_NOTES.md`
+- `JOURNAL.md`
+
+### Key Changes
+- **40** slide sections aligned to **`final_talk1.yaml`** order (Transformer FLOPS **figure-wide** immediately before **GUO** Mermaid, then **summary**)
+
+### Notes
+- Complements deck **`final_talk1.yaml`** / **`final_talk1.html`**
+
+---
+
+## 2026-04-23 - **`final_talk1.yaml`**: moved last five slides into **Part 7** (before GUO diagram)
+
+### Completed Tasks ✅
+- [x] Relocated **four** operation-count factor slides + **`figure-wide` Transformer FLOPS** from **after** the closing **summary** to immediately **after** **Classical vs Quantum Attention at a Glance** and **before** **GUO Quantum Transformer Pipeline** — so the Big-O decomposition precedes the stage sketch and the **summary** ends the deck
+- [x] Recompiled **`final_talk1.html`** from **`conversion/quantum_transformerss_ML_seminar_2026-04-18/`** (relative paths)
+
+### Files Created/Modified
+- `conversion/quantum_transformerss_ML_seminar_2026-04-18/final_talk1.yaml`, `final_talk1.html`
+- `JOURNAL.md`, `SNAPSHOT.md`
+
+### Key Changes
+- Narrative order: high-level classical vs quantum comparison → **four factors** + **Transformer FLOPS** figure → **Mermaid** pipeline → **summary**
+
+### Notes
+- Compiler warning unchanged: **slides 34–37** consecutive **`content`** (the four factor slides)
+
+---
+
 ## 2026-04-23 - **`four_slides.yaml`**: four **content** slides (operation-count factors)
 
 ### Completed Tasks ✅

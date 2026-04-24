@@ -269,6 +269,32 @@ alt_text: "Ancillas, width, and depth on a 16-qubit device. Side-by-side circuit
 
 ---
 layout: divider
+title: "Part 6.5: State Preparation & The QRAM Assumption"
+---
+
+---
+layout: content
+title: "QRAM: The Data-Loading Bottleneck"
+subtitle: "Translating classical ML data into quantum superposition"
+---
+- **The Problem:** Classical ML matrices ($V$, $QK^T$) sit in standard memory. Quantum algorithms process **state vectors**. 
+- **Sequential Loading:** Standard initialization of an $N$-dimensional vector takes $O(N)$ quantum gates. 
+    - *Result:* Data loading dominates the runtime; polylogarithmic algorithmic speedup is erased.
+- **The QRAM Promise:** A theoretical architecture allowing an $N$-dimensional classical vector to be loaded into a quantum superposition in $O(\log N)$ depth.
+- **The Mechanism:** Often conceptualized as a "bucket brigade" — a bifurcating binary tree of quantum routing switches.
+
+---
+layout: content
+title: "The Physical Reality of QRAM"
+subtitle: "When can we actually build it?"
+---
+- **Hardware Status:** Currently theoretical/small-scale lab demonstrations. No large-scale QRAM exists.
+- **The Engineering Hurdle:** To load data in $O(\log N)$ time, the entire tree of millions of routing switches must remain **coherent** simultaneously. 
+- **The Measurement Tax:** Quantum states collapse upon measurement. To build statistical expectation values, the $N \times N$ data matrices must be queried through the QRAM circuit repeatedly for every shot, even under FTQC.
+- **Timeline:** Large-scale QRAM is strictly an **FTQC-era** requirement (likely well into the 2030s+), requiring millions of physical qubits just for error-corrected state preparation.
+
+---
+layout: divider
 title: "Part 7 — GUO Pipeline (Sketch)"
 ---
 
@@ -284,41 +310,6 @@ left:
 - Classical **$O(S^2 d)$** vs idealized **polylog**-depth under **QRAM + sparsity + FTQC** stories
 - **QRAM** is the usual **read-in** assumption; without it, loading can **erase** the headline speedup
 - **Pipeline:** block-encode $QK^T/\sqrt{d_k}$, **QSVT** softmax, then multiply by $V$; **shots** for readout vs **coherent** layer stacking (time vs coherence tradeoff)
-
----
-layout: diagram
-title: GUO Quantum Transformer Pipeline
-alt_text: "Two-row left-to-right flowchart of the GUO Quantum Transformer pipeline. Top row: input Q, K, V in R^(S x d); Stage 1 QRAM loading (O(log d) per query, dominant assumption, highlighted); Stage 2 block-encode QK-transpose (d-sparse, O(d polylog S) T-gates). Bottom row: Stage 3 QSVT softmax (depth O(log 1/epsilon), Chebyshev poly of exp, highlighted); Stage 4 multiply by V (second QSVT circuit); Stage 5 measure or coherent pass to layer l+1. Arrows run left-to-right within each row; the flow continues from Stage 2 down to Stage 3."
----
-%%{init: {"flowchart": {"htmlLabels": true, "useMaxWidth": true, "padding": 12, "nodeSpacing": 28, "rankSpacing": 44}}}%%
-flowchart TB
-  subgraph row1[" "]
-    direction LR
-    A["Q, K, V in R^(S x d)"] --> B["Stage 1: QRAM Loading\nO(log d) per query\nDominant assumption"] --> C["Stage 2: Block-Encode QK^T\nd-sparse: O(d polylog S) T-gates"]
-  end
-  subgraph row2[" "]
-    direction LR
-    D["Stage 3: QSVT Softmax\ndepth O(log 1/eps)\nChebyshev poly of exp"] --> E["Stage 4: Multiply by V\nsecond QSVT circuit"] --> F["Stage 5: Measure or\ncoherent pass to layer l+1"]
-  end
-  C --> D
-  style B fill:#a06000,color:#ffffff
-  style D fill:#1a7a1a,color:#ffffff
-
----
-layout: summary
-title: "Summary — Quantum Transformers"
-subtitle: "What to remember"
-content_scale: 0.9
----
-- **Classical:** attention is **$O(S^2 d)$** in the long-context regime; FFN is **$O(Sd^2)$**
-- **FTQC+QSVT:** **analytic** activations and spectra enable **$O(\log(1/\varepsilon))$**-degree / depth targets 
-    - **$\alpha$** and **oracle T-count** matter
-- **Polylog in $n$** is a **separate** story from **$\varepsilon$**; 
-    - both need **QRAM/structured access** and honest **NISQ** (depth/width/ancilla) accounting
-- **Reality check:** **QRAM**, **LayerNorm**, **shot budgets**, and **dequantization**-style limits can **invalidate** a polylog claim in practice
-- **Polylog scaling:** costs like **$(\log n)^k$** in idealized QLA writeups; 
-    - **caveat:** strongest statements are **theoretical** and long-run **hardware**-dependent
-
 
 ---
 layout: content
@@ -360,3 +351,18 @@ alt_text: "Operation count as the product of four terms: norm/amplitude factor, 
 ---
 ## Summary
 Operation count to execute a single block of the transformer
+
+---
+layout: summary
+title: "Summary — Quantum Transformers"
+subtitle: "What to remember"
+content_scale: 0.9
+---
+- **Classical:** attention is **$O(S^2 d)$** in the long-context regime; FFN is **$O(Sd^2)$**
+- **FTQC+QSVT:** **analytic** activations and spectra enable **$O(\log(1/\varepsilon))$**-degree / depth targets 
+    - **$\alpha$** and **oracle T-count** matter
+- **Polylog in $n$** is a **separate** story from **$\varepsilon$**; 
+    - both need **QRAM/structured access** and honest **NISQ** (depth/width/ancilla) accounting
+- **Reality check:** **QRAM**, **LayerNorm**, **shot budgets**, and **dequantization**-style limits can **invalidate** a polylog claim in practice
+- **Polylog scaling:** costs like **$(\log n)^k$** in idealized QLA writeups; 
+    - **caveat:** strongest statements are **theoretical** and long-run **hardware**-dependent

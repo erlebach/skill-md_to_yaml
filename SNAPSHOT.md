@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-23 (c)
+# Project Snapshot — 2026-04-23 (e)
 
 ## Current Architecture
 
@@ -61,6 +61,8 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-04-23 (e)**: **`conversion/.../PRESENTER_NOTES.md`** — full presenter script outline for **`final_talk1`** (40 slides): on-screen cues, detailed **Say** bullets, **Transition** lines between slides, GUO / four-factor / summary closings, timing tips.
+- **2026-04-23 (d)**: **`conversion/.../final_talk1.yaml`** — last **five** slides (four operation-count **`content`** slides + **Transformer FLOPS** **`figure-wide`**) moved from **after** **`summary`** to **Part 7** between **Classical vs Quantum Attention at a Glance** and **GUO Quantum Transformer Pipeline**; **`final_talk1.html`** recompiled from that folder.
 - **2026-04-23 (c)**: **`four_slides.yaml`** — four **`layout: content`** slides decomposing **$O(\sqrt{N} \cdot d_{\text{poly}} \cdot \log^2 N \cdot \log(1/\epsilon))$** (norm/amplitude, QSVT calls, gates per call, T-gate overhead); each slide **`subtitle`** states scaling; compiles with **`.claude/skills/md_to_yaml`** (consecutive-content warning only).
 - **2026-04-24 (a)**: **Fixed slide footer** — deck keys **`footer_inset`** (CSS **`bottom`**, default **`0.5in`**, was **`1in`** in template only) and **`footer_scale`** (**0.5–2.5**); **`<html>`** sets **`--footer-scale`**, **`--slide-footer-inset`**; **`--slide-footer-ui-clearance`** scales with **`footer_scale`**. See [`CSS_CONTROLS.md`](CSS_CONTROLS.md) section **Fixed footer**.
 - **2026-04-23 (m)**: **[`FIGURE_WIDE.md`](.claude/skills/md_to_yaml/FIGURE_WIDE.md)** — full **`layout: figure-wide`** reference; links from [`CSS_CONTROLS.md`](CSS_CONTROLS.md) and [`.claude/skills/md_to_yaml/SKILL.md`](.claude/skills/md_to_yaml/SKILL.md).
