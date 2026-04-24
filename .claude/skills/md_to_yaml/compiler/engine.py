@@ -407,7 +407,7 @@ def _render(
             else deck.metadata.content_scale
         )
         eff_figure_scale = None
-        if slide.layout == "figure":
+        if slide.layout in ("figure", "figure-wide"):
             slide_fig_scale = getattr(slide, "figure_scale", None)
             eff_figure_scale = float(
                 slide_fig_scale

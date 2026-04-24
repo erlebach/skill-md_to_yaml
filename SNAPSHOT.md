@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-23 (h)
+# Project Snapshot — 2026-04-23 (m)
 
 ## Current Architecture
 
@@ -20,6 +20,10 @@
 - **13 layout types**: title, hero, content, divider, figure, diagram, two-column, quote, comparison, code, steps, summary, table (+ legacy `transcribe`)
 - **Math rendering** — **latex2mathml** MathML: **`$$...$$`** block and **`$...$`** inline math
 - **ADA compliance** — required `alt_text` on figures/diagrams, contrast validation
+
+## Documentation
+
+- **[`.claude/skills/md_to_yaml/FIGURE_WIDE.md`](.claude/skills/md_to_yaml/FIGURE_WIDE.md)** — **`layout: figure-wide`**: flex band, **`figure_scale`** (**`zoom`** / **`transform: scale`**), pitfalls, YAML sketch; cross-linked from **[`CSS_CONTROLS.md`](CSS_CONTROLS.md)** and **`SKILL.md`**.
 
 ## File Structure
 
@@ -57,6 +61,11 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-04-23 (m)**: **[`FIGURE_WIDE.md`](.claude/skills/md_to_yaml/FIGURE_WIDE.md)** — full **`layout: figure-wide`** reference (band **CSS**, **`figure_scale`**, Mermaid, history table); links from [`CSS_CONTROLS.md`](CSS_CONTROLS.md) and [`.claude/skills/md_to_yaml/SKILL.md`](.claude/skills/md_to_yaml/SKILL.md).
+- **2026-04-23 (l)**: **`layout: figure-wide` / `figure_scale`** — apply scale with **`zoom` / `transform: scale`**, like **figure** **`--fill`**, not **`calc(100% * --figure-scale)`** on **img** **`max-height`** (unreliable when **%** height is indefinite).
+- **2026-04-23 (k)**: (superseded) **`calc(100% * scale)`** attempt on **figure-wide** **img** **max** bounds.
+- **2026-04-23 (j)**: **`layout: figure-wide`** — **taller** default **`.figure-wide-figure-wrap`** (**`min-height: clamp(12rem, 36vh, 62vh)`**); rasters / SVG use **`min(100%, 58vh×scale)`**-style caps so the graphic can **fill** a **tall** panel.
+- **2026-04-23 (i)**: **`layout: figure-wide`** — optional **`figure_scale`** in slide frontmatter (same range as **`layout: figure`**); compiler sets **`--figure-scale`** on the section; **img** / **SVG** in **`.figure-wide-media`** use **vh**-based caps scaled like **`layout: figure`**. See **`CSS_CONTROLS.md`** and **`SKILL.md`**.
 - **2026-04-23 (h)**: **`layout: figure-wide`** — **`.figure-wide-figure-wrap`**: **`min-height: clamp(10rem, 28vh, 50vh)`**, **`flex-shrink: 0`**, so the **infographic** / **raster** band does not **collapse to 0** when **summary** + **two-column** **markdown** use most of the **viewport**; **`final_talk1.html`** recompiled.
 - **2026-04-23 (g)**: **`layout: figure`** **--fill** **panel** is **1** **in** **wider** than the **content** **column** (**`calc(100% + 1in)`**, **`margin: 0 -0.5in`**) — **½in** into each **slide** **side** **padding** — for **raster** / **file** **SVG** **slides** **(not** **Mermaid**).
 - **2026-04-23 (f)**: **--fill** file **SVG**: template uses **`width: auto; max-width: 100%`** (not full column width) for horizontal centering; **`quantum_circuit_ancilla.svg`** **`viewBox`** tightened to **`100 0 780 500`** to balance art in user space. See [CSS_CONTROLS.md](CSS_CONTROLS.md) **figure** / **`viewBox` note.

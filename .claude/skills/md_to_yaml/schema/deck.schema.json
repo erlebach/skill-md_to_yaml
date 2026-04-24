@@ -616,7 +616,7 @@
         },
         "figure_scale": {
           "default": 1.0,
-          "description": "Default scale for layout: figure — multiplies the width cap and matching max-height (vh) so media scales proportionally; the panel uses width: fit-content up to the cap.",
+          "description": "Default scale for layout: figure and figure-wide \u2014 multiplies the width cap and matching max-height (vh) so media scales proportionally; the figure panel uses width: fit-content up to the cap.",
           "maximum": 4.0,
           "minimum": 0.25,
           "title": "Figure Scale",
@@ -624,7 +624,7 @@
         },
         "figure_layout_debug": {
           "default": false,
-          "description": "If True, draw red debug borders on layout figure panel (figure) and inner graphic (img / .diagram-container).",
+          "description": "If True, draw red debug borders on layout: figure .figure-asset-wrap (panel) and inner graphic (img / .diagram-container).",
           "title": "Figure Layout Debug",
           "type": "boolean"
         }
@@ -1218,6 +1218,21 @@
           ],
           "title": "Proportion",
           "type": "string"
+        },
+        "figure_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override deck figure_scale for this slide (None = use deck default).",
+          "title": "Figure Scale"
         }
       },
       "required": [

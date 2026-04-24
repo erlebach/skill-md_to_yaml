@@ -130,6 +130,12 @@ class FigureWideSlide(SlideBase):
     alt_text: str
     caption: str | None = None
     proportion: Literal['50/50', '40/60', '60/40'] = '50/50'
+    figure_scale: float | None = Field(
+        default=None,
+        ge=0.25,
+        le=4.0,
+        description='Override deck figure_scale for this slide (None = use deck default).',
+    )
 
 
 class DiagramSlide(SlideBase):
@@ -310,9 +316,9 @@ class DeckMetadata(BaseModel):
         ge=0.25,
         le=4.0,
         description=(
-            'Default scale for layout: figure — multiplies the width cap and matching '
-            'max-height (vh) so media scales proportionally; the panel uses width: '
-            'fit-content up to the cap.'
+            'Default scale for layout: figure and figure-wide — multiplies the width '
+            'cap and matching max-height (vh) so media scales proportionally; the figure '
+            'panel uses width: fit-content up to the cap.'
         ),
     )
     figure_layout_debug: bool = Field(

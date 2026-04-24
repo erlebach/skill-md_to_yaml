@@ -105,14 +105,14 @@ Block `$$...$$` uses `font-size: calc(1em * var(--math-display-scale, 1))` relat
 
 ## Figure slide scale (`figure_scale`)
 
-For **`layout: figure`** only. The compiler sets **`--figure-scale`** on the slide **`<section>`** (deck default **0.25–4.0**, optional per-slide override). **Behavior depends on media type** (see below). Does **not** apply to **`layout: figure-wide`**, two-column figures, or bare **`layout: diagram`** (edit CSS for those).
+For **`layout: figure`** and **`layout: figure-wide`**, the compiler sets **`--figure-scale`** on the slide **`<section>`** (deck default **0.25–4.0**, optional per-slide override). On **`layout: figure`**, **behavior depends on media type** (see below). On **`layout: figure-wide`**, rasters and **`.diagram-container svg`** use a **base** **`58vh` / `100%` width** cap, then **`zoom` / `transform: scale`** for **`--figure-scale`** (same idea as **layout: figure** **`.figure-asset-wrap--fill`**; full narrative: [`.claude/skills/md_to_yaml/FIGURE_WIDE.md`](.claude/skills/md_to_yaml/FIGURE_WIDE.md)). Does **not** apply to two-column figures or bare **`layout: diagram`** (edit CSS for those).
 
 ### YAML
 
 | Where | Key | Default | What it does |
 |-------|-----|--------|--------------|
-| Deck metadata | `figure_scale` | `1.0` | `float` **0.25–4.0** — default for figure layout. |
-| `layout: figure` frontmatter | `figure_scale` | *(omit)* | If set, **replaces** deck `figure_scale` for that slide. |
+| Deck metadata | `figure_scale` | `1.0` | `float` **0.25–4.0** — default for **`layout: figure`** and **`layout: figure-wide`**. |
+| `layout: figure` or `layout: figure-wide` frontmatter | `figure_scale` | *(omit)* | If set, **replaces** deck `figure_scale` for that slide. |
 
 ### Non-Mermaid rasters and file SVG (`figure-asset-wrap--fill`)
 
@@ -126,7 +126,7 @@ When the slide is **not** rendered as Mermaid (e.g. **`.jpeg`**, **`.png`**, **`
 
 ### CSS variable
 
-**`--figure-scale`** is set on **`<section>`** only for **`layout: figure`**. All **`var(--figure-scale, 1))`** fallbacks in the stylesheet are for safety on other layouts.
+**`--figure-scale`** is set on **`<section>`** for **`layout: figure`** and **`layout: figure-wide`**. All **`var(--figure-scale, 1))`** fallbacks in the stylesheet are for safety on other layouts.
 
 ### Debug: panel vs graphic box model
 
@@ -264,14 +264,16 @@ For **how large the graphic is drawn** (scaling), read [Figure scale adjustments
 
 ### `layout: figure-wide` (summary + panel + bottom columns, smart flex)
 
+See **[`FIGURE_WIDE.md`](.claude/skills/md_to_yaml/FIGURE_WIDE.md)** for a full narrative (flex band, `figure_scale` / `zoom`, pitfalls, YAML sketch).
+
 This layout is designed so the **figure area shrinks** when **title, optional top summary, and footer (`.figure-wide-below`)** need more vertical space, while the slide stays within **`100vh`** and the slide **`padding: 1in`**.
 
 | Mechanism | Role |
 |----------|------|
 | `section.slide-figure-wide` | **`height` / `max-height: 100vh`**, **`overflow: hidden`** — one screen; no unbounded growth. |
-| `.figure-wide-layout` + `.figure-wide-figure-wrap` | **Column flex** with **`min-height: 0`**; the **wrap** (`flex: 1`) is the only region that **competes** for leftover height between summary and footer. |
+| `.figure-wide-layout` + `.figure-wide-figure-wrap` | **Column flex**; the **wrap** has **`min-height: clamp(12rem, 36vh, 62vh)`** (taller default gray panel) and **`flex: 1`** so it also **grows** when the viewport allows. |
 | `.figure-wide-below` | **`flex: 0 0 auto`** — footer **does not shrink**; the figure region yields space first. |
-| `.figure-wide-media` + `img` / `svg` | **`max-width: 100%`**, **`max-height: 100%`**, **`object-fit: contain`** — when the panel is **short**, the graphic **scales down**; width is **not** held at 100% if height is the limit. |
+| `.figure-wide-media` + `img` / `svg` | **Base** **`max-width: 100%`**, **`max-height: 58vh`**, then **`figure_scale`** via **`zoom: var(--figure-scale, 1)`** (`@supports (zoom: 1)`) or **`transform: scale(var(--figure-scale, 1))`** — same idea as **layout: figure** **`--fill`**. (Earlier **`calc(100% * scale)`** on **`max-height`** is unreliable when **`100%`**’s **height** base is **indefinite**, so the rule could be **dropped** and **scale** looked **inert**.) **`.figure-wide-figure-wrap`** — **`overflow: visible`**. |
 | Mermaid in this layout | **Extra** `forEach` after `mermaid.run` sizes SVG to **`.figure-wide-figure-wrap`** bounds (minus padding and **figcaption** if present), using `FW_INSET` (~`40` px) in the script. |
 
 **What you can turn without redesign**
@@ -280,8 +282,7 @@ This layout is designed so the **figure area shrinks** when **title, optional to
 - **Panel padding** around the figure: `.figure-wide-figure-wrap { padding: ... }` (smaller padding slightly increases the drawable area).
 - **Mermaid inset**: constant **`FW_INSET`** in the `figure-wide` mermaid `forEach` (smaller = slightly more usable width/height for the graph).
 - **Cap the panel width** (e.g. center a narrower diagram): e.g. ` .figure-wide-figure-wrap { max-width: 70%; margin-left: auto; margin-right: auto; }` — the flex height logic still applies.
-
-There is **no** YAML key for `figure_scale`; behavior is **template CSS + optional slide-level overrides**.
+- **YAML `figure_scale`**: see [Figure slide scale](#figure-slide-scale-figure_scale); optional per-slide override on **`layout: figure-wide`** the same as **`layout: figure`**.
 
 ### `layout: diagram` and two-column diagram columns
 

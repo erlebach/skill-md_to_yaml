@@ -2,6 +2,69 @@
 
 ---
 
+## 2026-04-23 (m) - Docs: **`FIGURE_WIDE.md`** + links from **`CSS_CONTROLS.md`** / **`SKILL.md`**
+
+### Completed Tasks ✅
+- [x] Added **`.claude/skills/md_to_yaml/FIGURE_WIDE.md`** — structure, panel **CSS**, **`figure_scale`** / **`zoom`**, why **`calc(100%×scale)`** on **img** failed, Mermaid, YAML sketch, 2026-04-23 change table
+- [x] **`CSS_CONTROLS.md`**: **Figure slide scale** paragraph + **figure-wide** subsection link to **`FIGURE_WIDE.md`**
+- [x] **`.claude/skills/md_to_yaml/SKILL.md`**: **Typography & figure scale** bullet points to **`FIGURE_WIDE.md`** for **figure-wide**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/FIGURE_WIDE.md`, `CSS_CONTROLS.md`, `.claude/skills/md_to_yaml/SKILL.md`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
+## 2026-04-23 (l) - **`layout: figure-wide` / `figure_scale`**: use **`zoom` / `transform`** (not **`calc(100% * scale)`** on **img**)
+
+### Completed Tasks ✅
+- [x] **Root cause:** **`max-height: … calc(100% * var(--figure-scale, 1))`** on **`<img>`** often **fails** in browsers when the **percentage height** used for **`calc(100% * …)`** has an **indefinite** / **cyclic** base — the **`max-height`** (or whole rule) can be **ignored**, so **`--figure-scale`** appears to do **nothing** even when set on **`<section>`**
+- [x] **Fix:** match **layout: figure** **`.figure-asset-wrap--fill`**: **base** **`max-height: 58vh`** + **`max-width: 100%`**, then **`figure_scale`** = **`zoom: var(--figure-scale, 1)`** (Chromium) or **`transform: scale(var(--figure-scale, 1))`** (elsewhere); **`@supports (zoom: 1)`** block
+- [x] **`CSS_CONTROLS.md`**, **`conversion/.../final_talk1.html`**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `CSS_CONTROLS.md`, `conversion/.../final_talk1.html`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
+## 2026-04-23 (k) - **`layout: figure-wide`**: **`figure_scale`** had no effect when **`100%`** was the min bound
+
+### Completed Tasks ✅
+- [x] **Root cause:** **`max-height: min(100%, calc(58vh * var(--figure-scale, 1)))`** (and same for **width**) — when **`100%`** of the **panel** was **smaller** than the **vh** leg, the **`100%` term did not include **`--figure-scale`**, so changing **`figure_scale`** did **not** change the used **max** 
+- [x] **Fix:** **`min(calc(100% * var(--figure-scale, 1)), calc(58vh * var(--figure-scale, 1)))`** (and **96%** for **width**); **`.figure-wide-figure-wrap`**: **`overflow: visible`** so upscaled **raster**/**SVG** is not **clipped** by the gray box
+- [x] **`CSS_CONTROLS.md`**, **`conversion/.../final_talk1.html`**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `CSS_CONTROLS.md`, `conversion/.../final_talk1.html`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
+## 2026-04-23 (j) - **`layout: figure-wide`**: taller panel + **`min(100%, vh)`** so art fills the gray box
+
+### Completed Tasks ✅
+- [x] **`.figure-wide-figure-wrap`**: **`min-height: clamp(12rem, 36vh, 62vh)`** (was **28vh** / **50vh** max) — default **background panel** is **taller**
+- [x] **`.figure-wide-media`**: **`align-self: stretch`** for a definite cross-axis band
+- [x] **img / svg**: **`max-height: min(100%, calc(58vh * var(--figure-scale, 1)))`** instead of a fixed **`42vh`** cap — image can **grow with panel height**; **vh** remains a **viewport** ceiling
+- [x] **`CSS_CONTROLS.md`**, recompiled **`conversion/.../final_talk1.html`**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `CSS_CONTROLS.md`, `conversion/.../final_talk1.html`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
+## 2026-04-23 (i) - **`layout: figure-wide`**: per-slide **`figure_scale`** (deck `--figure-scale`)
+
+### Completed Tasks ✅
+- [x] **`FigureWideSlide`**: optional **`figure_scale`** (same **`0.25–4.0`** guardrails as **`FigureSlide`**) — **`None`** = deck default
+- [x] **`engine.py`**: **`eff_figure_scale`** for **`layout in ("figure", "figure-wide")`**
+- [x] **`base.html.j2`**: **`--figure-scale`** on **`<section>`** for **figure-wide**; **CSS** — **img** / **`.diagram-container svg`** use **`min(100%, 96% * scale)`** width cap and **`42vh * scale`** max-height (matches **figure**-style vh scaling, not **--fill** zoom)
+- [x] **`DeckMetadata.figure_scale`**: description now names **figure-wide**; **`SKILL.md`**, **`CSS_CONTROLS.md`**; regenerated **`deck.schema.json`**
+- [x] Recompiled **`conversion/.../final_talk1.html`**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/schema/models.py`, `compiler/engine.py`, `compiler/templates/base.html.j2`, `schema/deck.schema.json`, `SKILL.md`, `CSS_CONTROLS.md`, `conversion/.../final_talk1.html`, `JOURNAL.md`, `SNAPSHOT.md`
+
+---
+
 ## 2026-04-23 (h) - layout: **figure-wide** — reserve min height for raster/SVG (NISQ/FTQC infographic)
 
 ### Completed Tasks ✅

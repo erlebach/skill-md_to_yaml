@@ -1057,14 +1057,14 @@
       margin-bottom: 0.25rem;
     }
     .figure-wide-figure-wrap {
-      /* Reserve a minimum band for raster/SVG; without this, flex can shrink
-         this region to 0 when summary + two-column body fill the viewport. */
+      /* Taller default panel; flex still grows when space allows. */
       flex: 1 1 auto;
       flex-shrink: 0;
-      min-height: clamp(10rem, 28vh, 50vh);
+      min-height: clamp(12rem, 36vh, 62vh);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      /* visible: scaled max-width/max-height (figure_scale) may exceed 100% of band */
+      overflow: visible;
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 0.75rem;
@@ -1086,6 +1086,7 @@
       min-width: 0;
       width: 100%;
       max-height: 100%;
+      align-self: stretch;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1104,29 +1105,53 @@
       text-align: center;
       overflow: auto;
     }
-    .figure-wide-media .diagram-container svg,
-    .slide-figure-wide .figure-wide-media .diagram-container svg {
-      max-width: 100%;
-      max-height: 100%;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-      display: block;
-    }
     .figure-wide-media .diagram-container pre.mermaid {
       max-width: 100%;
       max-height: 100%;
     }
+    /* figure-wide: apply figure_scale like layout: figure --fill (zoom / transform).
+       Do not use calc(100% * scale) on img max-height — percentage base is often
+       indefinite, so the rule is dropped and scale appears to do nothing. */
     .figure-wide-figure > .figure-wide-media > img,
     .figure-wide-media img {
       flex: 0 1 auto;
       max-width: 100%;
-      max-height: 100%;
+      max-height: 58vh;
       width: auto;
       height: auto;
       object-fit: contain;
       margin: 0 auto;
       display: block;
+      transform: scale(var(--figure-scale, 1));
+      transform-origin: center center;
+    }
+    .figure-wide-media .diagram-container svg,
+    .slide-figure-wide .figure-wide-media .diagram-container svg {
+      max-width: 100%;
+      max-height: 58vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+      transform: scale(var(--figure-scale, 1));
+      transform-origin: center center;
+    }
+    @supports (zoom: 1) {
+      .slide-figure-wide .figure-wide-media > img,
+      .slide-figure-wide .figure-wide-media img {
+        max-height: 58vh;
+        transform: none;
+        transform-origin: unset;
+        zoom: var(--figure-scale, 1);
+      }
+      .slide-figure-wide .figure-wide-media .diagram-container svg {
+        max-width: 100%;
+        max-height: 58vh;
+        transform: none;
+        transform-origin: unset;
+        zoom: var(--figure-scale, 1);
+      }
     }
     .figure-wide-below {
       flex: 0 0 auto;
@@ -1185,7 +1210,7 @@
     {% if slide.layout == 'diagram' and not slide.body %}{% set extra_class = ' diagram-only' %}{% endif %}
     {% if title_has_math %}{% set extra_class = extra_class ~ ' slide-heading-math' %}{% endif %}
     {% if s.math_display_center|default(true) %}{% set extra_class = extra_class ~ ' math-display-eq-center' %}{% else %}{% set extra_class = extra_class ~ ' math-display-eq-start' %}{% endif %}
-    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" style="--title-scale: {{ s.title_scale }}; --content-scale: {{ s.content_scale }}; --math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}{% if slide.layout == 'figure' and s.figure_scale is not none %} --figure-scale: {{ s.figure_scale }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
+    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" style="--title-scale: {{ s.title_scale }}; --content-scale: {{ s.content_scale }}; --math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}{% if slide.layout in ['figure', 'figure-wide'] and s.figure_scale is not none %} --figure-scale: {{ s.figure_scale }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}
