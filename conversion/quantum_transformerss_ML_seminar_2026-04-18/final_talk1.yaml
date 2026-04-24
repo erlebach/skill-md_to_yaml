@@ -135,19 +135,6 @@ title: Why more ancillae? (reality)
 
 ---
 layout: divider
-title: "Part 4 — Shots: Sampling Quantum Outputs"
----
-
----
-layout: content
-title: "Why shots, and NISQ vs FTQC in one picture"
----
-- Measurement is **probabilistic**; states are **destroyed**; **repetition** is not a hardware quirk
-- $S_{\text{NISQ}} = S_{\text{stats}} \times S_{\text{mit}}$, while **FTQC** removes mitigation overhead: $S_{\text{FTQC}} \approx S_{\text{stats}}$
-- Examples (order-of-magnitude): simple 1Q circuits $\sim$ thousands of shots; **NISQ** on tens of qubits can demand **$10^4$+**; **FTQC** trends toward the **statistical** floor; **very deep** NISQ can become intractable
-
----
-layout: divider
 title: "Part 5 — From Classical SVD to QSVT"
 ---
 
@@ -269,29 +256,63 @@ alt_text: "Ancillas, width, and depth on a 16-qubit device. Side-by-side circuit
 
 ---
 layout: divider
-title: "Part 6.5: State Preparation & The QRAM Assumption"
+title: "Part 6.5 — State Preparation & The QRAM Assumption"
 ---
 
 ---
-layout: content
-title: "QRAM: The Data-Loading Bottleneck"
-subtitle: "Translating classical ML data into quantum superposition"
+layout: figure-wide
+title: "The Data-Loading Bottleneck"
+proportion: 50/50
+src: "QRAM_motivation_bottleneck.png"
+alt_text: "Diagram showing sequential loading without QRAM requiring O(N) gates, erasing the speedup."
+figure_scale: 1.2
 ---
-- **The Problem:** Classical ML matrices ($V$, $QK^T$) sit in standard memory. Quantum algorithms process **state vectors**. 
-- **Sequential Loading:** Standard initialization of an $N$-dimensional vector takes $O(N)$ quantum gates. 
-    - *Result:* Data loading dominates the runtime; polylogarithmic algorithmic speedup is erased.
-- **The QRAM Promise:** A theoretical architecture allowing an $N$-dimensional classical vector to be loaded into a quantum superposition in $O(\log N)$ depth.
-- **The Mechanism:** Often conceptualized as a "bucket brigade" — a bifurcating binary tree of quantum routing switches.
+## Issues:
+- Classical matrices ($V$, $QK^T$) sit in standard memory.
+- Standard initialization of an $N$-dimensional state vector takes $O(N)$ sequential quantum gates.
+- **Result:** Data loading strictly dominates runtime.
+- The theoretical $O(\text{polylog})$ algorithmic speedup is completely erased by I/O constraints.
+
+---
+layout: two-column
+title: "The QRAM Promise"
+proportion: 50/50
+right:
+  type: figure
+  src: "QRAM_ideal_version.png"
+  alt_text: "Diagram of Idealized QRAM bucket-brigade routing tree achieving O(log N) depth."
+---
+- **QRAM** translates classical data into quantum superposition.
+- Uses a bifurcating "bucket brigade" tree of quantum routing switches.
+- **The Math:** Loads an $N$-dimensional classical vector in $O(\log N)$ depth.
+- This architecture is what enables the polylogarithmic speedups claimed in Quantum Transformer literature.
+
+---
+layout: two-column
+title: "The Physical Reality & Measurement Tax"
+proportion: 50/50
+left:
+  type: figure
+  src: "QRAM_physical_reality.png"
+  alt_text: "Diagram highlighting the engineering burden of QRAM, including coherence requirements, FTQC necessity, and the repeated measurement tax."
+---
+- **Coherence:** The entire routing tree of millions of switches must remain perfectly coherent to execute the entanglement.
+- **The Measurement Tax:** States collapse upon measurement. The full $N \times N$ matrix must be repeatedly routed through the tree for every statistical shot.
+- **Timeline:** Strictly an **FTQC-era** technology. Requires millions of physical qubits just to protect the state preparation step.
 
 ---
 layout: content
-title: "The Physical Reality of QRAM"
-subtitle: "When can we actually build it?"
+title: "Why Shots?"
 ---
-- **Hardware Status:** Currently theoretical/small-scale lab demonstrations. No large-scale QRAM exists.
-- **The Engineering Hurdle:** To load data in $O(\log N)$ time, the entire tree of millions of routing switches must remain **coherent** simultaneously. 
-- **The Measurement Tax:** Quantum states collapse upon measurement. To build statistical expectation values, the $N \times N$ data matrices must be queried through the QRAM circuit repeatedly for every shot, even under FTQC.
-- **Timeline:** Large-scale QRAM is strictly an **FTQC-era** requirement (likely well into the 2030s+), requiring millions of physical qubits just for error-corrected state preparation.
+- Measurement is **probabilistic**; states are **destroyed**; **repetition** is not a hardware quirk
+- **NISQ:** $\color{cyan}S_{\text{NISQ}} = S_{\text{stats}} \times S_{\text{mit}}$, 
+- **FTQC** removes mitigation overhead: $\color{cyan}S_{\text{FTQC}} \approx S_{\text{stats}}$
+- Examples (order-of-magnitude): 
+  - simple 1Q circuits $\sim$ thousands of shots; 
+  - **NISQ** on tens of qubits can demand **$10^4$+**; 
+  - **FTQC** trends toward the **statistical** floor; 
+  - **very deep** NISQ can become intractable
+
 
 ---
 layout: divider
@@ -356,7 +377,7 @@ Operation count to execute a single block of the transformer
 layout: summary
 title: "Summary — Quantum Transformers"
 subtitle: "What to remember"
-content_scale: 0.9
+content_scale: 1.0
 ---
 - **Classical:** attention is **$O(S^2 d)$** in the long-context regime; FFN is **$O(Sd^2)$**
 - **FTQC+QSVT:** **analytic** activations and spectra enable **$O(\log(1/\varepsilon))$**-degree / depth targets 
