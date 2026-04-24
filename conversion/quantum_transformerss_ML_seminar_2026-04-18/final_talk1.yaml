@@ -139,24 +139,32 @@ title: "Part 5 — From Classical SVD to QSVT"
 ---
 
 ---
-layout: content
-title: SVD, singular values, and the quantum target
+layout: two-column
+title: "From Classical SVD to Quantum 'Spectral Mapping'"
+proportion: 50/50
 ---
-- **SVD:** $A = U \Sigma V^\dagger$; singular values $\sigma_i$ 
-- **Use cases:** low-rank truncation, attention on $QK^T$; goal is to apply a **function** to $\Sigma$ without forming dense $A$
-- **Quantum target:** $p(\Sigma)$ via **QSP/QSVT** in **$O(d_{\text{poly}})$** calls to a **block-encoded** $A/\alpha$ — not $O(N^2)$ classical linear algebra
-- **Block encoding** gives $U_A$; **QSP** interleaves $U_A$ with **$Z$-rotations**; **QSVT** implements $p(\Sigma)$ on two registers
+### The Classical Bottleneck
+
+- **Operation:** Explicit $A = U\Sigma V^\dagger$
+- **Cost:** $O(N^2)$ or $O(N^3)$ FLOPs
+- **Limit:** Dense linear algebra scales poorly
+
+<!-- split -->
+
+### The Quantum Shortcut
+
+- **Operation:** Directly compute $U [f(\Sigma)] V^\dagger$
+- **Benefit:** Skip explicit decomposition
+- **Target:** $O(\text{polylog } N)$ spectral engineering
 
 ---
 layout: content
-title: "QSP / QSVT — what you compile"
+title: "The Mechanism: QSP as 'Curve Fitting'"
 ---
-$$(\langle 0|^{\otimes a} \otimes I_n)\; U_A\; (|0\rangle^{\otimes a} \otimes I_n) = \frac{A}{\alpha}$$
-
-- **QSP:** phases $\{e^{i\phi_k Z}\}$ with $U_A$ realize **bounded** polynomials $p(\sigma)$ on $[-1,1]$, degree $d$ $\Rightarrow$ $O(d)$ **oracle** depth
-- **Classical** phase solving (QSPPACK, pyqsp) + **FTQC T-count** for sparse $A$: often **$O(d\,\text{poly}\log N)$** vs $N^2$ dense work
-
-$$\text{QSVT of degree } d \text{ uses } O(d) \text{ block-encoded } U_A \text{ applications}$$
+- **$U_A$ (The Data):** Your matrix $A$ "wrapped" in a unitary block
+- **$\phi$ (The Knobs):** Scalar phase angles acting as "trainable weights"
+- **The Intuition:** Like **polynomial regression**—phases "shape" quantum interference to draw $p(x)$ across singular values
+- **The Trade-off:** Higher precision $\Rightarrow$ higher degree $d$ $\Rightarrow$ deeper circuit depth
 
 ---
 layout: figure

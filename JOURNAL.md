@@ -2,6 +2,42 @@
 
 ---
 
+## 2026-04-24 - **Two-column** column **`h3`** font size **+20%**
+
+### Completed Tasks ✅
+- [x] **`base.html.j2`**: **`section.slide-two-column .two-col--markdown-split .slide-body > h3`** and **`slide-comparison`** counterparts use **`font-size: calc(... * var(--title-font-mul) * 1.2)`** (same clamp as global **`h3`**, scaled **1.2×**)
+- [x] Recompiled **`final_talk1.html`**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+- `conversion/quantum_transformerss_ML_seminar_2026-04-18/final_talk1.html`
+- `JOURNAL.md`, `SNAPSHOT.md`
+
+### Notes
+- Spacing between column header and list may still need a separate pass if **`gap`** is insufficient in some browsers/views
+
+---
+
+## 2026-04-24 - **Two-column** column heading → body spacing (**`gap`** actually applied)
+
+### Completed Tasks ✅
+- [x] Fixed **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**: markdown-split / comparison **`.slide-body`** columns now use **`display: flex; flex-direction: column`** so **`gap`** controls space between **`h3`** and **`ul`** (previously **`gap` had no effect** on non-flex boxes)
+- [x] Increased heading-to-list **`gap`** by **50%** vs prior intended value: **`calc(1.35rem * 1.5 * 1.5)`**; **`width: 100%`** + **`align-items: stretch`** so text uses full column width inside centered flex parents
+- [x] Recompiled **`conversion/quantum_transformerss_ML_seminar_2026-04-18/final_talk1.html`**
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+- `conversion/quantum_transformerss_ML_seminar_2026-04-18/final_talk1.html`
+- `JOURNAL.md`, `SNAPSHOT.md`
+
+### Key Changes
+- Root cause: **`.col-left` / `.col-right`** are flex containers but only wrap **one** child (**`.slide-body`**); spacing between **`<h3>`** and **`<ul>`** must be enforced on **`.slide-body`**, which must be **flex** for **`gap`** to apply
+
+### Notes
+- Affects **`layout: two-column`** with **`<!-- split -->`** and **`layout: comparison`** text columns using the same selectors
+
+---
+
 ## 2026-04-23 - **`PRESENTER_NOTES.md`** for **`final_talk1`** (slide 1 → summary)
 
 ### Completed Tasks ✅

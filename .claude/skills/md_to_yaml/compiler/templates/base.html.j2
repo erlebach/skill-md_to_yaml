@@ -540,6 +540,39 @@
       min-height: 0;
       margin-top: var(--two-col-title-gap);
     }
+    /* Text split in two columns: start under title (avoid vertical centering gap) */
+    section.slide-two-column .slide-content-area:has(.two-col--markdown-split),
+    section.slide-comparison .slide-content-area {
+      justify-content: flex-start;
+      margin-top: 1.5in;
+    }
+    section.slide-two-column .two-col--markdown-split > .col-left,
+    section.slide-two-column .two-col--markdown-split > .col-right,
+    section.slide-comparison .two-col > .col-left,
+    section.slide-comparison .two-col > .col-right {
+      justify-content: flex-start;
+    }
+    /* Heading-to-list: .slide-body must be flex for gap to apply (col-* only has one child). */
+    section.slide-two-column .two-col--markdown-split > .col-left.slide-body,
+    section.slide-two-column .two-col--markdown-split > .col-right.slide-body,
+    section.slide-comparison .two-col > .col-left.slide-body,
+    section.slide-comparison .two-col > .col-right.slide-body {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      gap: calc(1.35rem * 1.5 * 1.5);
+    }
+    section.slide-two-column .two-col--markdown-split .slide-body > h3,
+    section.slide-comparison .two-col .slide-body > h3 {
+      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--title-font-mul) * 1.2);
+      margin-bottom: 0;
+    }
+    section.slide-two-column .two-col--markdown-split .slide-body > ul,
+    section.slide-comparison .two-col .slide-body > ul {
+      margin-top: 0;
+    }
+
     /* Flex item min-height:auto would prevent shrinking — images need min-height:0 to honor max-height:100% */
     .two-col img { min-height: 0; flex-shrink: 1; }
     /* Comparison slide: first bold line in each column is the column heading */

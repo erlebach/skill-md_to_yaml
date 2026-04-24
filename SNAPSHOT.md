@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-23 (e)
+# Project Snapshot — 2026-04-24 (b)
 
 ## Current Architecture
 
@@ -61,6 +61,8 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-04-24 (b)**: **Two-column / comparison** column headers (**`h3`**) — **`font-size`** multiplied by **1.2** (same **`clamp(22px, 2.8vw, 34px) * var(--title-font-mul)`** base as global **`h3`**). Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**; **`final_talk1.html`** recompiled.
+- **2026-04-24 (a)**: **Two-column / comparison** — column **`.slide-body`** is **`display: flex; flex-direction: column`** so **`gap`** spaces **`<h3>`** vs **`<ul>`**; **`gap`** set to **`calc(1.35rem * 1.5 * 1.5)`** (50% more than the previous **`calc(1.35rem * 1.5)`** target). Fixes slides like **Spectral Mapping** (markdown **`<!-- split -->`**). Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**.
 - **2026-04-23 (e)**: **`conversion/.../PRESENTER_NOTES.md`** — full presenter script outline for **`final_talk1`** (40 slides): on-screen cues, detailed **Say** bullets, **Transition** lines between slides, GUO / four-factor / summary closings, timing tips.
 - **2026-04-23 (d)**: **`conversion/.../final_talk1.yaml`** — last **five** slides (four operation-count **`content`** slides + **Transformer FLOPS** **`figure-wide`**) moved from **after** **`summary`** to **Part 7** between **Classical vs Quantum Attention at a Glance** and **GUO Quantum Transformer Pipeline**; **`final_talk1.html`** recompiled from that folder.
 - **2026-04-23 (c)**: **`four_slides.yaml`** — four **`layout: content`** slides decomposing **$O(\sqrt{N} \cdot d_{\text{poly}} \cdot \log^2 N \cdot \log(1/\epsilon))$** (norm/amplitude, QSVT calls, gates per call, T-gate overhead); each slide **`subtitle`** states scaling; compiles with **`.claude/skills/md_to_yaml`** (consecutive-content warning only).
