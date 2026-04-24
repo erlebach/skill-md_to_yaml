@@ -333,36 +333,15 @@ left:
 - **Pipeline:** block-encode $QK^T/\sqrt{d_k}$, **QSVT** softmax, then multiply by $V$; **shots** for readout vs **coherent** layer stacking (time vs coherence tradeoff)
 
 ---
-layout: content
-title: '1 — Norm / amplitude factor'
-subtitle: 'Scaling: $O(\sqrt{N})$'
----
-- Comes from the **block-encoding normalization** of the input sequence
-- In Guo et al., the relevant sequence-matrix norm is empirically argued to scale as **$O(\sqrt{N})$**
-
----
-layout: content
-title: '2 — QSVT / polynomial calls'
-subtitle: 'Scaling: $d_{\text{poly}}$'
----
-- Counts **calls** to a **block-encoding oracle**
-- This is the **algorithmic query-complexity** layer
-
----
-layout: content
-title: '3 — Gates per call'
-subtitle: 'Scaling: $O(\log^2 N)$'
----
-- Only appears after **opening** the block-encoding oracle and choosing a **QRAM / routing** implementation
-- Factor **$\log^2 N$** is the **per-call** gate cost at that layer
-
----
-layout: content
-title: '4 — T-gate precision overhead'
-subtitle: 'Scaling: $O(\log(1/\epsilon))$'
----
-- **Fault-tolerant** cost of synthesizing **non-Clifford** rotations to target accuracy **$\epsilon$**
-- Standard precision–cost trade-off in **T**-gate decomposition
+layout: table
+title: "The GUO Pipeline: Quantum vs. Classical"
+caption: "Quantum cost factors mapped to ML intuition (illustrative)."
+headers: ['Quantum Factor', 'ML Equivalent / "Why it Hurts"', 'Scaling']
+rows:
+  - ['**Norm Factor** ($\alpha$)', '**Weight Norm / Spectral Radius** <br> Forces re-runs via subnormalization.', '$O(\sqrt{N})$']
+  - ['**QSVT Calls**', '**Activation Complexity** <br> Effort to "draw" Softmax or GELU.', '$d_{\text{poly}}$']
+  - ['**Gate Overhead**', '**Data Loading Latency** <br> Moving data from QRAM into state.', '$O(\log^2 N)$']
+  - ['**T-Gate Precision**', '**Numerical Precision** <br> Compute cost of FP64-like accuracy', '$O(\log(1/\epsilon))$']
 
 ---
 layout: figure-wide
