@@ -747,12 +747,7 @@
     }
     .slide-figure .figure-asset-wrap.figure-asset-wrap--fill,
     .slide-figure.figure-only .figure-asset-wrap.figure-asset-wrap--fill {
-      /* Widen the panel 1/2in into each side of the slide content column (1in total). */
-      width: calc(100% + 1in);
-      max-width: calc(100% + 1in);
-      margin-left: -0.5in;
-      margin-right: -0.5in;
-      box-sizing: border-box;
+      max-width: 100%;
     }
     .figure-asset-wrap--fill .figure-asset {
       display: flex;
@@ -1062,8 +1057,11 @@
       margin-bottom: 0.25rem;
     }
     .figure-wide-figure-wrap {
+      /* Reserve a minimum band for raster/SVG; without this, flex can shrink
+         this region to 0 when summary + two-column body fill the viewport. */
       flex: 1 1 auto;
-      min-height: 0;
+      flex-shrink: 0;
+      min-height: clamp(10rem, 28vh, 50vh);
       display: flex;
       flex-direction: column;
       overflow: hidden;

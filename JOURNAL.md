@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-04-23 (h) - layout: **figure-wide** — reserve min height for raster/SVG (NISQ/FTQC infographic)
+
+### Completed Tasks ✅
+- [x] **Root cause:** **`.figure-wide-figure-wrap`** had **`min-height: 0`** in a **column** **flex** with **summary** + **two-column** **body**; when vertical space was tight, the **middle** **figure** **region** could **shrink to 0** — **valid** **`<img src>`** still **loaded** but had **no** **painted** **area** (user confirmed **PNG**/**JPG** **open** fine with **`open`**)
+- [x] **Fix:** **`flex-shrink: 0`**, **`min-height: clamp(10rem, 28vh, 50vh)`** on **`.figure-wide-figure-wrap`**, with a **comment** in **`base.html.j2`**
+- [x] Recompiled **`conversion/quantum_transformerss_ML_seminar_2026-04-18/final_talk1.html`** (cwd = that folder for asset paths)
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`, `conversion/.../final_talk1.html`, `JOURNAL.md`, `SNAPSHOT.md`
+
+### Notes
+- If a **very** small **viewport** + **tall** **below** **content** still **overflows** **`100vh`**, consider **`overflow-y: auto`** on **`.slide-figure-wide` `.slide-content-area`** in a follow-up (not done here)
+
+---
+
 ## 2026-04-23 (g) - layout: figure **--fill** panel: +½in left and right (1in total width)
 
 ### Completed Tasks ✅

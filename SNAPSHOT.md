@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-23 (g)
+# Project Snapshot — 2026-04-23 (h)
 
 ## Current Architecture
 
@@ -57,6 +57,7 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-04-23 (h)**: **`layout: figure-wide`** — **`.figure-wide-figure-wrap`**: **`min-height: clamp(10rem, 28vh, 50vh)`**, **`flex-shrink: 0`**, so the **infographic** / **raster** band does not **collapse to 0** when **summary** + **two-column** **markdown** use most of the **viewport**; **`final_talk1.html`** recompiled.
 - **2026-04-23 (g)**: **`layout: figure`** **--fill** **panel** is **1** **in** **wider** than the **content** **column** (**`calc(100% + 1in)`**, **`margin: 0 -0.5in`**) — **½in** into each **slide** **side** **padding** — for **raster** / **file** **SVG** **slides** **(not** **Mermaid**).
 - **2026-04-23 (f)**: **--fill** file **SVG**: template uses **`width: auto; max-width: 100%`** (not full column width) for horizontal centering; **`quantum_circuit_ancilla.svg`** **`viewBox`** tightened to **`100 0 780 500`** to balance art in user space. See [CSS_CONTROLS.md](CSS_CONTROLS.md) **figure** / **`viewBox` note.
 - **2026-04-23 (e)**: **layout: figure (`--fill`)** — **Wrappers** **`overflow: visible`** (not **`hidden`**) so **`zoom` / `transform: scale`** is not **clipped**; **removed** **`max-height: 100%`** on the **slide-figure** **asset-wrap / figure** chain; **media** **`80vh` / `85vh`** only (no **`min(..., 100%)`**). **`section.slide-figure`** still **`overflow: hidden`** + **extra** **bottom** **padding** for **`.slide-footer-nav`**. **Refs:** `final_talk1.yaml` **Polylog** PNG, **Embedding** SVG.
