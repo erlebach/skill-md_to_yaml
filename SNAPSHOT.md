@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-24 (a)
+# Project Snapshot — 2026-04-23 (c)
 
 ## Current Architecture
 
@@ -61,6 +61,7 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-04-23 (c)**: **`four_slides.yaml`** — four **`layout: content`** slides decomposing **$O(\sqrt{N} \cdot d_{\text{poly}} \cdot \log^2 N \cdot \log(1/\epsilon))$** (norm/amplitude, QSVT calls, gates per call, T-gate overhead); each slide **`subtitle`** states scaling; compiles with **`.claude/skills/md_to_yaml`** (consecutive-content warning only).
 - **2026-04-24 (a)**: **Fixed slide footer** — deck keys **`footer_inset`** (CSS **`bottom`**, default **`0.5in`**, was **`1in`** in template only) and **`footer_scale`** (**0.5–2.5**); **`<html>`** sets **`--footer-scale`**, **`--slide-footer-inset`**; **`--slide-footer-ui-clearance`** scales with **`footer_scale`**. See [`CSS_CONTROLS.md`](CSS_CONTROLS.md) section **Fixed footer**.
 - **2026-04-23 (m)**: **[`FIGURE_WIDE.md`](.claude/skills/md_to_yaml/FIGURE_WIDE.md)** — full **`layout: figure-wide`** reference; links from [`CSS_CONTROLS.md`](CSS_CONTROLS.md) and [`.claude/skills/md_to_yaml/SKILL.md`](.claude/skills/md_to_yaml/SKILL.md).
 - **2026-04-23 (l)**: **`layout: figure-wide` / `figure_scale`** — apply scale with **`zoom` / `transform: scale`**, like **figure** **`--fill`**, not **`calc(100% * --figure-scale)`** on **img** **`max-height`** (unreliable when **%** height is indefinite).
@@ -72,6 +73,7 @@ md_to_yaml/
 - **2026-04-23 (f)**: **--fill** file **SVG**: template uses **`width: auto; max-width: 100%`** (not full column width) for horizontal centering; **`quantum_circuit_ancilla.svg`** **`viewBox`** tightened to **`100 0 780 500`** to balance art in user space. See [CSS_CONTROLS.md](CSS_CONTROLS.md) **figure** / **`viewBox` note.
 - **2026-04-23 (e)**: **layout: figure (`--fill`)** — **Wrappers** **`overflow: visible`** (not **`hidden`**) so **`zoom` / `transform: scale`** is not **clipped**; **removed** **`max-height: 100%`** on the **slide-figure** **asset-wrap / figure** chain; **media** **`80vh` / `85vh`** only (no **`min(..., 100%)`**). **`section.slide-figure`** still **`overflow: hidden`** + **extra** **bottom** **padding** for **`.slide-footer-nav`**. **Refs:** `final_talk1.yaml` **Polylog** PNG, **Embedding** SVG.
 - **2026-04-23 (d)**: **layout: figure** — **`section.slide-figure`**: one **`100vh`** **screen**, **flex** **`min-height: 0`** chain, **`padding-bottom: calc(1in + var(--slide-footer-ui-clearance))`** so content stays out of the **fixed** **bottom** **nav** band. **`:root`**: `--slide-footer-ui-clearance: 2.75rem` (tunable).
+- **2026-04-23 (b)**: **`conversion/.../final_talk1.yaml`** — **GUO Quantum Transformer Pipeline** diagram: **Mermaid** **`flowchart TB`** with two **`subgraph`** rows (**`direction LR`**, three nodes each), **`C --> D`** between rows; **`%%{init}%%`** padding/node spacing; **alt_text** updated for accessibility.
 - **2026-04-23 (c)**: **layout: figure (`.figure-asset-wrap--fill`)** — Browsers with **`@supports (zoom: 1)`** use **`zoom: var(--figure-scale)`** on rasters and file **`<svg>`** (replacing **`transform: scale`**) so the **laid-out** size tracks **`figure_scale`**; **Firefox** / no-zoom: keep **`transform`** + **flex** centering. Fixes **vertical centering** for **file SVG** at e.g. **`0.8`**; JPEGs already appeared acceptable.
 - **2026-04-24 (b)**: **layout: figure (raster)** — **`.figure-asset-wrap--fill`**: panel **`max-width: 100%`**; **`img` / `svg`**: base **`max-height: 80vh|85vh`** and **`transform: scale(var(--figure-scale))`** so **landscape** images respond to per-slide **`figure_scale`** (e.g. **`4.0`** in **`final_talk1.yaml`**) without width saturating at scale 1. **Mermaid** unchanged.
 - **2026-04-24**: **Mermaid (layout: figure)**: **`sizeSvgFit`**, rasters: **`--fill`**, Mermaid: no **`--fill`**.

@@ -2,6 +2,43 @@
 
 ---
 
+## 2026-04-23 - **`four_slides.yaml`**: four **content** slides (operation-count factors)
+
+### Completed Tasks ✅
+- [x] Authored **`four_slides.yaml`** — one **`layout: content`** slide per colored factor (**norm/amplitude**, **QSVT calls**, **gates per call**, **T-gate overhead**) with **subtitle** = scaling (**$O(\sqrt{N})$**, **$d_{\text{poly}}$**, **$O(\log^2 N)$**, **$O(\log(1/\epsilon))$**) and bullets from the reference slide
+- [x] Validated with **`PYTHONPATH=.claude/skills/md_to_yaml uv run python -m compiler four_slides.yaml …`** (expected warning: 3+ consecutive content slides)
+
+### Files Created/Modified
+- `four_slides.yaml` — new deck (4 slides)
+- `JOURNAL.md`, `SNAPSHOT.md`
+
+### Key Changes
+- Deck metadata: **title**, **date**, **theme: dark**, **font: IBM Plex Sans** (no **`subtitle`** / **`flavor`** on **`DeckMetadata`** — schema rejects them)
+
+### Notes
+- Parent context: **$O(\sqrt{N} \cdot d_{\text{poly}} \cdot \log^2 N \cdot \log(1/\epsilon))$** as a product of abstraction-layer costs
+
+---
+
+## 2026-04-23 - GUO pipeline **Mermaid**: two **LR** rows (less label clipping)
+
+### Completed Tasks ✅
+- [x] Replaced single **`graph LR`** (six nodes in one row) with **`flowchart TB`** + two **`subgraph`** blocks, each **`direction LR`** (three nodes per row), linked **`C --> D`**
+- [x] Added **`%%{init: …}%%`** for **`htmlLabels`**, **`padding`**, **`nodeSpacing`**, **`rankSpacing`** to reduce cramped boxes
+- [x] Updated diagram **`alt_text`** for the two-row layout
+
+### Files Created/Modified
+- `conversion/quantum_transformerss_ML_seminar_2026-04-18/final_talk1.yaml` — diagram slide
+- `JOURNAL.md`, `SNAPSHOT.md`
+
+### Key Changes
+- Pipeline stages still read **A→B→C→D→E→F**; **Stage 1** (orange) and **Stage 3** (green) styling preserved
+
+### Notes
+- Recompile **`final_talk1.html`** from the skill compiler to refresh embedded Mermaid output
+
+---
+
 ## 2026-04-24 (a) - Deck **footer** — **`footer_scale`**, **`footer_inset`**, default **`bottom: 0.5in`**
 
 ### Completed Tasks ✅

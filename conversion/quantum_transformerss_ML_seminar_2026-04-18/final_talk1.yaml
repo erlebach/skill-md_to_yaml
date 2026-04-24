@@ -288,14 +288,19 @@ left:
 ---
 layout: diagram
 title: GUO Quantum Transformer Pipeline
-alt_text: "Left-to-right flowchart of the GUO Quantum Transformer pipeline with five stages. Stage 1 (data loading via QRAM): Q, K, V matrices loaded in O(log d) per query if QRAM available. Stage 2 (block-encode QK-transpose): O(d poly-log S) T-gates for d-sparse attention. Stage 3 (QSVT softmax): depth O(log 1 over epsilon) via Chebyshev polynomial approximation of the exponential function. Stage 4 (multiply by V): second QSVT circuit, further poly-log depth. Stage 5 (measurement): O(S over epsilon-squared) shots for full output, or coherent pass to next layer to avoid measurement. The QRAM loading stage is highlighted as the dominant assumption."
+alt_text: "Two-row left-to-right flowchart of the GUO Quantum Transformer pipeline. Top row: input Q, K, V in R^(S x d); Stage 1 QRAM loading (O(log d) per query, dominant assumption, highlighted); Stage 2 block-encode QK-transpose (d-sparse, O(d polylog S) T-gates). Bottom row: Stage 3 QSVT softmax (depth O(log 1/epsilon), Chebyshev poly of exp, highlighted); Stage 4 multiply by V (second QSVT circuit); Stage 5 measure or coherent pass to layer l+1. Arrows run left-to-right within each row; the flow continues from Stage 2 down to Stage 3."
 ---
-graph LR
-  A["Q, K, V in R^(S x d)"] --> B["Stage 1: QRAM Loading\nO(log d) per query\nDominant assumption"]
-  B --> C["Stage 2: Block-Encode QK^T\nd-sparse: O(d polylog S) T-gates"]
-  C --> D["Stage 3: QSVT Softmax\ndepth O(log 1/eps)\nChebyshev poly of exp"]
-  D --> E["Stage 4: Multiply by V\nsecond QSVT circuit"]
-  E --> F["Stage 5: Measure or\ncoherent pass to layer l+1"]
+%%{init: {"flowchart": {"htmlLabels": true, "useMaxWidth": true, "padding": 12, "nodeSpacing": 28, "rankSpacing": 44}}}%%
+flowchart TB
+  subgraph row1[" "]
+    direction LR
+    A["Q, K, V in R^(S x d)"] --> B["Stage 1: QRAM Loading\nO(log d) per query\nDominant assumption"] --> C["Stage 2: Block-Encode QK^T\nd-sparse: O(d polylog S) T-gates"]
+  end
+  subgraph row2[" "]
+    direction LR
+    D["Stage 3: QSVT Softmax\ndepth O(log 1/eps)\nChebyshev poly of exp"] --> E["Stage 4: Multiply by V\nsecond QSVT circuit"] --> F["Stage 5: Measure or\ncoherent pass to layer l+1"]
+  end
+  C --> D
   style B fill:#a06000,color:#ffffff
   style D fill:#1a7a1a,color:#ffffff
 
@@ -315,3 +320,43 @@ content_scale: 0.9
     - **caveat:** strongest statements are **theoretical** and long-run **hardware**-dependent
 
 
+---
+layout: content
+title: '1 — Norm / amplitude factor'
+subtitle: 'Scaling: $O(\sqrt{N})$'
+---
+- Comes from the **block-encoding normalization** of the input sequence
+- In Guo et al., the relevant sequence-matrix norm is empirically argued to scale as **$O(\sqrt{N})$**
+
+---
+layout: content
+title: '2 — QSVT / polynomial calls'
+subtitle: 'Scaling: $d_{\text{poly}}$'
+---
+- Counts **calls** to a **block-encoding oracle**
+- This is the **algorithmic query-complexity** layer
+
+---
+layout: content
+title: '3 — Gates per call'
+subtitle: 'Scaling: $O(\log^2 N)$'
+---
+- Only appears after **opening** the block-encoding oracle and choosing a **QRAM / routing** implementation
+- Factor **$\log^2 N$** is the **per-call** gate cost at that layer
+
+---
+layout: content
+title: '4 — T-gate precision overhead'
+subtitle: 'Scaling: $O(\log(1/\epsilon))$'
+---
+- **Fault-tolerant** cost of synthesizing **non-Clifford** rotations to target accuracy **$\epsilon$**
+- Standard precision–cost trade-off in **T**-gate decomposition
+
+---
+layout: figure-wide
+title: Transformer FLOPS
+src: transformer_operation_count.png
+alt_text: "Operation count as the product of four terms: norm/amplitude factor, number of QSVT calls, number of gates per call, T-gate overhead. "
+---
+## Summary
+Operation count to execute a single block of the transformer
