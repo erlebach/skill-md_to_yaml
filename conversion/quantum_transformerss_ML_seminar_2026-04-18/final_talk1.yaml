@@ -19,6 +19,14 @@ subtitle: "Fault-Tolerant Attention via Quantum Singular Value Transformation"
 ---
 
 ---
+layout: figure
+src: "strait_of_hormuz.png"
+title: Superposition in the Strait of Hormuz
+alt_text: Illustration of the Strait of Hormuz as a superposition of open and closed states. 
+figure_scale: 0.85
+---
+
+---
 layout: hero
 title: The Central Question
 description: "Can quantum computers accelerate transformer attention — and at what cost to QRAM, shots, and circuit depth?"
@@ -57,8 +65,11 @@ layout: content
 title: Notation
 ---
 - $S$ — context length; $d$ — embedding dimension; $L$ — number of blocks
-- $W^Q, W^K, W^V, W^O \in \mathbb{R}^{d \times d}$; FFN: $W_1 \in \mathbb{R}^{4d \times d}$, $W_2 \in \mathbb{R}^{d \times 4d}$
-- Memory per block: $O(S^2 d + S d^2)$ for attention; $O(d^2)$ for FFN weights
+- $W^Q, W^K, W^V, W^O \in \mathbb{R}^{d \times d}$; 
+- FFN: $W_1 \in \mathbb{R}^{4d \times d}$, $W_2 \in \mathbb{R}^{d \times 4d}$
+- Memory per block: 
+  - $O(S^2 d + S d^2)$ for attention 
+  - $O(d^2)$ for FFN weights
 
 ---
 layout: table
@@ -108,9 +119,15 @@ layout: divider
 title: "Part 3 — Block Encoding: Embedding Non-Unitary Matrices"
 ---
 
+
 ---
-layout: content
-title: "Block encodings, ancillae, and subnormalization"
+layout: two-column
+title: "Embedding a Non-Unitary Matrix: Corner Idea and $\alpha$"
+proportion: 60/40
+right: 
+  type: figure
+  src: "two_by_two_matrix_embedding.png"
+  alt_text: "Illustration of an embedding of a non-unitary matrix 'A' in a 2x2 block formed with ancillary qubits."
 ---
 - **Unitary constraint:** $U_A$ on $n{+}a$ qubits; attention / weight matrices are **not** unitary; embed $A$ in a corner and **post-select** ancillae
 - **Embedding:** $(\langle 0|^{\otimes a} \otimes I) U_A (|0\rangle^{\otimes a} \otimes I) = A/\alpha$ with **$\alpha \ge \|A\|$** (singular values in $[0,1]$ in the block)
@@ -120,7 +137,7 @@ title: "Block encodings, ancillae, and subnormalization"
 ---
 layout: figure
 figure_scale: 0.75
-title: "Embedding a Non-Unitary Matrix in a larger Unitary Matrix"
+title: "Embedding a Non-Unitary Matrix: Circuit
 src: quantum_circuit_ancilla.svg
 alt_text: "Quantum circuit labeled Case a = 1, one ancilla qubit. One ancilla wire (ket-zero) and three system qubits (n plus 1 qubits total) pass through U_A (blue box). Inside U_A the matrix is partitioned into a 2-by-2 block structure: A over alpha (red border) top-left, B top-right, C bottom-left, D bottom-right. Post-selecting the ancilla on ket-zero extracts A over alpha on the system register."
 ---
@@ -162,9 +179,9 @@ layout: content
 title: "The Mechanism: QSP as 'Curve Fitting'"
 ---
 - **$U_A$ (The Data):** Your matrix $A$ "wrapped" in a unitary block
-- **$\phi$ (The Knobs):** Scalar phase angles acting as "trainable weights"
-- **The Intuition:** Like **polynomial regression**—phases "shape" quantum interference to draw $p(x)$ across singular values
-- **The Trade-off:** Higher precision $\Rightarrow$ higher degree $d$ $\Rightarrow$ deeper circuit depth
+- **$\phi$ (The Knobs):** **Pre-computed phases** that define the circuit's functional behavior
+- **The Intuition:** Like **Digital Filter Design**—phases are calculated classically to "draw" $p(x)$ across singular values
+- **The Compilation:** We use solvers (QSPPACK) to find $\phi$ before running the circuit
 
 ---
 layout: figure
@@ -249,7 +266,7 @@ rows:
 ---
 layout: figure
 figure_scale: 1.0
-title: "Gate Count vs Circuit Depth on 16 Qubits."
+title: "Gate Count vs Circuit Depth on 16 Qubits"
 src: "./Gate Count vs Circuit Depth on 16 Qubits.png"
 alt_text: "Gate count vs circuit depth on 16 qubits. Two 16-line quantum circuits (q0–q15) compare a serial, low-parallelism schedule with yellow entangling (XX) gates staggered in time, 24 total entangling gates, depth 12 time layers, versus a parallel, high-occupancy schedule with the same 24 entangling gates packed into only 3 time layers. Legend defines gate count as total operations and depth as sequential layers, notes that more parallelism cuts depth without changing total work, and states that on NISQ hardware shallower circuits are preferred because noise grows with depth."
 ---
