@@ -20,7 +20,7 @@ subtitle: "Fault-Tolerant Attention via Quantum Singular Value Transformation"
 
 ---
 layout: figure
-src: "strait_of_hormuz.cropped.cropped.png"
+src: "strait_of_hormuz.cropped.png"
 title: Superposition in the Strait of Hormuz
 alt_text: Illustration of the Strait of Hormuz as a superposition of open and closed states. 
 figure_scale: 0.85
