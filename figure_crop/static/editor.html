@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>figure_crop</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #1a1a1a; color: #eee; }
+  header { padding: 8px 12px; background: #222; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid #333; }
+  header .file { font-weight: 600; }
+  header .hint { color: #aaa; }
+  header .status { margin-left: auto; color: #8c8; }
+  header .status.err { color: #e88; }
+  .stage { padding: 16px; display: flex; justify-content: center; }
+  .canvas {
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    box-shadow: 0 0 0 1px #333;
+    background: #000;
+  }
+  .canvas img { display: block; max-width: 100%; height: auto; }
+  /* Overlay sits on top of the image, dimming everything except the crop rect. */
+  .overlay { position: absolute; inset: 0; pointer-events: none; }
+  .dim { position: absolute; background: rgba(0,0,0,0.55); pointer-events: auto; }
+  .rect {
+    position: absolute;
+    border: 1px dashed #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6);
+    pointer-events: auto;
+    cursor: move;
+  }
+  .handle {
+    position: absolute;
+    width: 12px; height: 12px;
+    background: #fff; border: 1px solid #000;
+    pointer-events: auto;
+  }
+  .handle.nw { left: -6px;  top: -6px;     cursor: nwse-resize; }
+  .handle.ne { right: -6px; top: -6px;     cursor: nesw-resize; }
+  .handle.sw { left: -6px;  bottom: -6px;  cursor: nesw-resize; }
+  .handle.se { right: -6px; bottom: -6px;  cursor: nwse-resize; }
+  .handle.n  { left: 50%; top: -6px;       transform: translateX(-50%); cursor: ns-resize; }
+  .handle.s  { left: 50%; bottom: -6px;    transform: translateX(-50%); cursor: ns-resize; }
+  .handle.w  { left: -6px; top: 50%;       transform: translateY(-50%); cursor: ew-resize; }
+  .handle.e  { right: -6px; top: 50%;      transform: translateY(-50%); cursor: ew-resize; }
+  button {
+    background: #333; color: #eee; border: 1px solid #555; padding: 4px 10px;
+    border-radius: 3px; cursor: pointer; font: inherit;
+  }
+  button:hover { background: #444; }
+</style>
+</head>
+<body>
+<header>
+  <span class="file" id="file">…</span>
+  <span class="hint">drag handles to crop · press <b>c</b> to save · <b>r</b> to reset · <b>u</b> to uncrop</span>
+  <span class="status" id="status"></span>
+  <button id="save">Save (c)</button>
+  <button id="reset">Reset (r)</button>
+  <button id="uncrop">Uncrop (u)</button>
+</header>
+<div class="stage">
+  <div class="canvas" id="canvas">
+    <img id="img" alt="source" />
+    <div class="overlay" id="overlay">
+      <div class="dim" id="dim-t"></div>
+      <div class="dim" id="dim-b"></div>
+      <div class="dim" id="dim-l"></div>
+      <div class="dim" id="dim-r"></div>
+      <div class="rect" id="rect">
+        <div class="handle nw" data-h="nw"></div>
+        <div class="handle n"  data-h="n"></div>
+        <div class="handle ne" data-h="ne"></div>
+        <div class="handle e"  data-h="e"></div>
+        <div class="handle se" data-h="se"></div>
+        <div class="handle s"  data-h="s"></div>
+        <div class="handle sw" data-h="sw"></div>
+        <div class="handle w"  data-h="w"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const state = {
+  sourceW: 0, sourceH: 0,         // image native pixels
+  rect: { x: 0, y: 0, w: 0, h: 0 } // current crop rect in source-pixel coords
+};
+
+async function loadState() {
+  const r = await fetch("/api/state");
+  const s = await r.json();
+  state.sourceW = s.source_size.w;
+  state.sourceH = s.source_size.h;
+  state.rect = { ...s.rect };
+  $("file").textContent = s.source_filename + (s.has_existing_crop ? "  (cropped)" : "");
+  $("img").src = "/image?ts=" + Date.now();
+  await new Promise((res) => $("img").addEventListener("load", res, { once: true }));
+  render();
+}
+
+function setStatus(msg, isError = false) {
+  const el = $("status");
+  el.textContent = msg;
+  el.classList.toggle("err", isError);
+  if (msg) setTimeout(() => { if (el.textContent === msg) el.textContent = ""; }, 2500);
+}
+
+function scale() {
+  // displayed-pixels per source-pixel (uniform; image scaled by max-width:100%)
+  const img = $("img");
+  return img.clientWidth / state.sourceW;
+}
+
+function render() {
+  const s = scale();
+  const r = state.rect;
+  const overlay = $("overlay");
+  const W = $("img").clientWidth, H = $("img").clientHeight;
+  overlay.style.width = W + "px"; overlay.style.height = H + "px";
+  const x = r.x * s, y = r.y * s, w = r.w * s, h = r.h * s;
+  const rectEl = $("rect");
+  rectEl.style.left = x + "px"; rectEl.style.top = y + "px";
+  rectEl.style.width = w + "px"; rectEl.style.height = h + "px";
+  // dim panels
+  $("dim-t").style.cssText = `left:0;top:0;width:${W}px;height:${y}px`;
+  $("dim-b").style.cssText = `left:0;top:${y+h}px;width:${W}px;height:${Math.max(0,H-(y+h))}px`;
+  $("dim-l").style.cssText = `left:0;top:${y}px;width:${x}px;height:${h}px`;
+  $("dim-r").style.cssText = `left:${x+w}px;top:${y}px;width:${Math.max(0,W-(x+w))}px;height:${h}px`;
+}
+
+function clampRect(r) {
+  r.x = Math.max(0, Math.min(state.sourceW - 1, Math.round(r.x)));
+  r.y = Math.max(0, Math.min(state.sourceH - 1, Math.round(r.y)));
+  r.w = Math.max(1, Math.min(state.sourceW - r.x, Math.round(r.w)));
+  r.h = Math.max(1, Math.min(state.sourceH - r.y, Math.round(r.h)));
+  return r;
+}
+
+function startDrag(ev, kind) {
+  ev.preventDefault();
+  const s = scale();
+  const startX = ev.clientX, startY = ev.clientY;
+  const start = { ...state.rect };
+  const onMove = (e) => {
+    const dx = (e.clientX - startX) / s;
+    const dy = (e.clientY - startY) / s;
+    let r = { ...start };
+    if (kind === "move") {
+      r.x = start.x + dx; r.y = start.y + dy;
+    } else {
+      if (kind.includes("n")) { r.y = start.y + dy; r.h = start.h - dy; }
+      if (kind.includes("s")) { r.h = start.h + dy; }
+      if (kind.includes("w")) { r.x = start.x + dx; r.w = start.w - dx; }
+      if (kind.includes("e")) { r.w = start.w + dx; }
+    }
+    state.rect = clampRect(r);
+    render();
+  };
+  const onUp = () => {
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+  };
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+}
+
+function wireHandles() {
+  $("rect").addEventListener("pointerdown", (e) => {
+    if (e.target.classList.contains("handle")) return;
+    startDrag(e, "move");
+  });
+  for (const h of document.querySelectorAll(".handle")) {
+    h.addEventListener("pointerdown", (e) => startDrag(e, h.dataset.h));
+  }
+  window.addEventListener("resize", render);
+}
+
+async function save() {
+  const r = state.rect;
+  setStatus("saving…");
+  const resp = await fetch("/api/crop", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ x: r.x, y: r.y, w: r.w, h: r.h }),
+  });
+  const j = await resp.json();
+  if (!resp.ok || j.error) { setStatus("error: " + (j.error || resp.status), true); return; }
+  setStatus("saved → " + j.cropped_file);
+}
+
+async function uncrop() {
+  setStatus("uncropping…");
+  const resp = await fetch("/api/uncrop", { method: "POST" });
+  const j = await resp.json();
+  if (!resp.ok || j.error) { setStatus("error: " + (j.error || resp.status), true); return; }
+  setStatus(j.changed ? "uncropped" : "no crop to remove");
+  await loadState();
+}
+
+function reset() {
+  state.rect = { x: 0, y: 0, w: state.sourceW, h: state.sourceH };
+  render();
+  setStatus("reset");
+}
+
+window.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.key === "c") save();
+  else if (e.key === "r") reset();
+  else if (e.key === "u") uncrop();
+});
+
+$("save").addEventListener("click", save);
+$("reset").addEventListener("click", reset);
+$("uncrop").addEventListener("click", uncrop);
+
+wireHandles();
+loadState();
+</script>
+</body>
+</html>
