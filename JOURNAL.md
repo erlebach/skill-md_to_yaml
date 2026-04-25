@@ -2,18 +2,30 @@
 
 ---
 
-## 2026-04-24 - **GSAP** stagger demo deck (**`examples/mycontent.yaml`**)
+## 2026-04-24 - Declarative **GSAP** bullet stagger (deck defaults + skill defaults + slide overrides)
 
 ### Completed Tasks ✅
-- [x] Added **[`examples/mycontent.yaml`](examples/mycontent.yaml)** — minimal deck (title + content) with Markdown bullets, CDN **GSAP**, inline **`IntersectionObserver`** stagger, **`prefers-reduced-motion`** guard, **`document.currentScript.closest('section')`** scoping
-- [x] Verified compile with **`PYTHONPATH=. uv run python -m compiler`** from **`.claude/skills/md_to_yaml`**
+- [x] **`schema/animation_defaults.py`** — skill-level **`SKILL_BULLET_STAGGER_DEFAULTS`** and **`SKILL_GSAP_SCRIPT_URL_DEFAULT`**
+- [x] **`schema/models.py`** — **`BulletStaggerSettings`**, **`AnimationDefaults`**, **`DeckMetadata.animation_defaults`**, **`gsap_script_url`**, **`bullet_animation`** on **`ContentSlide`** and **`TranscribeSlide`**
+- [x] **`compiler/engine.py`** — merge order: skill → deck **`animation_defaults.bullet_stagger`** → slide **`bullet_animation`**; **`data-bullet-stagger`** JSON on each **`<section>`**; **`has_bullet_animation`** / **`gsap_script_url`** for Jinja
+- [x] **`compiler/templates/base.html.j2`** — conditional GSAP CDN + driver script; **`prefers-reduced-motion`** respected
+- [x] **`examples/mycontent.yaml`** — demo deck (no inline JS)
+- [x] Regenerated **`schema/deck.schema.json`**
 
 ### Files Created/Modified
+- `.claude/skills/md_to_yaml/schema/animation_defaults.py` (new)
+- `.claude/skills/md_to_yaml/schema/models.py`
+- `.claude/skills/md_to_yaml/schema/deck.schema.json`
+- `.claude/skills/md_to_yaml/compiler/engine.py`
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
 - `examples/mycontent.yaml`
 - `JOURNAL.md`, `SNAPSHOT.md`
 
+### Key Changes
+- YAML stays free of **`<script>`**; animation intent lives in frontmatter / slide keys; compiled HTML loads **GSAP** only when at least one slide enables **`bullet_animation`**.
+
 ### Notes
-- **Deck metadata** has **`extra='forbid'`**; GSAP is loaded from the **content slide body** (raw HTML), not **`base.html.j2`**. Requires network for the CDN script when viewing HTML.
+- Optional deck key **`gsap_script_url`** must be **`https://`**. CDN fetch requires network when viewing HTML.
 
 ---
 

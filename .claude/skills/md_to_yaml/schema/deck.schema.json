@@ -14,9 +14,102 @@
             }
           ],
           "default": null
+        },
+        "bullet_focus": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BulletFocusSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "title": "AnimationDefaults",
+      "type": "object"
+    },
+    "BulletFocusSettings": {
+      "additionalProperties": false,
+      "description": "Optional GSAP key-driven focus parameters for list items.\n\nWhen a slide enables ``bullet_focus``, all list items start dimmed\nexcept the first; pressing ``key`` advances the focused bullet so\nthat exactly one item is fully opaque while the others fade to\n``dim``. Omitted fields inherit deck defaults, then skill defaults.",
+      "properties": {
+        "key": {
+          "anyOf": [
+            {
+              "maxLength": 8,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Keyboard key that advances the focused bullet (e.g. \"j\").",
+          "title": "Key"
+        },
+        "back_key": {
+          "anyOf": [
+            {
+              "maxLength": 8,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Keyboard key that moves the focus to the previous bullet (e.g. \"k\").",
+          "title": "Back Key"
+        },
+        "dim": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Opacity applied to non-focused list items.",
+          "title": "Dim"
+        },
+        "duration": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 10,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Tween duration in seconds for opacity transitions.",
+          "title": "Duration"
+        },
+        "ease": {
+          "anyOf": [
+            {
+              "maxLength": 48,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "GSAP ease string (e.g. power2.out).",
+          "title": "Ease"
+        }
+      },
+      "title": "BulletFocusSettings",
       "type": "object"
     },
     "BulletStaggerSettings": {
@@ -576,6 +669,22 @@
           "default": null,
           "description": "If true or \"stagger\", animate list items when the slide is revealed. Use an object to override duration, stagger, ease, threshold, or x_offset.",
           "title": "Bullet Animation"
+        },
+        "bullet_focus": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/BulletFocusSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "If true, dim all list items except the first; pressing the configured key (default \"j\") advances the focused bullet. Use an object to override key, dim opacity, duration, or ease.",
+          "title": "Bullet Focus"
         }
       },
       "required": [
@@ -2577,6 +2686,22 @@
           "default": null,
           "description": "Same as content slides: optional GSAP stagger for list items.",
           "title": "Bullet Animation"
+        },
+        "bullet_focus": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/BulletFocusSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Same as content slides: optional key-driven bullet focus.",
+          "title": "Bullet Focus"
         }
       },
       "required": [

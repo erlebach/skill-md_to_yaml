@@ -1252,7 +1252,7 @@
     {% if slide.layout == 'diagram' and not slide.body %}{% set extra_class = ' diagram-only' %}{% endif %}
     {% if title_has_math %}{% set extra_class = extra_class ~ ' slide-heading-math' %}{% endif %}
     {% if s.math_display_center|default(true) %}{% set extra_class = extra_class ~ ' math-display-eq-center' %}{% else %}{% set extra_class = extra_class ~ ' math-display-eq-start' %}{% endif %}
-    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}"{% if s.bullet_stagger_json %} data-bullet-stagger="{{ s.bullet_stagger_json | e }}"{% endif %} style="--title-scale: {{ s.title_scale }}; --content-scale: {{ s.content_scale }}; --math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}{% if slide.layout in ['figure', 'figure-wide'] and s.figure_scale is not none %} --figure-scale: {{ s.figure_scale }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
+    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}"{% if s.bullet_stagger_json %} data-bullet-stagger="{{ s.bullet_stagger_json | e }}"{% endif %}{% if s.bullet_focus_json %} data-bullet-focus="{{ s.bullet_focus_json | e }}"{% endif %} style="--title-scale: {{ s.title_scale }}; --content-scale: {{ s.content_scale }}; --math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}{% if slide.layout in ['figure', 'figure-wide'] and s.figure_scale is not none %} --figure-scale: {{ s.figure_scale }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}
@@ -1709,6 +1709,86 @@
       });
     }, { threshold: thr });
     observer.observe(section);
+  });
+
+  // Key-driven bullet focus: dim all but the currently focused bullet; configured key advances focus.
+  var focusSections = Array.prototype.slice.call(
+    document.querySelectorAll('[data-bullet-focus]')
+  );
+  if (!focusSections.length) return;
+
+  var states = new Map();   // section -> { items, idx, dim, dur, ease, key }
+  var visible = new Set();  // sections currently in view
+
+  focusSections.forEach(function (section) {
+    var raw = section.getAttribute('data-bullet-focus');
+    var cfg;
+    try { cfg = JSON.parse(raw); } catch (e) { return; }
+    var items = section.querySelectorAll('.slide-body li');
+    if (!items.length) return;
+    var dim = typeof cfg.dim === 'number' ? cfg.dim : 0.25;
+    var state = {
+      items: items,
+      idx: 0,
+      dim: dim,
+      dur: typeof cfg.duration === 'number' ? cfg.duration : 0.3,
+      ease: cfg.ease || 'power2.out',
+      key: (cfg.key || 'j').toLowerCase(),
+      backKey: (cfg.back_key || 'k').toLowerCase()
+    };
+    states.set(section, state);
+    if (reduce) {
+      gsap.set(items, { opacity: 1 });
+      return;
+    }
+    gsap.set(items, { opacity: dim });
+    gsap.set(items[0], { opacity: 1 });
+  });
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) visible.add(entry.target);
+      else visible.delete(entry.target);
+    });
+  }, { threshold: 0.5 });
+  focusSections.forEach(function (s) { io.observe(s); });
+
+  function activeSection() {
+    if (visible.size === 1) return visible.values().next().value;
+    var best = null, bestArea = 0;
+    visible.forEach(function (s) {
+      var r = s.getBoundingClientRect();
+      var a = Math.max(0, r.width) * Math.max(0, r.height);
+      if (a > bestArea) { bestArea = a; best = s; }
+    });
+    return best;
+  }
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    var tag = (ev.target && ev.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ev.target && ev.target.isContentEditable)) return;
+    var section = activeSection();
+    if (!section) return;
+    var st = states.get(section);
+    if (!st) return;
+    var k = ev.key.toLowerCase();
+    var dir = 0;
+    if (k === st.key) dir = 1;
+    else if (k === st.backKey) dir = -1;
+    else return;
+    ev.preventDefault();
+    var newIdx = st.idx + dir;
+    if (newIdx < 0 || newIdx > st.items.length - 1) return;
+    var prev = st.items[st.idx];
+    st.idx = newIdx;
+    var next = st.items[st.idx];
+    if (reduce) {
+      gsap.set([prev, next], { opacity: 1 });
+      return;
+    }
+    gsap.to(prev, { opacity: st.dim, duration: st.dur, ease: st.ease });
+    gsap.to(next, { opacity: 1, duration: st.dur, ease: st.ease });
   });
 })();
 </script>

@@ -9,10 +9,11 @@ import yaml as _yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from schema.animation_defaults import (
+    SKILL_BULLET_FOCUS_DEFAULTS,
     SKILL_BULLET_STAGGER_DEFAULTS,
     SKILL_GSAP_SCRIPT_URL_DEFAULT,
 )
-from schema.models import BulletStaggerSettings, Deck
+from schema.models import BulletFocusSettings, BulletStaggerSettings, Deck
 from compiler.validators import validate_deck
 from compiler.renderers import (
     render_body,
@@ -54,6 +55,31 @@ def _merge_bullet_stagger_config(deck: Deck, slide) -> dict[str, float | str] | 
 
 def _bullet_stagger_json(cfg: dict[str, float | str] | None) -> str | None:
     """Serialize merged stagger config for a data-attribute on the slide section."""
+    if cfg is None:
+        return None
+    return json.dumps(cfg, separators=(',', ':'))
+
+
+def _merge_bullet_focus_config(deck: Deck, slide) -> dict[str, float | str] | None:
+    """Resolve key-driven bullet focus params: skill defaults, deck animation_defaults, slide overrides."""
+    spec = getattr(slide, 'bullet_focus', None)
+    if spec is None or spec is False:
+        return None
+    out = dict(SKILL_BULLET_FOCUS_DEFAULTS)
+    ad = deck.metadata.animation_defaults
+    if ad is not None and getattr(ad, 'bullet_focus', None) is not None:
+        out.update(ad.bullet_focus.model_dump(mode='python', exclude_none=True))
+    if spec is True:
+        pass
+    elif isinstance(spec, BulletFocusSettings):
+        out.update(spec.model_dump(mode='python', exclude_none=True))
+    else:
+        return None
+    return out
+
+
+def _bullet_focus_json(cfg: dict[str, float | str] | None) -> str | None:
+    """Serialize merged focus config for a data-attribute on the slide section."""
     if cfg is None:
         return None
     return json.dumps(cfg, separators=(',', ':'))
@@ -445,6 +471,7 @@ def _render(
             )
 
         bsc = _merge_bullet_stagger_config(deck, slide)
+        bfc = _merge_bullet_focus_config(deck, slide)
         slides_context.append(
             {
                 "slide": slide,
@@ -476,6 +503,7 @@ def _render(
                 "content_scale": eff_content_scale,
                 "figure_scale": eff_figure_scale,
                 "bullet_stagger_json": _bullet_stagger_json(bsc),
+                "bullet_focus_json": _bullet_focus_json(bfc),
             }
         )
 
@@ -493,7 +521,8 @@ def _render(
     mermaid_theme = 'dark' if deck.metadata.theme == 'dark' else 'default'
 
     has_bullet_animation = any(
-        s.get('bullet_stagger_json') for s in slides_context
+        s.get('bullet_stagger_json') or s.get('bullet_focus_json')
+        for s in slides_context
     )
     gsap_script_url = (
         deck.metadata.gsap_script_url or SKILL_GSAP_SCRIPT_URL_DEFAULT

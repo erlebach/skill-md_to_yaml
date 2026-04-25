@@ -153,12 +153,69 @@ class BulletStaggerSettings(BaseModel):
         return s
 
 
+class BulletFocusSettings(BaseModel):
+    """Optional GSAP key-driven focus parameters for list items.
+
+    When a slide enables ``bullet_focus``, all list items start dimmed
+    except the first; pressing ``key`` advances the focused bullet so
+    that exactly one item is fully opaque while the others fade to
+    ``dim``. Omitted fields inherit deck defaults, then skill defaults.
+    """
+
+    model_config = ConfigDict(extra='forbid')
+
+    key: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=8,
+        description='Keyboard key that advances the focused bullet (e.g. "j").',
+    )
+    back_key: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=8,
+        description='Keyboard key that moves the focus to the previous bullet (e.g. "k").',
+    )
+    dim: float | None = Field(
+        default=None,
+        ge=0,
+        le=1,
+        description='Opacity applied to non-focused list items.',
+    )
+    duration: float | None = Field(
+        default=None,
+        gt=0,
+        le=10,
+        description='Tween duration in seconds for opacity transitions.',
+    )
+    ease: str | None = Field(
+        default=None,
+        max_length=48,
+        description='GSAP ease string (e.g. power2.out).',
+    )
+
+    @field_validator('ease')
+    @classmethod
+    def _v_focus_ease(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        s = str(v).strip()
+        if not s:
+            return None
+        if not _EASE_RE.match(s):
+            raise ValueError(
+                'ease: use a GSAP ease name like power2.out or elastic.out(1, 0.3)'
+            )
+        return s
+
+
 class AnimationDefaults(BaseModel):
     """Deck-level defaults merged before per-slide animation overrides."""
 
     model_config = ConfigDict(extra='forbid')
 
     bullet_stagger: BulletStaggerSettings | None = None
+    bullet_focus: BulletFocusSettings | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -187,6 +244,14 @@ class ContentSlide(SlideBase):
             'Use an object to override duration, stagger, ease, threshold, or x_offset.'
         ),
     )
+    bullet_focus: bool | BulletFocusSettings | None = Field(
+        default=None,
+        description=(
+            'If true, dim all list items except the first; pressing the configured '
+            'key (default "j") advances the focused bullet. Use an object to override '
+            'key, dim opacity, duration, or ease.'
+        ),
+    )
 
 
 class TranscribeSlide(SlideBase):
@@ -196,6 +261,10 @@ class TranscribeSlide(SlideBase):
     bullet_animation: bool | Literal['stagger'] | BulletStaggerSettings | None = Field(
         default=None,
         description='Same as content slides: optional GSAP stagger for list items.',
+    )
+    bullet_focus: bool | BulletFocusSettings | None = Field(
+        default=None,
+        description='Same as content slides: optional key-driven bullet focus.',
     )
 
 

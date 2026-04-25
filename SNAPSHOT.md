@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-24 (c)
+# Project Snapshot — 2026-04-24 (d)
 
 ## Current Architecture
 
@@ -20,6 +20,7 @@
 - **13 layout types**: title, hero, content, divider, figure, diagram, two-column, quote, comparison, code, steps, summary, table (+ legacy `transcribe`)
 - **Math rendering** — **latex2mathml** MathML: **`$$...$$`** block and **`$...$`** inline math
 - **ADA compliance** — required `alt_text` on figures/diagrams, contrast validation
+- **Declarative bullet animation (md_to_yaml)** — deck **`animation_defaults.bullet_stagger`** (optional partial **`BulletStaggerSettings`**) merges with skill defaults in **`schema/animation_defaults.py`**, then per-slide **`bullet_animation`**: **`true`**, **`stagger`**, or partial **`BulletStaggerSettings`** on **`layout: content`** and **`layout: transcribe`**. Compiler sets **`data-bullet-stagger`** on **`<section>`** and emits one GSAP block when **`has_bullet_animation`**. Optional **`gsap_script_url`** on deck metadata (**https** only).
 
 ## Documentation
 
@@ -62,7 +63,7 @@ md_to_yaml/
 
 ## Recent Changes
 
-- **2026-04-24 (c)**: **[`examples/mycontent.yaml`](examples/mycontent.yaml)** — demo **md_to_yaml** deck: **GSAP** CDN + staggered **`li`** animation on a **`layout: content`** slide ( **`IntersectionObserver`**, **`prefers-reduced-motion`** ). Compile from **`.claude/skills/md_to_yaml`**: **`PYTHONPATH=. uv run python -m compiler <yaml> <out.html>`**.
+- **2026-04-24 (d)**: **Bullet stagger** — schema + compiler + **`base.html.j2`**: deck **`animation_defaults`**, slide **`bullet_animation`**, skill defaults in **`schema/animation_defaults.py`**; **[`examples/mycontent.yaml`](examples/mycontent.yaml)** updated (no inline scripts). Regenerated **`deck.schema.json`**.
 - **2026-04-24 (b)**: **Two-column / comparison** column headers (**`h3`**) — **`font-size`** multiplied by **1.2** (same **`clamp(22px, 2.8vw, 34px) * var(--title-font-mul)`** base as global **`h3`**). Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**; **`final_talk1.html`** recompiled.
 - **2026-04-24 (a)**: **Two-column / comparison** — column **`.slide-body`** is **`display: flex; flex-direction: column`** so **`gap`** spaces **`<h3>`** vs **`<ul>`**; **`gap`** set to **`calc(1.35rem * 1.5 * 1.5)`** (50% more than the previous **`calc(1.35rem * 1.5)`** target). Fixes slides like **Spectral Mapping** (markdown **`<!-- split -->`**). Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**.
 - **2026-04-23 (e)**: **`conversion/.../PRESENTER_NOTES.md`** — full presenter script outline for **`final_talk1`** (40 slides): on-screen cues, detailed **Say** bullets, **Transition** lines between slides, GUO / four-factor / summary closings, timing tips.
