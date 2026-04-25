@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-24 (d)
+# Project Snapshot — 2026-04-25
 
 ## Current Architecture
 
@@ -63,6 +63,7 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-04-25**: **`figure_crop` slide dev server** — injected crop overlay: **`renderBox`** uses viewport mapping consistent with **`imgRel`** (fixes wrong crop file corner/size under **`--figure-scale`** / view scale); handle/box drags use **`clientDeltaToLayout`**. See **`figure_crop/slidedev.py`**.
 - **2026-04-24 (d)**: **Bullet stagger** — schema + compiler + **`base.html.j2`**: deck **`animation_defaults`**, slide **`bullet_animation`**, skill defaults in **`schema/animation_defaults.py`**; **[`examples/mycontent.yaml`](examples/mycontent.yaml)** updated (no inline scripts). Regenerated **`deck.schema.json`**.
 - **2026-04-24 (b)**: **Two-column / comparison** column headers (**`h3`**) — **`font-size`** multiplied by **1.2** (same **`clamp(22px, 2.8vw, 34px) * var(--title-font-mul)`** base as global **`h3`**). Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**; **`final_talk1.html`** recompiled.
 - **2026-04-24 (a)**: **Two-column / comparison** — column **`.slide-body`** is **`display: flex; flex-direction: column`** so **`gap`** spaces **`<h3>`** vs **`<ul>`**; **`gap`** set to **`calc(1.35rem * 1.5 * 1.5)`** (50% more than the previous **`calc(1.35rem * 1.5)`** target). Fixes slides like **Spectral Mapping** (markdown **`<!-- split -->`**). Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**.

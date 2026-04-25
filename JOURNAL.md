@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-04-25 - **figure_crop** slide dev overlay: fix scaling to natural pixels
+
+### Completed Tasks ✅
+- [x] **`figure_crop/slidedev.py` (injected overlay JS)** — `renderBox` now maps layout-space `rect` to **viewport** using the same `getBoundingClientRect` / `clientWidth` scale as `imgRel`, with **`position: fixed`**, so the orange box lines up with rasters that use deck **`transform: scale(--figure-scale)`** / view-scale (sibling + `offsetLeft` was wrong).
+- [x] **Handle and whole-box drags** — `clientX`/`clientY` deltas are converted with **`clientDeltaToLayout`** (divide by the same per-axis scale) so `rect` stays in the same space as the initial `imgRel` drag; previously raw viewport deltas corrupted width/height and corner when scale ≠ 1.
+- [x] **Scroll/resize** — `window` listeners (scroll capture + resize) call **`renderBox`** while a selection is active, then remove in **`clearSelection`**.
+
+### Files Created/Modified
+- `figure_crop/slidedev.py` — overlay JS only (string `_OVERLAY_JS`).
+
+### Key Changes
+- **Root cause:** Selection coordinates are in unscaled **`<img>`** layout + **object-fit** “fit” rect; the overlay was placed in the parent without applying the same scale as the painted image, and handle moves mixed viewport and layout units.
+
+### Notes
+- Pillow and **`POST /__dev/crop`** still expect top-left + size in **original file** pixel space; the fix aligns browser math with that.
+
+---
+
 ## 2026-04-24 - Declarative **GSAP** bullet stagger (deck defaults + skill defaults + slide overrides)
 
 ### Completed Tasks ✅

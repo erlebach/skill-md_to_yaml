@@ -126,7 +126,15 @@ _OVERLAY_JS = r"""
   }
 
   function clearSelection() {
-    if (cs) { cs.box.remove(); cs = null; }
+    if (cs) {
+      if (cs._onReposition) {
+        window.removeEventListener('scroll', cs._onReposition, true);
+        window.removeEventListener('resize', cs._onReposition);
+        cs._onReposition = null;
+      }
+      cs.box.remove();
+      cs = null;
+    }
     if (hintEl) { hintEl.remove(); hintEl = null; }
   }
 
@@ -174,6 +182,14 @@ _OVERLAY_JS = r"""
     ];
   }
 
+  // Map a viewport (client) delta to layout-space (same units as imgRel / rect).
+  function clientDeltaToLayout(img, dcx, dcy) {
+    const br = img.getBoundingClientRect();
+    const sx = br.width  / (img.clientWidth  || 1);
+    const sy = br.height / (img.clientHeight || 1);
+    return [dcx / sx, dcy / sy];
+  }
+
   // Clamp rect so it stays within the rendered image area (local CSS px).
   function clampRect(img, r) {
     const {w: W, h: H} = objectFitRect(img);
@@ -185,13 +201,22 @@ _OVERLAY_JS = r"""
     return {x, y, w, h};
   }
 
+  // Position in viewport: rect + object-fit are in unscaled <img> layout space;
+  // forward map matches imgRel. Sibling + offsetLeft missed figure-scale
+  // transform:scale on the <img> (see deck base template).
   function renderBox() {
+    if (!cs) return;
     const {img, rect, box} = cs;
+    const br = img.getBoundingClientRect();
+    const sx = br.width  / (img.clientWidth  || 1);
+    const sy = br.height / (img.clientHeight || 1);
     const fit = objectFitRect(img);
-    box.style.left   = (img.offsetLeft + fit.x + rect.x) + 'px';
-    box.style.top    = (img.offsetTop  + fit.y + rect.y) + 'px';
-    box.style.width  = rect.w + 'px';
-    box.style.height = rect.h + 'px';
+    const lx = fit.x + rect.x, ly = fit.y + rect.y;
+    box.style.position = 'fixed';
+    box.style.left   = (br.left + lx * sx) + 'px';
+    box.style.top    = (br.top  + ly * sy) + 'px';
+    box.style.width  = (rect.w * sx) + 'px';
+    box.style.height = (rect.h * sy) + 'px';
   }
 
   // Build the URL for the cropped file, derived from the original src URL.
@@ -211,15 +236,20 @@ _OVERLAY_JS = r"""
     const img = e.currentTarget;
     clearSelection();
 
-    const wrap = img.parentElement;
-    if (getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
     const box = document.createElement('div');
     box.className = '__crop-box';
     box.style.pointerEvents = 'none'; // transparent during initial draw
-    wrap.appendChild(box);
+    box.style.boxSizing = 'border-box';
+    box.style.zIndex = '99998';
+    document.body.appendChild(box);
+
+    const onReposition = () => { if (cs) renderBox(); };
+    window.addEventListener('scroll', onReposition, true);
+    window.addEventListener('resize', onReposition);
 
     const [x0, y0] = imgRel(img, e.clientX, e.clientY);
-    cs = { img, rect: {x: x0, y: y0, w: 0, h: 0}, box, _draw: {x0, y0} };
+    cs = { img, rect: {x: x0, y: y0, w: 0, h: 0}, box, _draw: {x0, y0},
+           _onReposition: onReposition };
 
     img.setPointerCapture(e.pointerId);
     img.addEventListener('pointermove', onImgMove);
@@ -270,7 +300,8 @@ _OVERLAY_JS = r"""
     e.currentTarget.setPointerCapture(e.pointerId);
 
     function onMove(ev) {
-      const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+      const dcx = ev.clientX - start.x, dcy = ev.clientY - start.y;
+      const [dx, dy] = clientDeltaToLayout(cs.img, dcx, dcy);
       let {x, y, w, h} = start.rect;
       if (dir.includes('n')) { y += dy; h -= dy; }
       if (dir.includes('s')) { h += dy; }
@@ -295,7 +326,8 @@ _OVERLAY_JS = r"""
     cs.box.setPointerCapture(e.pointerId);
 
     function onMove(ev) {
-      const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+      const dcx = ev.clientX - start.x, dcy = ev.clientY - start.y;
+      const [dx, dy] = clientDeltaToLayout(cs.img, dcx, dcy);
       cs.rect = clampRect(cs.img, {
         x: start.rect.x + dx, y: start.rect.y + dy,
         w: start.rect.w,      h: start.rect.h,
