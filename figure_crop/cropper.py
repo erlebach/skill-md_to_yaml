@@ -1,18 +1,18 @@
 """Crop logic, sidecar JSON, and captions.yaml read/write.
 
-The crop rectangle is persisted in two places:
+The sidecar JSON (`<stem>.cropped.json`) is the canonical store.  It holds a
+*history* of every crop applied to a source image so you can backtrack.  The
+active crop is always the **last** entry in ``history``.
 
-1. A **sidecar JSON** `<basename>.cropped.json` next to the cropped image. This
-   is the canonical, always-written source of truth — it lets the editor
-   restore handle positions on the next session and "widen" a previous crop.
-2. (Optional) `captions.yaml` mirror — a deck-wide index used by the compiler.
-   Written only when `--write-captions` is on.
-
-If the two ever disagree, the sidecar wins.
+Repeated crops always write back to the same ``<stem>.cropped.<ext>`` output
+file (cropping from the original each time), so there is no chaining of
+``.cropped.cropped.cropped…`` filenames.  ``resolve_original`` strips any
+``.cropped`` suffix so callers always operate on the true source.
 """
 
 from __future__ import annotations
 
+import datetime
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -47,6 +47,19 @@ def normalize_ext(ext: str) -> str:
     if e == ".jpeg":
         return ".jpg"
     return e
+
+
+def resolve_original(path: Path) -> Path:
+    """Return the true source image, stripping any .cropped suffix.
+
+    strait_of_hormuz.cropped.png → strait_of_hormuz.png
+    foo.cropped.cropped.jpg      → foo.jpg  (handles accidental chains)
+    foo.png                      → foo.png  (unchanged)
+    """
+    p = path
+    while p.stem.endswith(CROPPED_SUFFIX):
+        p = p.with_name(p.stem[: -len(CROPPED_SUFFIX)] + p.suffix)
+    return p
 
 
 def cropped_path(source: Path) -> Path:
@@ -110,27 +123,76 @@ def image_size(path: Path) -> tuple[int, int]:
 def write_sidecar(
     source: Path, rect: CropRect, source_size: tuple[int, int]
 ) -> Path:
+    """Append rect to the sidecar history (creates the file if absent).
+
+    The output file always lives next to the *original* source so that
+    repeated crops do not produce chained sidecar files.  Old single-rect
+    sidecars are migrated to the history format on first write.
+    """
+    source = resolve_original(source)
     sw, sh = source_size
-    payload = {
-        "source_file": source.name,
-        "source_size": {"w": sw, "h": sh},
-        "rect": rect.to_dict(),
-    }
+    ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
     p = sidecar_path(source)
-    p.write_text(json.dumps(payload, indent=2) + "\n")
+    if p.exists():
+        try:
+            data = json.loads(p.read_text())
+        except (json.JSONDecodeError, ValueError):
+            data = {}
+    else:
+        data = {}
+
+    # Migrate legacy format (single top-level "rect") to history list.
+    if "rect" in data and "history" not in data:
+        data["history"] = [{"rect": data.pop("rect"), "ts": data.pop("ts", "")}]
+
+    data["source_file"] = source.name
+    data["source_size"] = {"w": sw, "h": sh}
+    data.setdefault("history", [])
+    data["history"].append({"rect": rect.to_dict(), "ts": ts})
+
+    p.write_text(json.dumps(data, indent=2) + "\n")
     return p
 
 
 def read_sidecar(source: Path) -> CropRect | None:
+    """Return the active (most recent) crop rect, or None if no sidecar."""
+    source = resolve_original(source)
     p = sidecar_path(source)
     if not p.exists():
         return None
     try:
         data = json.loads(p.read_text())
-        r = data["rect"]
+        # New format: history list.
+        if "history" in data and data["history"]:
+            r = data["history"][-1]["rect"]
+        else:
+            r = data["rect"]  # legacy single-rect format
         return CropRect(int(r["x"]), int(r["y"]), int(r["w"]), int(r["h"]))
     except (json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
+
+
+def read_sidecar_history(source: Path) -> list[CropRect]:
+    """Return all historical crop rects, oldest first."""
+    source = resolve_original(source)
+    p = sidecar_path(source)
+    if not p.exists():
+        return []
+    try:
+        data = json.loads(p.read_text())
+        if "history" in data:
+            return [
+                CropRect(int(e["rect"]["x"]), int(e["rect"]["y"]),
+                         int(e["rect"]["w"]), int(e["rect"]["h"]))
+                for e in data["history"]
+            ]
+        if "rect" in data:
+            r = data["rect"]
+            return [CropRect(int(r["x"]), int(r["y"]), int(r["w"]), int(r["h"]))]
+    except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+        pass
+    return []
 
 
 def remove_sidecar(source: Path) -> bool:

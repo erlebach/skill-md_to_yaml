@@ -27,7 +27,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from .cropper import CropRect, image_size, perform_crop, write_sidecar
+from .cropper import CropRect, image_size, perform_crop, resolve_original, write_sidecar
 
 # ---------------------------------------------------------------------------
 # Overlay JS — injected at serve time, never written to disk.
@@ -38,19 +38,17 @@ _OVERLAY_JS = r"""
   'use strict';
 
   // -- scroll-position restore after reload ----------------------------------
-  // Called immediately: if sessionStorage has a saved slide index, jump to it.
   (function restoreScroll() {
     const idx = parseInt(sessionStorage.getItem('__dev_slide') || '-1', 10);
     if (idx < 0) return;
     sessionStorage.removeItem('__dev_slide');
-    // Wait one frame so layout is complete before scrolling.
     requestAnimationFrame(() => {
-      const sections = document.querySelectorAll('section');
-      if (sections[idx]) sections[idx].scrollIntoView({ behavior: 'instant' });
+      const s = document.querySelectorAll('section')[idx];
+      if (s) s.scrollIntoView({ behavior: 'instant' });
     });
   })();
 
-  // -- version polling for live reload ---------------------------------------
+  // -- version polling -------------------------------------------------------
   function mostVisibleSlideIdx() {
     let best = -1, bestVis = -1;
     document.querySelectorAll('section').forEach((s, i) => {
@@ -60,33 +58,48 @@ _OVERLAY_JS = r"""
     });
     return best;
   }
-
   let _ver = null;
   setInterval(() => {
     fetch('/__dev/version', { cache: 'no-store' })
       .then(r => r.text())
       .then(v => {
         if (_ver === null) { _ver = v; return; }
-        if (v !== _ver) {
-          sessionStorage.setItem('__dev_slide', mostVisibleSlideIdx());
-          location.reload();
-        }
-      })
-      .catch(() => {});
+        if (v !== _ver) { sessionStorage.setItem('__dev_slide', mostVisibleSlideIdx()); location.reload(); }
+      }).catch(() => {});
   }, 1000);
 
-  // -- style -----------------------------------------------------------------
+  // -- styles ----------------------------------------------------------------
   const sty = document.createElement('style');
-  sty.textContent = [
-    '.__crop-box{position:absolute;border:2px dashed #f90;box-sizing:border-box;',
-    'pointer-events:none;background:rgba(255,165,0,.07);}',
-    '.__crop-hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);',
-    'background:rgba(0,0,0,.78);color:#fff;padding:6px 16px;border-radius:6px;',
-    'font:13px/1.5 system-ui,sans-serif;pointer-events:none;z-index:99999;}',
-  ].join('');
+  sty.textContent = `
+    .__crop-box {
+      position: absolute; box-sizing: border-box;
+      border: 2px solid #f90; background: rgba(255,165,0,.06);
+      cursor: move; pointer-events: all;
+    }
+    .__crop-handle {
+      position: absolute; width: 10px; height: 10px;
+      background: #f90; border: 1.5px solid #000;
+      box-sizing: border-box; pointer-events: all; z-index: 2;
+    }
+    .__crop-handle[data-dir=nw]{left:-5px;top:-5px;cursor:nwse-resize}
+    .__crop-handle[data-dir=n] {left:calc(50% - 5px);top:-5px;cursor:ns-resize}
+    .__crop-handle[data-dir=ne]{right:-5px;top:-5px;cursor:nesw-resize}
+    .__crop-handle[data-dir=e] {right:-5px;top:calc(50% - 5px);cursor:ew-resize}
+    .__crop-handle[data-dir=se]{right:-5px;bottom:-5px;cursor:nwse-resize}
+    .__crop-handle[data-dir=s] {left:calc(50% - 5px);bottom:-5px;cursor:ns-resize}
+    .__crop-handle[data-dir=sw]{left:-5px;bottom:-5px;cursor:nesw-resize}
+    .__crop-handle[data-dir=w] {left:-5px;top:calc(50% - 5px);cursor:ew-resize}
+    .__crop-hint {
+      position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.78); color: #fff; padding: 6px 16px;
+      border-radius: 6px; font: 13px/1.5 system-ui,sans-serif;
+      pointer-events: none; z-index: 99999;
+    }
+  `;
   document.head.appendChild(sty);
 
   // -- state -----------------------------------------------------------------
+  // cs.rect is always {x, y, w, h} in display pixels relative to img top-left.
   let cs = null;
   let hintEl = null;
 
@@ -110,57 +123,140 @@ _OVERLAY_JS = r"""
       if (img.dataset.cropWired) return;
       img.dataset.cropWired = '1';
       img.style.cursor = 'crosshair';
-      img.addEventListener('pointerdown', onDown);
+      img.addEventListener('pointerdown', onImgDown);
     });
   }
-
   wireImages();
   new MutationObserver(wireImages).observe(document.body, { childList: true, subtree: true });
 
-  // -- drag ------------------------------------------------------------------
+  // -- helpers ---------------------------------------------------------------
   function imgRel(img, cx, cy) {
     const r = img.getBoundingClientRect();
     return [cx - r.left, cy - r.top];
   }
 
-  function onDown(e) {
-    e.preventDefault();
-    const img = e.currentTarget;
-    clearSelection();
-    const [x0, y0] = imgRel(img, e.clientX, e.clientY);
-    const box = document.createElement('div');
-    box.className = '__crop-box';
-    const wrap = img.parentElement;
-    if (getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
-    wrap.appendChild(box);
-    cs = { img, x0, y0, x1: x0, y1: y0, box };
-    img.setPointerCapture(e.pointerId);
-    img.addEventListener('pointermove', onMove);
-    img.addEventListener('pointerup', onUp, { once: true });
-    showHint('drag to select · c to save · Escape to cancel');
-  }
-
-  function onMove(e) {
-    if (!cs) return;
-    const [x, y] = imgRel(cs.img, e.clientX, e.clientY);
-    cs.x1 = x; cs.y1 = y;
-    renderBox();
-  }
-
-  function onUp() {
-    if (!cs) return;
-    cs.img.removeEventListener('pointermove', onMove);
-    renderBox();
+  function clampRect(img, r) {
+    const W = img.clientWidth, H = img.clientHeight;
+    let {x, y, w, h} = r;
+    x = Math.max(0, Math.min(x, W - 2));
+    y = Math.max(0, Math.min(y, H - 2));
+    w = Math.max(2, Math.min(w, W - x));
+    h = Math.max(2, Math.min(h, H - y));
+    return {x, y, w, h};
   }
 
   function renderBox() {
-    const { img, x0, y0, x1, y1, box } = cs;
-    const lx = Math.min(x0, x1), rx = Math.max(x0, x1);
-    const ly = Math.min(y0, y1), ry = Math.max(y0, y1);
-    box.style.left   = img.offsetLeft + lx + 'px';
-    box.style.top    = img.offsetTop  + ly + 'px';
-    box.style.width  = (rx - lx) + 'px';
-    box.style.height = (ry - ly) + 'px';
+    const {img, rect, box} = cs;
+    box.style.left   = (img.offsetLeft + rect.x) + 'px';
+    box.style.top    = (img.offsetTop  + rect.y) + 'px';
+    box.style.width  = rect.w + 'px';
+    box.style.height = rect.h + 'px';
+  }
+
+  // -- phase 1: initial draw -------------------------------------------------
+  function onImgDown(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const img = e.currentTarget;
+    clearSelection();
+
+    const wrap = img.parentElement;
+    if (getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
+    const box = document.createElement('div');
+    box.className = '__crop-box';
+    box.style.pointerEvents = 'none'; // transparent during initial draw
+    wrap.appendChild(box);
+
+    const [x0, y0] = imgRel(img, e.clientX, e.clientY);
+    cs = { img, rect: {x: x0, y: y0, w: 0, h: 0}, box, _draw: {x0, y0} };
+
+    img.setPointerCapture(e.pointerId);
+    img.addEventListener('pointermove', onImgMove);
+    img.addEventListener('pointerup', onImgUp, { once: true });
+    showHint('drag to select · c to save · Escape to cancel');
+  }
+
+  function onImgMove(e) {
+    if (!cs || !cs._draw) return;
+    const [x1, y1] = imgRel(cs.img, e.clientX, e.clientY);
+    const {x0, y0} = cs._draw;
+    cs.rect = clampRect(cs.img, {
+      x: Math.min(x0, x1), y: Math.min(y0, y1),
+      w: Math.abs(x1 - x0),  h: Math.abs(y1 - y0),
+    });
+    renderBox();
+  }
+
+  function onImgUp(e) {
+    if (!cs) return;
+    cs.img.removeEventListener('pointermove', onImgMove);
+    delete cs._draw;
+    cs.box.style.pointerEvents = 'all';
+    if (cs.rect.w > 4 && cs.rect.h > 4) {
+      attachHandles();
+      showHint('drag handles to adjust · c to save · Escape to cancel');
+    }
+  }
+
+  // -- phase 2: handles & move -----------------------------------------------
+  function attachHandles() {
+    ['nw','n','ne','e','se','s','sw','w'].forEach(dir => {
+      const h = document.createElement('div');
+      h.className = '__crop-handle';
+      h.dataset.dir = dir;
+      h.addEventListener('pointerdown', onHandleDown);
+      cs.box.appendChild(h);
+    });
+    cs.box.addEventListener('pointerdown', onBoxDown);
+  }
+
+  function onHandleDown(e) {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const dir = e.currentTarget.dataset.dir;
+    const start = {x: e.clientX, y: e.clientY, rect: {...cs.rect}};
+    e.currentTarget.setPointerCapture(e.pointerId);
+
+    function onMove(ev) {
+      const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+      let {x, y, w, h} = start.rect;
+      if (dir.includes('n')) { y += dy; h -= dy; }
+      if (dir.includes('s')) { h += dy; }
+      if (dir.includes('w')) { x += dx; w -= dx; }
+      if (dir.includes('e')) { w += dx; }
+      cs.rect = clampRect(cs.img, {x, y, w, h});
+      renderBox();
+    }
+    function onUp() {
+      e.currentTarget.removeEventListener('pointermove', onMove);
+      e.currentTarget.removeEventListener('pointerup', onUp);
+    }
+    e.currentTarget.addEventListener('pointermove', onMove);
+    e.currentTarget.addEventListener('pointerup', onUp);
+  }
+
+  function onBoxDown(e) {
+    if (e.target !== cs.box) return; // ignore handle clicks that bubble
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const start = {x: e.clientX, y: e.clientY, rect: {...cs.rect}};
+    cs.box.setPointerCapture(e.pointerId);
+
+    function onMove(ev) {
+      const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+      cs.rect = clampRect(cs.img, {
+        x: start.rect.x + dx, y: start.rect.y + dy,
+        w: start.rect.w,      h: start.rect.h,
+      });
+      renderBox();
+    }
+    function onUp() {
+      cs.box.removeEventListener('pointermove', onMove);
+      cs.box.removeEventListener('pointerup', onUp);
+    }
+    cs.box.addEventListener('pointermove', onMove);
+    cs.box.addEventListener('pointerup', onUp);
   }
 
   // -- keyboard --------------------------------------------------------------
@@ -173,22 +269,17 @@ _OVERLAY_JS = r"""
 
     if (e.key === 'c') {
       if (!cs) return;
-      const { img, x0, y0, x1, y1 } = cs;
-      const dw = img.getBoundingClientRect().width;
-      const dh = img.getBoundingClientRect().height;
-      if (dw === 0 || dh === 0) return;
-      const sx = img.naturalWidth  / dw;
-      const sy = img.naturalHeight / dh;
-      const px = Math.round(Math.min(x0, x1) * sx);
-      const py = Math.round(Math.min(y0, y1) * sy);
-      const pw = Math.round(Math.abs(x1 - x0) * sx);
-      const ph = Math.round(Math.abs(y1 - y0) * sy);
-      if (pw < 4 || ph < 4) { showHint('selection too small — drag a larger region', 2000); return; }
+      const {img, rect} = cs;
+      if (rect.w < 4 || rect.h < 4) { showHint('selection too small', 2000); return; }
+      const scaleX = img.naturalWidth  / img.clientWidth;
+      const scaleY = img.naturalHeight / img.clientHeight;
+      const px = Math.round(rect.x * scaleX), py = Math.round(rect.y * scaleY);
+      const pw = Math.round(rect.w * scaleX), ph = Math.round(rect.h * scaleY);
       showHint('saving crop…');
       fetch('/__dev/crop', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ src: img.src, x: px, y: py, w: pw, h: ph }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({src: img.src, x: px, y: py, w: pw, h: ph}),
       }).then(r => r.json()).then(j => {
         if (j.error) { showHint('error: ' + j.error, 3000); return; }
         clearSelection();
@@ -323,6 +414,10 @@ def make_handler(
                 return self._json(400, {'error': 'path outside serve root'})
             if not src_abs.is_file():
                 return self._json(400, {'error': f'image not found: {src_path_rel}'})
+            # Always crop from the original, never from a previously cropped file.
+            src_abs = resolve_original(src_abs)
+            if not src_abs.is_file():
+                return self._json(400, {'error': f'original not found: {src_abs.name}'})
             try:
                 rect = CropRect(
                     int(body['x']), int(body['y']), int(body['w']), int(body['h'])
