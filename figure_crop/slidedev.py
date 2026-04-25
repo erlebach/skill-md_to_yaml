@@ -143,13 +143,40 @@ _OVERLAY_JS = r"""
   new MutationObserver(wireImages).observe(document.body, { childList: true, subtree: true });
 
   // -- helpers ---------------------------------------------------------------
-  function imgRel(img, cx, cy) {
-    const r = img.getBoundingClientRect();
-    return [cx - r.left, cy - r.top];
+
+  // Compute the actual rendered image rect (in local CSS px, relative to the
+  // img element's top-left) for object-fit:contain images.  With contain, the
+  // image is scaled to fit within the CSS box while keeping aspect ratio, so
+  // there may be letterbox (top/bottom) or pillarbox (left/right) gaps.
+  function objectFitRect(img) {
+    const natW = img.naturalWidth, natH = img.naturalHeight;
+    const boxW = img.clientWidth,  boxH = img.clientHeight;
+    if (!natW || !natH || !boxW || !boxH) return {x: 0, y: 0, w: boxW, h: boxH};
+    const iAspect = natW / natH, bAspect = boxW / boxH;
+    let w, h;
+    if (iAspect > bAspect) { w = boxW; h = boxW / iAspect; }
+    else                    { h = boxH; w = boxH * iAspect; }
+    return {x: (boxW - w) / 2, y: (boxH - h) / 2, w, h};
   }
 
+  // Convert a viewport-space pointer coordinate to local CSS px relative to
+  // the rendered image content (not the CSS box).  Handles both zoom: and
+  // transform: scale() used by the deck view-scale feature.
+  function imgRel(img, cx, cy) {
+    const br = img.getBoundingClientRect();
+    // br uses viewport pixels; clientWidth uses local (pre-transform) CSS px.
+    const cssScaleX = br.width  / (img.clientWidth  || 1);
+    const cssScaleY = br.height / (img.clientHeight || 1);
+    const fit = objectFitRect(img);
+    return [
+      (cx - br.left) / cssScaleX - fit.x,
+      (cy - br.top)  / cssScaleY - fit.y,
+    ];
+  }
+
+  // Clamp rect so it stays within the rendered image area (local CSS px).
   function clampRect(img, r) {
-    const W = img.clientWidth, H = img.clientHeight;
+    const {w: W, h: H} = objectFitRect(img);
     let {x, y, w, h} = r;
     x = Math.max(0, Math.min(x, W - 2));
     y = Math.max(0, Math.min(y, H - 2));
@@ -160,8 +187,9 @@ _OVERLAY_JS = r"""
 
   function renderBox() {
     const {img, rect, box} = cs;
-    box.style.left   = (img.offsetLeft + rect.x) + 'px';
-    box.style.top    = (img.offsetTop  + rect.y) + 'px';
+    const fit = objectFitRect(img);
+    box.style.left   = (img.offsetLeft + fit.x + rect.x) + 'px';
+    box.style.top    = (img.offsetTop  + fit.y + rect.y) + 'px';
     box.style.width  = rect.w + 'px';
     box.style.height = rect.h + 'px';
   }
@@ -295,10 +323,12 @@ _OVERLAY_JS = r"""
       const {img, rect} = cs;
       if (rect.w < 4 || rect.h < 4) { showHint('selection too small', 2000); return; }
 
-      // Scale display-pixel rect to natural image pixels.
+      // Scale local-CSS-px rect to natural image pixels, accounting for
+      // object-fit:contain (fit.w/h is the actual rendered image size in CSS px).
       // If we're already viewing a cropped image, translate to original coordinates.
-      const scaleX = img.naturalWidth  / img.clientWidth;
-      const scaleY = img.naturalHeight / img.clientHeight;
+      const fit = objectFitRect(img);
+      const scaleX = img.naturalWidth  / fit.w;
+      const scaleY = img.naturalHeight / fit.h;
       const offsetX = parseInt(img.dataset.cropX || '0', 10);
       const offsetY = parseInt(img.dataset.cropY || '0', 10);
       const px = Math.round(rect.x * scaleX) + offsetX;
