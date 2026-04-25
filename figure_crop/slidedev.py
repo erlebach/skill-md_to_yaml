@@ -62,12 +62,20 @@ _OVERLAY_JS = r"""
     return best;
   }
   let _ver = null;
+  // Set to true after a crop/undo so the next version bump (our own recompile)
+  // doesn't clobber the image we already swapped in.
+  let _suppressNextReload = false;
   setInterval(() => {
     fetch('/__dev/version', { cache: 'no-store' })
       .then(r => r.text())
       .then(v => {
         if (_ver === null) { _ver = v; return; }
-        if (v !== _ver) { sessionStorage.setItem('__dev_slide', mostVisibleSlideIdx()); location.reload(); }
+        if (v !== _ver) {
+          _ver = v; // always consume the version bump
+          if (_suppressNextReload) { _suppressNextReload = false; return; }
+          sessionStorage.setItem('__dev_slide', mostVisibleSlideIdx());
+          location.reload();
+        }
       }).catch(() => {});
   }, 1000);
 
@@ -320,9 +328,10 @@ _OVERLAY_JS = r"""
         img.src = croppedUrl(img, j.cropped_file);
 
         lastCropped = {img, originalSrc: img.dataset.originalSrc};
+        _suppressNextReload = true; // we already swapped the image; skip the recompile-triggered reload
         const histLen = j.history_len || '?';
         clearSelection();
-        showHint(`crop ${histLen} saved · drag to refine · z to undo · recompiling…`, 4000);
+        showHint(`crop ${histLen} saved · drag to refine · z to undo`, 4000);
       }).catch(err => showHint('fetch error: ' + err, 3000));
     }
 
@@ -337,6 +346,7 @@ _OVERLAY_JS = r"""
       }).then(r => r.json()).then(j => {
         if (j.error) { showHint('undo error: ' + j.error, 3000); return; }
         clearSelection();
+        _suppressNextReload = true; // we already updated the image; skip the recompile-triggered reload
         if (j.history_len === 0) {
           // All crops undone — revert to original image.
           img.src = originalSrc + '?v=' + Date.now();
@@ -344,14 +354,14 @@ _OVERLAY_JS = r"""
           img.removeAttribute('data-crop-x');
           img.removeAttribute('data-crop-y');
           lastCropped = null;
-          showHint('all crops undone · recompiling…', 3000);
+          showHint('all crops undone', 3000);
         } else {
           // Previous crop restored — update img src (cache-bust) and crop offset.
           const pr = j.prev_rect;
           img.dataset.cropX = String(pr.x);
           img.dataset.cropY = String(pr.y);
-          img.src = croppedUrl(img, j.cropped_file) ;
-          showHint(`reverted to crop ${j.history_len} · recompiling…`, 3000);
+          img.src = croppedUrl(img, j.cropped_file);
+          showHint(`reverted to crop ${j.history_len}`, 3000);
         }
       }).catch(err => showHint('fetch error: ' + err, 3000));
     }
