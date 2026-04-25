@@ -100,11 +100,11 @@ async function loadState() {
   render();
 }
 
-function setStatus(msg, isError = false) {
+function setStatus(msg, isError = false, sticky = false) {
   const el = $("status");
   el.textContent = msg;
   el.classList.toggle("err", isError);
-  if (msg) setTimeout(() => { if (el.textContent === msg) el.textContent = ""; }, 2500);
+  if (msg && !sticky) setTimeout(() => { if (el.textContent === msg) el.textContent = ""; }, 2500);
 }
 
 function scale() {
@@ -187,7 +187,7 @@ async function save() {
   });
   const j = await resp.json();
   if (!resp.ok || j.error) { setStatus("error: " + (j.error || resp.status), true); return; }
-  setStatus("saved → " + j.cropped_file);
+  setStatus("saved → " + (j.cropped_path || j.cropped_file), false, true);
 }
 
 async function uncrop() {
@@ -218,6 +218,11 @@ $("uncrop").addEventListener("click", uncrop);
 
 wireHandles();
 loadState();
+
+window.addEventListener("beforeunload", () => {
+  // best-effort ping so the server can log "editor closed"
+  try { navigator.sendBeacon("/api/closing"); } catch (_) {}
+});
 </script>
 </body>
 </html>

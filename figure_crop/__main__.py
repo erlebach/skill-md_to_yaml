@@ -16,6 +16,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("image", help="Path to the source image (inside its figures dir).")
     p.add_argument("--port", type=int, default=0, help="Port (0 = pick free).")
     p.add_argument("--no-browser", action="store_true", help="Do not auto-open browser.")
+    p.add_argument(
+        "--write-captions",
+        action="store_true",
+        help="Update <figures_dir>/captions.yaml with crop metadata. Off by default.",
+    )
     args = p.parse_args(argv)
 
     img = Path(args.image).resolve()
@@ -26,11 +31,17 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: unsupported extension: {img.suffix}", file=sys.stderr)
         return 2
 
-    ctx = CropContext(figures_dir=img.parent, source_filename=img.name)
+    ctx = CropContext(
+        figures_dir=img.parent,
+        source_filename=img.name,
+        write_captions=args.write_captions,
+    )
     server = serve(ctx, port=args.port)
     host, port = server.server_address[:2]
     url = f"http://{host}:{port}/"
-    print(f"figure_crop: editing {img}")
+    print(f"figure_crop: editing  {img}")
+    print(f"figure_crop: output → {img.with_name(img.stem + '.cropped' + img.suffix.lower().replace('.jpeg', '.jpg'))}")
+    print(f"figure_crop: captions.yaml = {'ON' if args.write_captions else 'OFF (testing)'}")
     print(f"figure_crop: open {url}")
 
     if not args.no_browser:
@@ -39,7 +50,13 @@ def main(argv: list[str] | None = None) -> int:
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nfigure_crop: bye")
+        print()
+    finally:
+        last = ctx.last_cropped_path
+        if last is not None:
+            print(f"figure_crop: last write → {last}")
+        else:
+            print("figure_crop: no crop was saved this session.")
         server.shutdown()
     return 0
 

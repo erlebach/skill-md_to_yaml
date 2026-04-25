@@ -21,10 +21,17 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 
 class CropContext:
-    def __init__(self, figures_dir: Path, source_filename: str):
+    def __init__(
+        self,
+        figures_dir: Path,
+        source_filename: str,
+        write_captions: bool = False,
+    ):
         self.figures_dir = figures_dir.resolve()
         self.source_filename = source_filename
         self.source_path = self.figures_dir / source_filename
+        self.write_captions = write_captions
+        self.last_cropped_path: Path | None = None
         if not self.source_path.exists():
             raise FileNotFoundError(self.source_path)
 
@@ -56,6 +63,13 @@ def make_handler(ctx: CropContext):
                 return self._handle_crop()
             if url.path == "/api/uncrop":
                 return self._handle_uncrop()
+            if url.path == "/api/closing":
+                last = ctx.last_cropped_path
+                if last is not None:
+                    print(f"figure_crop: editor closed. Last write: {last}", flush=True)
+                else:
+                    print("figure_crop: editor closed. No crop was saved.", flush=True)
+                return self._json(200, {"ok": True})
             self.send_error(404)
 
         # --- handlers --------------------------------------------------------
@@ -107,17 +121,27 @@ def make_handler(ctx: CropContext):
             try:
                 out = perform_crop(ctx.source_path, rect)
                 sw, sh = image_size(ctx.source_path)
-                entry = upsert_crop(
-                    ctx.figures_dir, ctx.source_filename, rect, (sw, sh)
-                )
+                entry = None
+                if ctx.write_captions:
+                    entry = upsert_crop(
+                        ctx.figures_dir, ctx.source_filename, rect, (sw, sh)
+                    )
             except (FileNotFoundError, ValueError) as e:
                 return self._json(400, {"error": str(e)})
+            ctx.last_cropped_path = out
+            print(
+                f"figure_crop: wrote {out}  "
+                f"({rect.w}x{rect.h} from {sw}x{sh})",
+                flush=True,
+            )
             self._json(
                 200,
                 {
                     "ok": True,
                     "cropped_file": out.name,
+                    "cropped_path": str(out),
                     "entry": entry,
+                    "wrote_captions": ctx.write_captions,
                 },
             )
 
