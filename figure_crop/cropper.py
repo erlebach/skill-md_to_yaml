@@ -1,7 +1,19 @@
-"""Crop logic and captions.yaml read/write."""
+"""Crop logic, sidecar JSON, and captions.yaml read/write.
+
+The crop rectangle is persisted in two places:
+
+1. A **sidecar JSON** `<basename>.cropped.json` next to the cropped image. This
+   is the canonical, always-written source of truth — it lets the editor
+   restore handle positions on the next session and "widen" a previous crop.
+2. (Optional) `captions.yaml` mirror — a deck-wide index used by the compiler.
+   Written only when `--write-captions` is on.
+
+If the two ever disagree, the sidecar wins.
+"""
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -10,6 +22,7 @@ from PIL import Image
 
 CAPTIONS_FILENAME = "captions.yaml"
 CROPPED_SUFFIX = ".cropped"
+SIDECAR_EXT = ".json"
 JPEG_EXTS = {".jpg", ".jpeg"}
 PNG_EXTS = {".png"}
 
@@ -40,6 +53,11 @@ def cropped_path(source: Path) -> Path:
     """foo.PNG -> foo.cropped.png, foo.jpeg -> foo.cropped.jpg."""
     ext = normalize_ext(source.suffix)
     return source.with_name(source.stem + CROPPED_SUFFIX + ext)
+
+
+def sidecar_path(source: Path) -> Path:
+    """foo.png -> foo.cropped.json (sits next to the cropped image)."""
+    return cropped_path(source).with_suffix(SIDECAR_EXT)
 
 
 def save_kwargs_for(ext: str) -> tuple[str, dict]:
@@ -84,6 +102,43 @@ def _rect_inside(r: CropRect, w: int, h: int) -> bool:
 def image_size(path: Path) -> tuple[int, int]:
     with Image.open(path) as im:
         return im.size
+
+
+# --- sidecar JSON ------------------------------------------------------------
+
+
+def write_sidecar(
+    source: Path, rect: CropRect, source_size: tuple[int, int]
+) -> Path:
+    sw, sh = source_size
+    payload = {
+        "source_file": source.name,
+        "source_size": {"w": sw, "h": sh},
+        "rect": rect.to_dict(),
+    }
+    p = sidecar_path(source)
+    p.write_text(json.dumps(payload, indent=2) + "\n")
+    return p
+
+
+def read_sidecar(source: Path) -> CropRect | None:
+    p = sidecar_path(source)
+    if not p.exists():
+        return None
+    try:
+        data = json.loads(p.read_text())
+        r = data["rect"]
+        return CropRect(int(r["x"]), int(r["y"]), int(r["w"]), int(r["h"]))
+    except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+        return None
+
+
+def remove_sidecar(source: Path) -> bool:
+    p = sidecar_path(source)
+    if p.exists():
+        p.unlink()
+        return True
+    return False
 
 
 # --- captions.yaml -----------------------------------------------------------

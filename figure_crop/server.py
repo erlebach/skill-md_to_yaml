@@ -13,8 +13,12 @@ from .cropper import (
     get_existing_crop,
     image_size,
     perform_crop,
+    read_sidecar,
     remove_crop,
+    remove_sidecar,
+    sidecar_path,
     upsert_crop,
+    write_sidecar,
 )
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -75,7 +79,14 @@ def make_handler(ctx: CropContext):
         # --- handlers --------------------------------------------------------
         def _serve_state(self):
             sw, sh = image_size(ctx.source_path)
-            existing = get_existing_crop(ctx.figures_dir, ctx.source_filename)
+            # Sidecar JSON is the canonical source of truth. captions.yaml is
+            # only consulted as a fallback if there is no sidecar yet (e.g.,
+            # editing an old deck where captions.yaml has the only metadata).
+            existing = read_sidecar(ctx.source_path)
+            source_of_state = "sidecar"
+            if existing is None:
+                existing = get_existing_crop(ctx.figures_dir, ctx.source_filename)
+                source_of_state = "captions" if existing else "default"
             payload = {
                 "source_filename": ctx.source_filename,
                 "source_size": {"w": sw, "h": sh},
@@ -85,6 +96,8 @@ def make_handler(ctx: CropContext):
                     else {"x": 0, "y": 0, "w": sw, "h": sh}
                 ),
                 "has_existing_crop": existing is not None,
+                "state_source": source_of_state,
+                "sidecar_path": str(sidecar_path(ctx.source_path)),
             }
             self._json(200, payload)
 
@@ -121,6 +134,8 @@ def make_handler(ctx: CropContext):
             try:
                 out = perform_crop(ctx.source_path, rect)
                 sw, sh = image_size(ctx.source_path)
+                # Always write the sidecar JSON — it is the canonical store.
+                sc = write_sidecar(ctx.source_path, rect, (sw, sh))
                 entry = None
                 if ctx.write_captions:
                     entry = upsert_crop(
@@ -134,20 +149,35 @@ def make_handler(ctx: CropContext):
                 f"({rect.w}x{rect.h} from {sw}x{sh})",
                 flush=True,
             )
+            print(f"figure_crop: sidecar {sc}", flush=True)
             self._json(
                 200,
                 {
                     "ok": True,
                     "cropped_file": out.name,
                     "cropped_path": str(out),
+                    "sidecar_path": str(sc),
                     "entry": entry,
                     "wrote_captions": ctx.write_captions,
                 },
             )
 
         def _handle_uncrop(self):
-            changed = remove_crop(ctx.figures_dir, ctx.source_filename)
-            self._json(200, {"ok": True, "changed": changed})
+            sidecar_changed = remove_sidecar(ctx.source_path)
+            captions_changed = (
+                remove_crop(ctx.figures_dir, ctx.source_filename)
+                if ctx.write_captions
+                else False
+            )
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "changed": sidecar_changed or captions_changed,
+                    "sidecar_removed": sidecar_changed,
+                    "captions_changed": captions_changed,
+                },
+            )
 
         # --- helpers ---------------------------------------------------------
         def _read_json(self) -> dict:
