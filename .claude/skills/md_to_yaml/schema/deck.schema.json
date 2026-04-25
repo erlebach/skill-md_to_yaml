@@ -1,5 +1,106 @@
 {
   "$defs": {
+    "AnimationDefaults": {
+      "additionalProperties": false,
+      "description": "Deck-level defaults merged before per-slide animation overrides.",
+      "properties": {
+        "bullet_stagger": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BulletStaggerSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "AnimationDefaults",
+      "type": "object"
+    },
+    "BulletStaggerSettings": {
+      "additionalProperties": false,
+      "description": "Optional GSAP stagger parameters for list items on a content slide.\n\nOmitted fields inherit from deck ``animation_defaults.bullet_stagger``,\nthen from skill defaults in ``schema.animation_defaults``.",
+      "properties": {
+        "duration": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 10,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Tween duration in seconds.",
+          "title": "Duration"
+        },
+        "stagger": {
+          "anyOf": [
+            {
+              "maximum": 5,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Delay between each list item.",
+          "title": "Stagger"
+        },
+        "ease": {
+          "anyOf": [
+            {
+              "maxLength": 48,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "GSAP ease string (e.g. power2.out).",
+          "title": "Ease"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "IntersectionObserver threshold for starting the animation.",
+          "title": "Threshold"
+        },
+        "x_offset": {
+          "anyOf": [
+            {
+              "maximum": 800,
+              "minimum": -800,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Initial horizontal offset in pixels before the tween.",
+          "title": "X Offset"
+        }
+      },
+      "title": "BulletStaggerSettings",
+      "type": "object"
+    },
     "CodeSlide": {
       "additionalProperties": false,
       "description": "Code block slide: title + fenced code in Markdown body. Language for syntax highlighting.",
@@ -455,6 +556,26 @@
           ],
           "default": null,
           "title": "Body"
+        },
+        "bullet_animation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "stagger",
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/BulletStaggerSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "If true or \"stagger\", animate list items when the slide is revealed. Use an object to override duration, stagger, ease, threshold, or x_offset.",
+          "title": "Bullet Animation"
         }
       },
       "required": [
@@ -641,6 +762,32 @@
           "description": "CSS length for the fixed footer nav distance from the viewport bottom (e.g. 0.5in \u2014 half a inch margin above the screen edge; default 0.5in was 1in).",
           "title": "Footer Inset",
           "type": "string"
+        },
+        "animation_defaults": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AnimationDefaults"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Deck-wide animation defaults; merged with skill defaults, then per-slide bullet_animation overrides."
+        },
+        "gsap_script_url": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "HTTPS URL for the GSAP script tag. When omitted, the md_to_yaml skill default CDN URL is used.",
+          "title": "Gsap Script Url"
         }
       },
       "required": [
@@ -2410,6 +2557,26 @@
           ],
           "default": null,
           "title": "Body"
+        },
+        "bullet_animation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "stagger",
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/BulletStaggerSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Same as content slides: optional GSAP stagger for list items.",
+          "title": "Bullet Animation"
         }
       },
       "required": [

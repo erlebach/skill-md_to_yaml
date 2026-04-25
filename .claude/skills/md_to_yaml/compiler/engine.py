@@ -1,4 +1,5 @@
 """Compiler engine: validate-then-render pipeline."""
+import json
 import re
 import sys
 from pathlib import Path
@@ -7,7 +8,11 @@ import yaml as _yaml
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from schema.models import Deck
+from schema.animation_defaults import (
+    SKILL_BULLET_STAGGER_DEFAULTS,
+    SKILL_GSAP_SCRIPT_URL_DEFAULT,
+)
+from schema.models import BulletStaggerSettings, Deck
 from compiler.validators import validate_deck
 from compiler.renderers import (
     render_body,
@@ -28,6 +33,30 @@ import html as _html
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
+
+def _merge_bullet_stagger_config(deck: Deck, slide) -> dict[str, float | str] | None:
+    """Resolve bullet stagger params: skill defaults, deck animation_defaults, slide overrides."""
+    spec = getattr(slide, 'bullet_animation', None)
+    if spec is None or spec is False:
+        return None
+    out = dict(SKILL_BULLET_STAGGER_DEFAULTS)
+    ad = deck.metadata.animation_defaults
+    if ad is not None and ad.bullet_stagger is not None:
+        out.update(ad.bullet_stagger.model_dump(mode='python', exclude_none=True))
+    if spec is True or spec == 'stagger':
+        pass
+    elif isinstance(spec, BulletStaggerSettings):
+        out.update(spec.model_dump(mode='python', exclude_none=True))
+    else:
+        return None
+    return out
+
+
+def _bullet_stagger_json(cfg: dict[str, float | str] | None) -> str | None:
+    """Serialize merged stagger config for a data-attribute on the slide section."""
+    if cfg is None:
+        return None
+    return json.dumps(cfg, separators=(',', ':'))
 
 def _render_col_html(col, base_dir: str, embed_images: bool, col_id: str, theme: str) -> str:
     """Render a TwoColumnSlide column to HTML, dispatching on src extension."""
@@ -415,6 +444,7 @@ def _render(
                 else deck.metadata.figure_scale
             )
 
+        bsc = _merge_bullet_stagger_config(deck, slide)
         slides_context.append(
             {
                 "slide": slide,
@@ -445,6 +475,7 @@ def _render(
                 "title_scale": eff_title_scale,
                 "content_scale": eff_content_scale,
                 "figure_scale": eff_figure_scale,
+                "bullet_stagger_json": _bullet_stagger_json(bsc),
             }
         )
 
@@ -461,6 +492,13 @@ def _render(
     )
     mermaid_theme = 'dark' if deck.metadata.theme == 'dark' else 'default'
 
+    has_bullet_animation = any(
+        s.get('bullet_stagger_json') for s in slides_context
+    )
+    gsap_script_url = (
+        deck.metadata.gsap_script_url or SKILL_GSAP_SCRIPT_URL_DEFAULT
+    )
+
     return template.render(
         deck=deck,
         slides=slides_context,
@@ -469,4 +507,6 @@ def _render(
         has_mermaid=has_mermaid,
         mermaid_theme=mermaid_theme,
         figure_layout_debug=figure_layout_debug,
+        has_bullet_animation=has_bullet_animation,
+        gsap_script_url=gsap_script_url,
     )

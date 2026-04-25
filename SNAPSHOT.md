@@ -1,4 +1,4 @@
-# Project Snapshot — 2026-04-24 (b)
+# Project Snapshot — 2026-04-24 (c)
 
 ## Current Architecture
 
@@ -56,11 +56,13 @@ md_to_yaml/
 ├── conversion_full/    # Full-document transcriptions
 ├── conversion/         # Partial/page-range conversions
 ├── conversion_results/ # Survey and other conversion outputs
+├── examples/           # Small demo decks (e.g. GSAP bullet animation sample YAML)
 └── polylog/            # Polylog scaling notes; matplotlib scripts + SVG figures
 ```
 
 ## Recent Changes
 
+- **2026-04-24 (c)**: **[`examples/mycontent.yaml`](examples/mycontent.yaml)** — demo **md_to_yaml** deck: **GSAP** CDN + staggered **`li`** animation on a **`layout: content`** slide ( **`IntersectionObserver`**, **`prefers-reduced-motion`** ). Compile from **`.claude/skills/md_to_yaml`**: **`PYTHONPATH=. uv run python -m compiler <yaml> <out.html>`**.
 - **2026-04-24 (b)**: **Two-column / comparison** column headers (**`h3`**) — **`font-size`** multiplied by **1.2** (same **`clamp(22px, 2.8vw, 34px) * var(--title-font-mul)`** base as global **`h3`**). Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**; **`final_talk1.html`** recompiled.
 - **2026-04-24 (a)**: **Two-column / comparison** — column **`.slide-body`** is **`display: flex; flex-direction: column`** so **`gap`** spaces **`<h3>`** vs **`<ul>`**; **`gap`** set to **`calc(1.35rem * 1.5 * 1.5)`** (50% more than the previous **`calc(1.35rem * 1.5)`** target). Fixes slides like **Spectral Mapping** (markdown **`<!-- split -->`**). Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**.
 - **2026-04-23 (e)**: **`conversion/.../PRESENTER_NOTES.md`** — full presenter script outline for **`final_talk1`** (40 slides): on-screen cues, detailed **Say** bullets, **Transition** lines between slides, GUO / four-factor / summary closings, timing tips.

@@ -4,10 +4,13 @@ Defines all layout slide types, deck metadata, and the AnySlide discriminated un
 """
 from __future__ import annotations
 
+import re
 from datetime import date as _date
 from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+_EASE_RE = re.compile(r'^[\w.]+(?:\([\d., ]+\))?$')
 
 # Guardrail: reject obvious injection in CSS `color` values for display math
 def _check_math_display_color(v: str | None) -> str | None:
@@ -90,6 +93,75 @@ class SlideBase(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Animation (declarative GSAP; merged in compiler)
+# ---------------------------------------------------------------------------
+
+
+class BulletStaggerSettings(BaseModel):
+    """Optional GSAP stagger parameters for list items on a content slide.
+
+    Omitted fields inherit from deck ``animation_defaults.bullet_stagger``,
+    then from skill defaults in ``schema.animation_defaults``.
+    """
+
+    model_config = ConfigDict(extra='forbid')
+
+    duration: float | None = Field(
+        default=None,
+        gt=0,
+        le=10,
+        description='Tween duration in seconds.',
+    )
+    stagger: float | None = Field(
+        default=None,
+        ge=0,
+        le=5,
+        description='Delay between each list item.',
+    )
+    ease: str | None = Field(
+        default=None,
+        max_length=48,
+        description='GSAP ease string (e.g. power2.out).',
+    )
+    threshold: float | None = Field(
+        default=None,
+        gt=0,
+        le=1,
+        description='IntersectionObserver threshold for starting the animation.',
+    )
+    x_offset: float | None = Field(
+        default=None,
+        ge=-800,
+        le=800,
+        description='Initial horizontal offset in pixels before the tween.',
+    )
+
+    @field_validator('ease')
+    @classmethod
+    def _v_ease(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        s = str(v).strip()
+        if not s:
+            return None
+        if len(s) > 48:
+            raise ValueError('ease: max 48 characters')
+        if not _EASE_RE.match(s):
+            raise ValueError(
+                'ease: use a GSAP ease name like power2.out or elastic.out(1, 0.3)'
+            )
+        return s
+
+
+class AnimationDefaults(BaseModel):
+    """Deck-level defaults merged before per-slide animation overrides."""
+
+    model_config = ConfigDict(extra='forbid')
+
+    bullet_stagger: BulletStaggerSettings | None = None
+
+
+# ---------------------------------------------------------------------------
 # Layout-specific slide models
 # ---------------------------------------------------------------------------
 
@@ -108,12 +180,23 @@ class HeroSlide(SlideBase):
 class ContentSlide(SlideBase):
     """Presentation content slide: title + Markdown body (md_to_yaml default)."""
     layout: Literal['content']
+    bullet_animation: bool | Literal['stagger'] | BulletStaggerSettings | None = Field(
+        default=None,
+        description=(
+            'If true or "stagger", animate list items when the slide is revealed. '
+            'Use an object to override duration, stagger, ease, threshold, or x_offset.'
+        ),
+    )
 
 
 class TranscribeSlide(SlideBase):
     """Dense transcription slide: same body pipeline as content; transcribe CSS in HTML."""
 
     layout: Literal['transcribe']
+    bullet_animation: bool | Literal['stagger'] | BulletStaggerSettings | None = Field(
+        default=None,
+        description='Same as content slides: optional GSAP stagger for list items.',
+    )
 
 
 class DividerSlide(SlideBase):
@@ -360,6 +443,38 @@ class DeckMetadata(BaseModel):
             '(e.g. 0.5in — half a inch margin above the screen edge; default 0.5in was 1in).'
         ),
     )
+    animation_defaults: AnimationDefaults | None = Field(
+        default=None,
+        description=(
+            'Deck-wide animation defaults; merged with skill defaults, then per-slide '
+            'bullet_animation overrides.'
+        ),
+    )
+    gsap_script_url: str | None = Field(
+        default=None,
+        max_length=500,
+        description=(
+            'HTTPS URL for the GSAP script tag. When omitted, the md_to_yaml skill '
+            'default CDN URL is used.'
+        ),
+    )
+
+    @field_validator('gsap_script_url')
+    @classmethod
+    def _v_gsap_script_url(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        s = str(v).strip()
+        if not s:
+            return None
+        if len(s) > 500:
+            raise ValueError('gsap_script_url: max 500 characters')
+        if not s.startswith('https://'):
+            raise ValueError('gsap_script_url must start with https://')
+        low = s.lower()
+        if 'javascript:' in low or '<' in s or '\n' in s or '\r' in s:
+            raise ValueError('gsap_script_url: invalid URL')
+        return s
 
     @field_validator('footer_inset')
     @classmethod

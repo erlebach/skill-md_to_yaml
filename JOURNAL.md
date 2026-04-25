@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-04-24 - **GSAP** stagger demo deck (**`examples/mycontent.yaml`**)
+
+### Completed Tasks ✅
+- [x] Added **[`examples/mycontent.yaml`](examples/mycontent.yaml)** — minimal deck (title + content) with Markdown bullets, CDN **GSAP**, inline **`IntersectionObserver`** stagger, **`prefers-reduced-motion`** guard, **`document.currentScript.closest('section')`** scoping
+- [x] Verified compile with **`PYTHONPATH=. uv run python -m compiler`** from **`.claude/skills/md_to_yaml`**
+
+### Files Created/Modified
+- `examples/mycontent.yaml`
+- `JOURNAL.md`, `SNAPSHOT.md`
+
+### Notes
+- **Deck metadata** has **`extra='forbid'`**; GSAP is loaded from the **content slide body** (raw HTML), not **`base.html.j2`**. Requires network for the CDN script when viewing HTML.
+
+---
+
 ## 2026-04-24 - **Two-column** column **`h3`** font size **+20%**
 
 ### Completed Tasks ✅

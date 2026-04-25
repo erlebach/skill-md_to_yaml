@@ -1252,7 +1252,7 @@
     {% if slide.layout == 'diagram' and not slide.body %}{% set extra_class = ' diagram-only' %}{% endif %}
     {% if title_has_math %}{% set extra_class = extra_class ~ ' slide-heading-math' %}{% endif %}
     {% if s.math_display_center|default(true) %}{% set extra_class = extra_class ~ ' math-display-eq-center' %}{% else %}{% set extra_class = extra_class ~ ' math-display-eq-start' %}{% endif %}
-    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}" style="--title-scale: {{ s.title_scale }}; --content-scale: {{ s.content_scale }}; --math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}{% if slide.layout in ['figure', 'figure-wide'] and s.figure_scale is not none %} --figure-scale: {{ s.figure_scale }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
+    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}"{% if s.bullet_stagger_json %} data-bullet-stagger="{{ s.bullet_stagger_json | e }}"{% endif %} style="--title-scale: {{ s.title_scale }}; --content-scale: {{ s.content_scale }}; --math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}{% if slide.layout in ['figure', 'figure-wide'] and s.figure_scale is not none %} --figure-scale: {{ s.figure_scale }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}
@@ -1674,5 +1674,45 @@
     });
   </script>
   {% endif %}
+
+{% if has_bullet_animation %}
+<script src="{{ gsap_script_url | e }}"></script>
+<script>
+(function () {
+  if (!window.gsap) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-bullet-stagger]').forEach(function (section) {
+    var raw = section.getAttribute('data-bullet-stagger');
+    if (!raw) return;
+    var cfg;
+    try { cfg = JSON.parse(raw); } catch (e) { return; }
+    var items = section.querySelectorAll('.slide-body li');
+    if (!items.length) return;
+    if (reduce) {
+      gsap.set(items, { clearProps: 'all' });
+      return;
+    }
+    var x0 = typeof cfg.x_offset === 'number' ? cfg.x_offset : -24;
+    gsap.set(items, { opacity: 0, x: x0 });
+    var thr = typeof cfg.threshold === 'number' ? cfg.threshold : 0.45;
+    var observer = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        obs.disconnect();
+        gsap.to(items, {
+          opacity: 1,
+          x: 0,
+          duration: typeof cfg.duration === 'number' ? cfg.duration : 0.45,
+          ease: cfg.ease || 'power2.out',
+          stagger: typeof cfg.stagger === 'number' ? cfg.stagger : 0.12
+        });
+      });
+    }, { threshold: thr });
+    observer.observe(section);
+  });
+})();
+</script>
+{% endif %}
+
 </body>
 </html>
