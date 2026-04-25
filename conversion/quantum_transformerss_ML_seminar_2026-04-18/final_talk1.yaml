@@ -20,7 +20,7 @@ subtitle: "Fault-Tolerant Attention via Quantum Singular Value Transformation"
 
 ---
 layout: figure
-src: "strait_of_hormuz.png"
+src: "strait_of_hormuz.cropped.cropped.png"
 title: Superposition in the Strait of Hormuz
 alt_text: Illustration of the Strait of Hormuz as a superposition of open and closed states. 
 figure_scale: 0.85
@@ -137,7 +137,7 @@ right:
 ---
 layout: figure
 figure_scale: 0.75
-title: "Embedding a Non-Unitary Matrix: Circuit
+title: "Embedding a Non-Unitary Matrix: Circuit"
 src: quantum_circuit_ancilla.svg
 alt_text: "Quantum circuit labeled Case a = 1, one ancilla qubit. One ancilla wire (ket-zero) and three system qubits (n plus 1 qubits total) pass through U_A (blue box). Inside U_A the matrix is partitioned into a 2-by-2 block structure: A over alpha (red border) top-left, B top-right, C bottom-left, D bottom-right. Post-selecting the ancilla on ket-zero extracts A over alpha on the system register."
 ---
