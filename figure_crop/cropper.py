@@ -203,6 +203,34 @@ def remove_sidecar(source: Path) -> bool:
     return False
 
 
+def pop_sidecar(source: Path) -> CropRect | None:
+    """Remove the most recent history entry and return the new active rect.
+
+    Returns the previous rect if history still has entries, or None if the
+    history is now empty (meaning the image should revert to the original).
+    Leaves the sidecar file in place even when empty so callers can distinguish
+    "never cropped" (no file) from "all crops undone" (file with empty history).
+    """
+    source = resolve_original(source)
+    p = sidecar_path(source)
+    if not p.exists():
+        return None
+    try:
+        data = json.loads(p.read_text())
+    except (json.JSONDecodeError, ValueError):
+        return None
+    history = data.get("history", [])
+    if not history:
+        return None
+    history.pop()
+    data["history"] = history
+    p.write_text(json.dumps(data, indent=2) + "\n")
+    if history:
+        r = history[-1]["rect"]
+        return CropRect(int(r["x"]), int(r["y"]), int(r["w"]), int(r["h"]))
+    return None  # history is now empty → caller should revert to original
+
+
 # --- captions.yaml -----------------------------------------------------------
 
 

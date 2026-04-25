@@ -27,7 +27,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from .cropper import CropRect, image_size, perform_crop, resolve_original, write_sidecar
+from .cropper import (
+    CropRect, cropped_path, image_size, perform_crop,
+    pop_sidecar, resolve_original, write_sidecar,
+)
 
 # ---------------------------------------------------------------------------
 # Overlay JS — injected at serve time, never written to disk.
@@ -102,6 +105,8 @@ _OVERLAY_JS = r"""
   // cs.rect is always {x, y, w, h} in display pixels relative to img top-left.
   let cs = null;
   let hintEl = null;
+  // Track the last image that was successfully cropped (for 'z' undo).
+  let lastCropped = null; // {img, originalSrc}
 
   function showHint(msg, ttl) {
     if (hintEl) hintEl.remove();
@@ -153,6 +158,16 @@ _OVERLAY_JS = r"""
     box.style.height = rect.h + 'px';
   }
 
+  // Build the URL for the cropped file, derived from the original src URL.
+  function croppedUrl(img, croppedFilename) {
+    const u = new URL(img.dataset.originalSrc || img.src, location.href);
+    const parts = u.pathname.split('/');
+    parts[parts.length - 1] = croppedFilename;
+    u.pathname = parts.join('/');
+    u.search = '?v=' + Date.now(); // cache-bust so browser fetches fresh bytes
+    return u.toString();
+  }
+
   // -- phase 1: initial draw -------------------------------------------------
   function onImgDown(e) {
     if (e.button !== 0) return;
@@ -173,7 +188,7 @@ _OVERLAY_JS = r"""
     img.setPointerCapture(e.pointerId);
     img.addEventListener('pointermove', onImgMove);
     img.addEventListener('pointerup', onImgUp, { once: true });
-    showHint('drag to select · c to save · Escape to cancel');
+    showHint('drag to select · c to save · z to undo · Escape to cancel');
   }
 
   function onImgMove(e) {
@@ -194,7 +209,7 @@ _OVERLAY_JS = r"""
     cs.box.style.pointerEvents = 'all';
     if (cs.rect.w > 4 && cs.rect.h > 4) {
       attachHandles();
-      showHint('drag handles to adjust · c to save · Escape to cancel');
+      showHint('drag handles to adjust · c to save · z to undo · Escape to cancel');
     }
   }
 
@@ -271,19 +286,73 @@ _OVERLAY_JS = r"""
       if (!cs) return;
       const {img, rect} = cs;
       if (rect.w < 4 || rect.h < 4) { showHint('selection too small', 2000); return; }
+
+      // Scale display-pixel rect to natural image pixels.
+      // If we're already viewing a cropped image, translate to original coordinates.
       const scaleX = img.naturalWidth  / img.clientWidth;
       const scaleY = img.naturalHeight / img.clientHeight;
-      const px = Math.round(rect.x * scaleX), py = Math.round(rect.y * scaleY);
-      const pw = Math.round(rect.w * scaleX), ph = Math.round(rect.h * scaleY);
+      const offsetX = parseInt(img.dataset.cropX || '0', 10);
+      const offsetY = parseInt(img.dataset.cropY || '0', 10);
+      const px = Math.round(rect.x * scaleX) + offsetX;
+      const py = Math.round(rect.y * scaleY) + offsetY;
+      const pw = Math.round(rect.w * scaleX);
+      const ph = Math.round(rect.h * scaleY);
+
+      // Always send the original image URL so the server can locate it.
+      const srcUrl = img.dataset.originalSrc || img.src;
+
       showHint('saving crop…');
       fetch('/__dev/crop', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({src: img.src, x: px, y: py, w: pw, h: ph}),
+        body: JSON.stringify({src: srcUrl, x: px, y: py, w: pw, h: ph}),
       }).then(r => r.json()).then(j => {
         if (j.error) { showHint('error: ' + j.error, 3000); return; }
+
+        // Remember original src for future crops and undo.
+        if (!img.dataset.originalSrc) img.dataset.originalSrc = img.src;
+
+        // Store crop origin (in original image space) for next crop translation.
+        img.dataset.cropX = String(px);
+        img.dataset.cropY = String(py);
+
+        // Immediately swap in the cropped image — no need to wait for reload.
+        img.src = croppedUrl(img, j.cropped_file);
+
+        lastCropped = {img, originalSrc: img.dataset.originalSrc};
+        const histLen = j.history_len || '?';
         clearSelection();
-        showHint('saved → ' + j.cropped_file + ' · recompiling…');
+        showHint(`crop ${histLen} saved · drag to refine · z to undo · recompiling…`, 4000);
+      }).catch(err => showHint('fetch error: ' + err, 3000));
+    }
+
+    if (e.key === 'z') {
+      if (!lastCropped) { showHint('nothing to undo', 1500); return; }
+      const {img, originalSrc} = lastCropped;
+      showHint('undoing crop…');
+      fetch('/__dev/undo', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({src: originalSrc}),
+      }).then(r => r.json()).then(j => {
+        if (j.error) { showHint('undo error: ' + j.error, 3000); return; }
+        clearSelection();
+        if (j.history_len === 0) {
+          // All crops undone — revert to original image.
+          img.src = originalSrc + '?v=' + Date.now();
+          img.removeAttribute('data-original-src');
+          img.removeAttribute('data-crop-x');
+          img.removeAttribute('data-crop-y');
+          lastCropped = null;
+          showHint('all crops undone · recompiling…', 3000);
+        } else {
+          // Previous crop restored — update img src (cache-bust) and crop offset.
+          const pr = j.prev_rect;
+          img.dataset.cropX = String(pr.x);
+          img.dataset.cropY = String(pr.y);
+          img.src = croppedUrl(img, j.cropped_file) ;
+          showHint(`reverted to crop ${j.history_len} · recompiling…`, 3000);
+        }
       }).catch(err => showHint('fetch error: ' + err, 3000));
     }
   });
@@ -400,22 +469,75 @@ def make_handler(
             ctype, _ = mimetypes.guess_type(candidate.name)
             self._send(200, ctype or 'application/octet-stream', data)
 
-        def do_POST(self):
-            if urlparse(self.path).path != '/__dev/crop':
-                self.send_error(404)
-                return
-            body = self._read_json()
+        def _resolve_src(self, body: dict):
+            """Resolve a `src` URL from a POST body to a safe absolute Path.
+
+            Returns (src_abs, error_response_dict_or_None).
+            """
             src_url = body.get('src', '')
             src_path_rel = unquote(urlparse(src_url).path).lstrip('/')
             src_abs = (serve_root / src_path_rel).resolve()
             try:
                 src_abs.relative_to(serve_root)
             except ValueError:
-                return self._json(400, {'error': 'path outside serve root'})
+                return None, {'error': 'path outside serve root'}
             if not src_abs.is_file():
-                return self._json(400, {'error': f'image not found: {src_path_rel}'})
-            # Always crop from the original, never from a previously cropped file.
-            src_abs = resolve_original(src_abs)
+                return None, {'error': f'image not found: {src_path_rel}'}
+            return resolve_original(src_abs), None
+
+        def do_POST(self):
+            endpoint = urlparse(self.path).path
+            if endpoint == '/__dev/undo':
+                body = self._read_json()
+                src_abs, err = self._resolve_src(body)
+                if err:
+                    return self._json(400, err)
+                if not src_abs.is_file():
+                    return self._json(400, {'error': f'original not found: {src_abs.name}'})
+                prev_rect = pop_sidecar(src_abs)
+                cropped_name = cropped_path(src_abs).name
+                if prev_rect is None:
+                    # All crops undone — remove cropped file and revert YAML.
+                    cp = cropped_path(src_abs)
+                    if cp.exists():
+                        cp.unlink()
+                    print(f'slide_dev: undo → all crops removed for {src_abs.name}', flush=True)
+                    self._json(200, {'ok': True, 'history_len': 0})
+                    threading.Thread(
+                        target=recompile,
+                        args=(cropped_name, src_abs.name),
+                        daemon=True,
+                    ).start()
+                else:
+                    # Re-apply the previous crop.
+                    out = perform_crop(src_abs, prev_rect)
+                    # Read remaining history length.
+                    sc = cropped_path(src_abs).with_suffix('.json')
+                    try:
+                        history_len = len(json.loads(sc.read_text()).get('history', []))
+                    except Exception:
+                        history_len = 1
+                    print(f'slide_dev: undo → re-applied crop {history_len} for {src_abs.name}', flush=True)
+                    self._json(200, {
+                        'ok': True,
+                        'history_len': history_len,
+                        'cropped_file': out.name,
+                        'prev_rect': prev_rect.to_dict(),
+                    })
+                    threading.Thread(
+                        target=recompile,
+                        args=(src_abs.name, out.name),
+                        daemon=True,
+                    ).start()
+                return
+
+            if endpoint != '/__dev/crop':
+                self.send_error(404)
+                return
+            body = self._read_json()
+            src_abs, err = self._resolve_src(body)
+            if err:
+                return self._json(400, err)
             if not src_abs.is_file():
                 return self._json(400, {'error': f'original not found: {src_abs.name}'})
             try:
@@ -427,8 +549,12 @@ def make_handler(
                 sc = write_sidecar(src_abs, rect, (sw, sh))
             except (KeyError, TypeError, ValueError, FileNotFoundError) as exc:
                 return self._json(400, {'error': str(exc)})
+            try:
+                history_len = len(json.loads(sc.read_text()).get('history', []))
+            except Exception:
+                history_len = 1
             print(f'slide_dev: cropped {src_abs.name} → {out.name}  sidecar → {sc.name}', flush=True)
-            self._json(200, {'ok': True, 'cropped_file': out.name})
+            self._json(200, {'ok': True, 'cropped_file': out.name, 'history_len': history_len})
             threading.Thread(
                 target=recompile,
                 args=(src_abs.name, out.name),
