@@ -8,11 +8,11 @@
 To generate an html file from a yaml input file, run the three examples below: 
 
 ```bash
-./scripts/compile_to_html.sh yaml_examples/example_2158/example_2158.yaml 2158.html --embed-figures
+./scripts/compile_to_html.sh yaml_examples/example_2158/example_2158.yaml 2158.html --embed-images
 
-./scripts/compile_to_html.sh yaml_examples/mycontent/mycontent.yaml mycontent.html --embed-figures
+./scripts/compile_to_html.sh yaml_examples/mycontent/mycontent.yaml mycontent.html --embed-images
 
-./scripts/compile_to_html.sh yaml_examples/quantum_seminar/quantum_seminar.yaml quantum_seminar.html --embed-figures
+./scripts/compile_to_html.sh yaml_examples/quantum_seminar/quantum_seminar.yaml quantum_seminar.html --embed-images
 ```
 
 The paths are relative to the current folder. 

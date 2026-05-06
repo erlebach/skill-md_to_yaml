@@ -20,6 +20,7 @@ dependencies = [
     "tinycss2>=1.5.1",
     "matplotlib>=3.10.8",
     "pillow>=12.2.0",
+    "compiler>=0.2.0",
 ]
 
 [project.optional-dependencies]
