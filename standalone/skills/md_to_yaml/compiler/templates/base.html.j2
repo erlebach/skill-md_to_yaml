@@ -1941,9 +1941,9 @@
       if (!vb || vb.width < 2) return;
 
       // Measure visual content bounds via screen coords — getBoundingClientRect
-      // includes foreignObject elements (period/event boxes) unlike getBBox.
+      // includes foreignObject and path elements (period/event boxes) unlike getBBox.
       let minX = Infinity, maxX = -Infinity;
-      svg.querySelectorAll('foreignObject, rect').forEach(el => {
+      svg.querySelectorAll('foreignObject, rect, path').forEach(el => {
         const r = el.getBoundingClientRect();
         if (r.width > 4) {
           minX = Math.min(minX, r.left);
