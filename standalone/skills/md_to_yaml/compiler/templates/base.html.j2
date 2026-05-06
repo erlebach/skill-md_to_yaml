@@ -1972,7 +1972,14 @@
           : null);
 
       if (!titleEl) return;
-      titleEl.setAttribute('x', centerSVG);
+      // Clamp so the title doesn't overflow the SVG viewBox left/right edges.
+      const titleWidth = titleEl.getComputedTextLength ? titleEl.getComputedTextLength() : 0;
+      const halfW = titleWidth / 2;
+      const pad = 5;
+      let x = centerSVG;
+      if (x - halfW < vb.x + pad) x = vb.x + pad + halfW;
+      if (x + halfW > vb.x + vb.width - pad) x = vb.x + vb.width - pad - halfW;
+      titleEl.setAttribute('x', x);
       titleEl.setAttribute('text-anchor', 'middle');
     });
   }
