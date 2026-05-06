@@ -1503,6 +1503,10 @@
     });
     // Tag each diagram container with its Mermaid diagram type, read from the
     // source text BEFORE mermaid.run() replaces the <pre> with rendered SVG.
+    // Also mark each container with data-mermaid-pre so we can select the
+    // rendered SVG after run() without relying on the SVG id prefix — Mermaid
+    // v11 uses different id schemes for different diagram types (mindmaps do
+    // NOT use the mermaid-* prefix), so svg[id^="mermaid"] misses them.
     // Used later by pickSizer() — aria-roledescription on the rendered SVG is
     // unreliable across Mermaid v11 diagram types (e.g. timeline).
     document.querySelectorAll('.diagram-container pre.mermaid, .diagram-container .mermaid').forEach(pre => {
@@ -1516,7 +1520,10 @@
         break;
       }
       const container = pre.closest('.diagram-container');
-      if (container && type) container.dataset.diagramType = type;
+      if (container) {
+        if (type) container.dataset.diagramType = type;
+        container.dataset.mermaidPre = '1';
+      }
     });
     await mermaid.run();
     // Let layout settle so getBoundingClientRect reports accurate column widths.
@@ -1604,12 +1611,15 @@
       return (UNCLAMPED_TYPES.has(type) || UNCLAMPED_TYPES.has(role)) ? sizeSvgFit : sizeSvg;
     }
 
-    // Scoped to Mermaid-generated SVGs (id prefix "mermaid-"). File-based
-    // SVGs have author-controlled fonts and are left to render at natural
-    // width (width="100%" already applied by the Python SVG normalizer).
+    // Scoped to Mermaid-generated SVGs. We select by [data-mermaid-pre] (set
+    // above before mermaid.run()) rather than svg[id^="mermaid"] because
+    // Mermaid v11 uses different id schemes per diagram type — mindmaps in
+    // particular do NOT use the mermaid-* prefix.  File-based SVGs have
+    // author-controlled fonts and are left to render at natural width
+    // (width="100%" already applied by the Python SVG normalizer).
     const SLIDE_PAD  = 96;   // 1in slide edge
     const PANEL_INSET = 48;  // panel internal padding (top+bottom or left+right combined)
-    document.querySelectorAll('.slide-diagram .diagram-container svg[id^="mermaid"]').forEach(svg => {
+    document.querySelectorAll('.slide-diagram .diagram-container[data-mermaid-pre] svg').forEach(svg => {
       const slide   = svg.closest('section[role="group"]');
       const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
       const titleH  = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
@@ -1621,7 +1631,7 @@
     });
 
     // Two-column diagrams — constrained to the diagram column.
-    document.querySelectorAll('.slide-two-column .diagram-container svg[id^="mermaid"]').forEach(svg => {
+    document.querySelectorAll('.slide-two-column .diagram-container[data-mermaid-pre] svg').forEach(svg => {
       const slide  = svg.closest('section[role="group"]');
       const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
       const titleH = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
@@ -1638,7 +1648,7 @@
     // Match the CSS max-width and max-height: calc(…vh * --figure-scale) caps.
     const FIG_WRAP_INSET = 80;  // ~horizontal padding 2rem*2 + border
     const FIG_V_PAD = 48;  // top/bottom padding slack inside wrap vs SVG box
-    document.querySelectorAll('.slide-figure .figure-asset .diagram-container svg[id^="mermaid"]').forEach(svg => {
+    document.querySelectorAll('.slide-figure .figure-asset .diagram-container[data-mermaid-pre] svg').forEach(svg => {
       const section = svg.closest('section.slide-figure');
       if (!section) return;
       const isOnly = section.classList.contains('figure-only');
@@ -1660,7 +1670,7 @@
     // Figure-wide: Mermaid in the flex panel — size to the wrap box (summary + footer
     // already reduced the available region via flex layout).
     const FW_INSET = 40;
-    document.querySelectorAll('.slide-figure-wide .figure-wide-figure-wrap .diagram-container svg[id^="mermaid"]').forEach(svg => {
+    document.querySelectorAll('.slide-figure-wide .figure-wide-figure-wrap .diagram-container[data-mermaid-pre] svg').forEach(svg => {
       const wrap = svg.closest('.figure-wide-figure-wrap');
       if (!wrap) return;
       const b = wrap.getBoundingClientRect();
