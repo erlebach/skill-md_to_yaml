@@ -1,4 +1,6 @@
-# Project Snapshot — 2026-04-25
+# Project Snapshot
+
+**Last updated:** 2026-05-06 14:18 (local)
 
 ## Current Architecture
 
@@ -28,7 +30,7 @@
 
 ## File Structure
 
-```
+```text
 md_to_yaml/
 ├── compiler/           # YAML→HTML compilation engine
 │   ├── engine.py       # Main compile_deck() and _render()
@@ -63,6 +65,43 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-05-06**: **Global ADA rule** — added `~/.cursor/rules/ADA.mdc` to codify
+  scroll-invariant measurement practices (avoid viewport `bottom/top` for
+  offscreen sizing; prefer container-based sizing).
+- **2026-05-06**: **Figure Mermaid sizing (offscreen fix)** — figure-slide Mermaid
+  sizing no longer depends on `getBoundingClientRect().bottom` (which varies for
+  offscreen slides in scroll-snap). This prevents diagrams only sizing correctly
+  after a zoom/interaction forces relayout.
+- **2026-05-06**: **Sequence diagram sizing** — Mermaid v11 `sequenceDiagram`
+  now prefers deterministic **fit-to-panel** scaling (BBox/viewBox), avoiding
+  unreliable text-metric-based scaling for this diagram type.
+- **2026-05-06**: **Mindmap lab metrics** — `mermaid_mindmap_scaling_lab.html`
+  now shows an always-visible Metrics panel including `textTarget` and
+  `mermaidFont` values plus computed fit/scale numbers.
+- **2026-05-06**: **Mindmap lab re-render** — `mermaid_mindmap_scaling_lab.html`
+  now uses `mermaid.render()` with a unique id per run so “Re-render” is always
+  a fresh SVG (no sticky `mermaid.run()` behavior).
+- **2026-05-06**: **Mindmap sizing** — Mermaid mindmaps now prefer deterministic
+  **fit-to-panel** geometry scaling by default (BBox/viewBox), avoiding reliance
+  on Mermaid’s `fontSize` control which appears inconsistent in v11 for mindmap.
+- **2026-05-06**: **Mermaid mindmap scaling lab** — added
+  `mermaid_mindmap_scaling_lab.html` to isolate Mermaid v11 mindmap rendering in
+  a fixed panel and compare sizing modes before porting the winner into the
+  compiler template.
+- **2026-05-06**: **Mermaid sizing: no flash + late diagrams** — compiled decks
+  hide Mermaid output until it has been sized (no “tiny then snap” flash), and
+  they wait (bounded attempts) for all Mermaid SVGs to exist before the first
+  sizing pass so some Mermaid 11 diagram types don’t miss resizing.
+- **2026-05-06**: **Mermaid sizing + view-scale** — compiled decks now re-run
+  Mermaid SVG sizing when **view scale** changes (Shift+`+` / footer controls),
+  preventing diagrams from starting tiny until the user zooms.
+- **2026-05-06**: **Mermaid YAML overrides** — added `mermaid_scale` (multiplier)
+  and `mermaid_scale_mode` (`measured`|`fit`) on slides/columns; compiler emits
+  `data-scale-mult`/`data-scale-mode` on `.diagram-container` and the Mermaid
+  sizing JS now honors them.
+- **2026-05-06**: **Mermaid sizing** — added a CSS fallback in the compiled
+  template so Mermaid SVGs don’t render at their tiny intrinsic size when
+  Mermaid v11+ markup/ID schemes cause the JS post-processor to miss a diagram.
 - **2026-04-25**: **`figure_crop` slide dev server** — injected crop overlay: **`renderBox`** uses viewport mapping consistent with **`imgRel`** (fixes wrong crop file corner/size under **`--figure-scale`** / view scale); handle/box drags use **`clientDeltaToLayout`**. See **`figure_crop/slidedev.py`**.
 - **2026-04-24 (d)**: **Bullet stagger** — schema + compiler + **`base.html.j2`**: deck **`animation_defaults`**, slide **`bullet_animation`**, skill defaults in **`schema/animation_defaults.py`**; **[`examples/mycontent.yaml`](examples/mycontent.yaml)** updated (no inline scripts). Regenerated **`deck.schema.json`**.
 - **2026-04-24 (b)**: **Two-column / comparison** column headers (**`h3`**) — **`font-size`** multiplied by **1.2** (same **`clamp(22px, 2.8vw, 34px) * var(--title-font-mul)`** base as global **`h3`**). Template: **`.claude/skills/md_to_yaml/compiler/templates/base.html.j2`**; **`final_talk1.html`** recompiled.

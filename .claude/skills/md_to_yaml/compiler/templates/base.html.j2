@@ -625,6 +625,21 @@
     /* Standalone diagram: JS post-processes SVG sizing after Mermaid renders */
     .slide-diagram .diagram-container svg { display: block; margin: 0 auto; }
     pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; }
+
+
+    /* Prevent a visible tiny->resized flash: keep Mermaid output hidden until
+       the JS sizing pass finishes (mermaid-pending is added before mermaid.run()). */
+    .diagram-container.mermaid-pending svg {
+      visibility: hidden;
+    }
+    /* Mermaid v11+ sometimes renders SVGs with a tiny intrinsic size (and/or
+       different id schemes across diagram types). The JS resizer should fix
+       this, but this CSS is a safe fallback so diagrams still fill the
+       available panel area when sizing logic misses. */
+    .diagram-container svg {
+      max-width: 100%;
+      max-height: 100%;
+    }
     /* Gutter between diagram and caption text below */
     .diagram-caption { margin-top: 1.5rem; }
     /* Panel background on standalone diagram slides */
@@ -1239,6 +1254,7 @@
     {% set rendered_image = s.rendered_image %}
     {% set rendered_svg = s.rendered_svg %}
     {% set rendered_mermaid = s.rendered_mermaid %}
+    {% set mermaid_data_attrs = s.mermaid_data_attrs %}
     {% set rendered_left_col = s.rendered_left_col %}
     {% set rendered_right_col = s.rendered_right_col %}
     {% set rendered_fw_summary = s.rendered_fw_summary %}
@@ -1339,6 +1355,19 @@
       return Math.round(x * 100) + '%';
     }
 
+
+
+    function requestMermaidResize() {
+      try {
+        var fn = window.__mdToYamlSizeAllMermaidSvgs;
+        if (typeof fn !== 'function') return;
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            fn();
+          });
+        });
+      } catch (err) {}
+    }
     function applyViewScale(next) {
       viewScale = clampViewScale(next);
       if (deckRoot) {
@@ -1346,6 +1375,7 @@
       }
       if (scalePctEl) scalePctEl.textContent = formatScalePct(viewScale);
       persistViewScale();
+      requestMermaidResize();
     }
 
     applyViewScale(viewScale);
@@ -1481,326 +1511,410 @@
   })();
   </script>
   {% if has_mermaid %}
-  <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-    // Render Mermaid with 22pt node labels. Cells are auto-sized by Mermaid
-    // around this font, giving correctly-proportioned boxes out of the box.
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: '{{ mermaid_theme }}',
-      flowchart: { useMaxWidth: false, htmlLabels: true },
-      sequence: { useMaxWidth: false },
-      timeline: { useMaxWidth: false },
-      gantt:    { useMaxWidth: false },
-      pie:      { useMaxWidth: false },
-      journey:  { useMaxWidth: false },
-      mindmap:  { useMaxWidth: false },
-      quadrantChart: { useMaxWidth: false },
-      themeVariables: {
-        fontSize: '22pt',
-        fontFamily: "'{{ deck.metadata.font }}', sans-serif",
-      },
-    });
-    // Tag each diagram container with its Mermaid diagram type, read from the
-    // source text BEFORE mermaid.run() replaces the <pre> with rendered SVG.
-    // Also mark each container with data-mermaid-pre so we can select the
-    // rendered SVG after run() without relying on the SVG id prefix — Mermaid
-    // v11 uses different id schemes for different diagram types (mindmaps do
-    // NOT use the mermaid-* prefix), so svg[id^="mermaid"] misses them.
-    // Used later by pickSizer() — aria-roledescription on the rendered SVG is
-    // unreliable across Mermaid v11 diagram types (e.g. timeline).
-    document.querySelectorAll('.diagram-container pre.mermaid, .diagram-container .mermaid').forEach(pre => {
-      const src = (pre.textContent || '').trim();
-      // First non-empty, non-directive line; take its first token.
-      let type = '';
-      for (const raw of src.split('\n')) {
-        const line = raw.trim();
-        if (!line || line.startsWith('%%') || line.startsWith('---')) continue;
-        type = line.split(/[\s:({]/)[0].toLowerCase();
-        break;
-      }
-      const container = pre.closest('.diagram-container');
-      if (container) {
-        if (type) container.dataset.diagramType = type;
-        container.dataset.mermaidPre = '1';
-      }
-    });
-    await mermaid.run();
-    // Let layout settle so getBoundingClientRect reports accurate column widths.
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.0/dist/mermaid.esm.min.mjs';
+
+  // Mermaid v11: do not rely on Mermaid's fontSize being honored uniformly.
+  // We render diagrams, then measure *actual* rendered label sizes and scale
+  // the final SVG ourselves for slide readability.
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: '{{ mermaid_theme }}',
+
+    // Set globally as well as per-diagram to defend against v11 defaults.
+    useMaxWidth: false,
+    fontSize: 22,
+    fontFamily: "'{{ deck.metadata.font }}', sans-serif",
+
+    // Important diagnostic switch:
+    // If flowchart labels are still problematic in v11, try htmlLabels: false.
+    flowchart: { useMaxWidth: false, htmlLabels: true },
+    sequence: { useMaxWidth: false },
+    timeline: { useMaxWidth: false },
+    gantt:    { useMaxWidth: false },
+    pie:      { useMaxWidth: false },
+    journey:  { useMaxWidth: false },
+    mindmap:  { useMaxWidth: false },
+    quadrantChart: { useMaxWidth: false },
+
+    themeVariables: {
+      fontSize: '22px',
+      fontFamily: "'{{ deck.metadata.font }}', sans-serif",
+    },
+  });
+
+  // Tag containers before Mermaid replaces the source nodes.
+  document.querySelectorAll('.diagram-container pre.mermaid, .diagram-container .mermaid').forEach(pre => {
+    const src = (pre.textContent || '').trim();
+    let type = '';
+    for (const raw of src.split('\n')) {
+      const line = raw.trim();
+      if (!line || line.startsWith('%%') || line.startsWith('---')) continue;
+      type = line.split(/[\s:({]/)[0].toLowerCase();
+      break;
+    }
+    const container = pre.closest('.diagram-container');
+    if (container) {
+      if (type) container.dataset.diagramType = type;
+      container.classList.add('mermaid-pending');
+      container.dataset.mermaidPre = '1';
+    }
+  });
+
+  await mermaid.run();
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  async function waitForMermaidLayout() {
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch (e) {}
+    }
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  }
+  await waitForMermaidLayout();
 
-    // Font-size constraints: 20pt min, 24pt max, rendered natural = 22pt.
-    // Scaling the SVG scales font and cells together, so we clamp the scale
-    // factor to keep font within the allowed band.
-    const NATURAL_PT = 22, MIN_PT = 20, MAX_PT = 24;
-    const MIN_SCALE = MIN_PT / NATURAL_PT;   // 0.909 — smaller overflows
-    const MAX_SCALE = MAX_PT / NATURAL_PT;   // 1.091 — larger overblown
 
-    function sizeSvg(svg, availW, availH) {
-      const nW = parseFloat(svg.getAttribute('width'))
-              || (svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal.width  : 0);
-      const nH = parseFloat(svg.getAttribute('height'))
-              || (svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal.height : 0);
-      svg.removeAttribute('width');
-      svg.removeAttribute('height');
-      svg.removeAttribute('style');
-      svg.style.display = 'block';
-      svg.style.margin  = '0 auto';
-      if (nW <= 0 || nH <= 0 || availW <= 0 || availH <= 0) {
-        svg.style.width = '100%';
-        svg.style.height = 'auto';
-        return;
+  const DEBUG_MERMAID_WAIT = false;
+  function mermaidWaitLog(evt, data) {
+    if (!DEBUG_MERMAID_WAIT) return;
+    console.debug('mermaid-wait', { evt, ...data });
+  }
+
+  function countMermaidExpectedAndRendered() {
+    const containers = Array.from(document.querySelectorAll('.diagram-container[data-mermaid-pre]'));
+    let rendered = 0;
+    for (const c of containers) {
+      if (c.querySelector('svg')) rendered += 1;
+    }
+    return { expected: containers.length, rendered };
+  }
+
+  async function waitForAllMermaidSvgs(maxAttempts = 12) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      const { expected, rendered } = countMermaidExpectedAndRendered();
+      mermaidWaitLog('attempt-start', { attempt: `${attempt}/${maxAttempts}`, expected, rendered });
+
+      if (expected > 0 && rendered >= expected) {
+        mermaidWaitLog('attempt-end', { attempt: `${attempt}/${maxAttempts}`, ok: true, expected, rendered });
+        return { ok: true, attempt, expected, rendered };
       }
-      // Scale to fit the available box, clamped to the font-size band.
-      const fitScale = Math.min(availW / nW, availH / nH);
-      const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
-      svg.style.width  = (nW * scale) + 'px';
-      svg.style.height = (nH * scale) + 'px';
-    }
 
-    // Fit-to-available for diagram types whose Mermaid renderer ignores
-    // themeVariables.fontSize (e.g. timeline, gantt, pie). For these the
-    // natural render size is arbitrary, so we scale to fill the panel
-    // without the 20–24pt clamp.
-    function sizeSvgFit(svg, availW, availH) {
-      // Prefer viewBox (true content geometry) over width/height attributes,
-      // which Mermaid may set to "100%" for some diagram types (timeline, etc.).
-      const vb = svg.viewBox && svg.viewBox.baseVal;
-      const nW = (vb && vb.width  > 0) ? vb.width  : parseFloat(svg.getAttribute('width'))  || 0;
-      const nH = (vb && vb.height > 0) ? vb.height : parseFloat(svg.getAttribute('height')) || 0;
-      svg.removeAttribute('width');
-      svg.removeAttribute('height');
-      svg.removeAttribute('style');
-      svg.style.display = 'block';
-      svg.style.margin  = '0 auto';
-      if (availW <= 0 || availH <= 0) return;
-      if (nW <= 0 || nH <= 0) {
-        svg.style.width  = availW + 'px';
-        svg.style.height = availH + 'px';
-        return;
+      // Bounded backoff so late Mermaid diagram types don't miss the sizing pass.
+      const ms = Math.min(250, 20 * attempt);
+      await new Promise(r => setTimeout(r, ms));
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      {
+        const after = countMermaidExpectedAndRendered();
+        mermaidWaitLog('attempt-end', {
+          attempt: `${attempt}/${maxAttempts}`,
+          ok: false,
+          expected: after.expected,
+          rendered: after.rendered,
+        });
       }
-      const scale = Math.min(availW / nW, availH / nH);
-      svg.style.width  = (nW * scale) + 'px';
-      svg.style.height = (nH * scale) + 'px';
+    }
+    const final = countMermaidExpectedAndRendered();
+    mermaidWaitLog('done', { attempt: `12/12`, ok: false, ...final });
+    return { ok: false, attempt: maxAttempts, ...final };
+  }
+
+  function markMermaidReadyFromSvg(svg) {
+    const container = svg.closest('.diagram-container');
+    if (!container) return;
+    container.classList.remove('mermaid-pending');
+    container.dataset.mermaidReady = '1';
+  }
+
+  await waitForAllMermaidSvgs();
+
+  function median(values) {
+    const a = values.filter(v => Number.isFinite(v) && v > 0).sort((x, y) => x - y);
+    if (!a.length) return 0;
+    const m = Math.floor(a.length / 2);
+    return a.length % 2 ? a[m] : 0.5 * (a[m - 1] + a[m]);
+  }
+
+  function clamp(x, lo, hi) {
+    return Math.max(lo, Math.min(hi, x));
+  }
+
+
+  function getScaleOverride(svg) {
+    const container = svg.closest('.diagram-container');
+    if (!container) return { mode: '', mult: 1 };
+
+    const mode = String(container.dataset.scaleMode || '').trim().toLowerCase();
+    let mult = parseFloat(container.dataset.scaleMult || '1');
+    if (!Number.isFinite(mult) || mult <= 0) mult = 1;
+
+    return { mode, mult };
+  }
+
+  function getSvgGeometry(svg) {
+    const vb = svg.viewBox && svg.viewBox.baseVal;
+    const vbW = (vb && vb.width > 0) ? vb.width : parseFloat(svg.getAttribute('width')) || 0;
+    const vbH = (vb && vb.height > 0) ? vb.height : parseFloat(svg.getAttribute('height')) || 0;
+
+    let contentW = vbW;
+    let contentH = vbH;
+    try {
+      const bb = svg.getBBox();
+      if (bb && bb.width > 0 && bb.height > 0) {
+        contentW = bb.width;
+        contentH = bb.height;
+      }
+    } catch (e) {
+      // Fall back to viewBox.
     }
 
-    // Diagram types where Mermaid does not honor themeVariables.fontSize —
-    // use fit-to-space instead of the 20–24pt clamp.
-    const UNCLAMPED_TYPES = new Set([
-      'timeline', 'gantt', 'pie', 'quadrantchart', 'journey', 'mindmap',
-    ]);
-    // Timeline has a lot of vertical whitespace in its natural viewBox, so
-    // height-based fit ends up too small. Width-dominant fill gives a
-    // readable font without clipping meaningful content.
-    const WIDTH_FILL_TYPES = new Set(['timeline']);
-    function sizeSvgFillWidth(svg, availW, availH) {
-      svg.removeAttribute('width');
-      svg.removeAttribute('height');
-      svg.removeAttribute('style');
-      svg.style.display = 'block';
-      svg.style.margin  = '0 auto';
-      svg.style.width   = availW + 'px';
-      svg.style.height  = 'auto';
-      svg.style.maxHeight = availH + 'px';
-    }
-    function pickSizer(svg) {
-      const container = svg.closest('.diagram-container');
-      const type = (container && container.dataset.diagramType || '').toLowerCase();
-      const role = (svg.getAttribute('aria-roledescription') || '').toLowerCase();
-      if (WIDTH_FILL_TYPES.has(type) || WIDTH_FILL_TYPES.has(role)) return sizeSvgFillWidth;
-      return (UNCLAMPED_TYPES.has(type) || UNCLAMPED_TYPES.has(role)) ? sizeSvgFit : sizeSvg;
-    }
+    return { vbW, vbH, contentW, contentH };
+  }
 
-    // Scoped to Mermaid-generated SVGs. We select by [data-mermaid-pre] (set
-    // above before mermaid.run()) rather than svg[id^="mermaid"] because
-    // Mermaid v11 uses different id schemes per diagram type — mindmaps in
-    // particular do NOT use the mermaid-* prefix.  File-based SVGs have
-    // author-controlled fonts and are left to render at natural width
-    // (width="100%" already applied by the Python SVG normalizer).
-    const SLIDE_PAD  = 96;   // 1in slide edge
-    const PANEL_INSET = 48;  // panel internal padding (top+bottom or left+right combined)
-    document.querySelectorAll('.slide-diagram .diagram-container[data-mermaid-pre] svg').forEach(svg => {
-      const slide   = svg.closest('section[role="group"]');
-      const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
-      const titleH  = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
-      const caption = slide && slide.querySelector('.diagram-caption');
-      const capH    = caption ? caption.getBoundingClientRect().height + 16 : 0;
-      const availW  = document.documentElement.clientWidth - SLIDE_PAD * 2 - PANEL_INSET;
-      const availH  = window.innerHeight - SLIDE_PAD * 2 - titleH - capH - PANEL_INSET;
-      pickSizer(svg)(svg, availW, availH);
+  function measureRenderedLabelPx(svg) {
+    const sizes = [];
+
+    // 1) Standard SVG text labels
+    svg.querySelectorAll('text').forEach(el => {
+      try {
+        const cs = getComputedStyle(el);
+        const fs = parseFloat(cs.fontSize);
+        if (fs > 0) {
+          sizes.push(fs);
+        } else {
+          const bb = el.getBBox();
+          if (bb && bb.height > 0) sizes.push(bb.height);
+        }
+      } catch (e) {}
     });
 
-    // Two-column diagrams — constrained to the diagram column.
+    // 2) Mermaid HTML labels inside foreignObject
+    svg.querySelectorAll('foreignObject').forEach(fo => {
+      fo.querySelectorAll('div, span, p, li').forEach(el => {
+        try {
+          const cs = getComputedStyle(el);
+          const fs = parseFloat(cs.fontSize);
+          if (fs > 0) {
+            sizes.push(fs);
+          } else {
+            const r = el.getBoundingClientRect();
+            if (r && r.height > 0) sizes.push(r.height);
+          }
+        } catch (e) {}
+      });
+    });
+
+    return median(sizes);
+  }
+
+  function normalizeSvgForHostSizing(svg) {
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
+    svg.removeAttribute('style');
+    svg.style.display = 'block';
+    svg.style.margin = '0 auto';
+    svg.style.maxWidth = 'none';
+    svg.style.maxHeight = 'none';
+    svg.style.overflow = 'visible';
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  }
+
+  // Scale based on actual rendered label size, not Mermaid's requested font size.
+  // minTextPx / maxTextPx are the *displayed* median label sizes you want on screen.
+  function sizeSvgMeasured(svg, availW, availH, minTextPx = 28, maxTextPx = 42) {
+    const { mode, mult } = getScaleOverride(svg);
+    const container = svg.closest('.diagram-container');
+    const isMindmap = (container && String(container.dataset.diagramType || '').toLowerCase() === 'mindmap');
+    const isSequence = (container && String(container.dataset.diagramType || '').toLowerCase() === 'sequencediagram');
+    normalizeSvgForHostSizing(svg);
+
+    if (availW <= 0 || availH <= 0) {
+      svg.style.width = '100%';
+      svg.style.height = 'auto';
+      return { ok: false, reason: 'bad-available-space' };
+    }
+
+    const { vbW, vbH, contentW, contentH } = getSvgGeometry(svg);
+
+    if (vbW <= 0 || vbH <= 0 || contentW <= 0 || contentH <= 0) {
+      svg.style.width = availW + 'px';
+      svg.style.height = 'auto';
+      return { ok: false, reason: 'bad-svg-geometry' };
+    }
+
+    // Fit based on actual content bbox, but apply scale to the full viewBox so we do not crop.
+    const fitScale = Math.min(availW / contentW, availH / contentH);
+
+    const measuredPx = measureRenderedLabelPx(svg);
+
+    // Default to fit-to-box.
+    let scale = fitScale;
+
+    // Mermaid v11 mindmap: fontSize is not a reliable control signal across engines.
+    // For mindmaps, prefer deterministic geometry-based scaling to fill the panel.
+    if ((isMindmap || isSequence) && mode !== 'measured') {
+      scale = Math.min(fitScale, fitScale * mult);
+      svg.style.width = (vbW * scale) + 'px';
+      svg.style.height = (vbH * scale) + 'px';
+      return { ok: true, reason: (isMindmap ? 'mindmap-fit-panel' : 'sequence-fit-panel'), measuredPx, scale, fitScale, vbW, vbH, contentW, contentH };
+    }
+
+    if (mode === 'fit') {
+      // Caller requested plain fit-to-panel (no readable-text target).
+      scale = Math.min(fitScale, scale * mult);
+      svg.style.width = (vbW * scale) + 'px';
+      svg.style.height = (vbH * scale) + 'px';
+      return { ok: true, reason: 'fit-only', measuredPx, scale, fitScale, vbW, vbH, contentW, contentH };
+    }
+    let ok = true;
+    let reason = 'fit-only';
+
+    if (measuredPx > 0) {
+      const scaleForMin = minTextPx / measuredPx;
+      const scaleForMax = maxTextPx / measuredPx;
+
+      // If the diagram can satisfy the minimum readable text threshold without overflow, do it.
+      if (fitScale >= scaleForMin) {
+        scale = clamp(scaleForMin, 0.05, scaleForMax);
+        scale = Math.min(scale, fitScale);
+        reason = 'target-min-readable-text';
+      } else {
+        // Not enough room: fit as large as possible and record the failure.
+        scale = fitScale;
+        ok = false;
+        reason = 'cannot-meet-min-text-within-panel';
+      }
+    } else {
+      ok = false;
+      reason = 'no-measurable-label-text';
+    }
+
+    svg.style.width = (vbW * scale) + 'px';
+    svg.style.height = (vbH * scale) + 'px';
+
+    return { ok, reason, measuredPx, scale, fitScale, vbW, vbH, contentW, contentH };
+  }
+
+  // Optional: useful while debugging Mermaid v11 behavior.
+  const DEBUG_MERMAID_SIZING = false;
+  function logSizing(svg, result, context) {
+    if (!DEBUG_MERMAID_SIZING) return;
+    const container = svg.closest('.diagram-container');
+    console.log('Mermaid sizing', {
+      context,
+      type: container?.dataset?.diagramType || '',
+      role: svg.getAttribute('aria-roledescription') || '',
+      ...result
+    });
+  }
+
+  // Scoped to Mermaid-generated SVGs. We select by [data-mermaid-pre] rather
+  // than svg[id^="mermaid"] because Mermaid v11 uses different id schemes by type.
+  const SLIDE_PAD   = 96;  // 1in slide edge
+  const PANEL_INSET = 48;  // panel internal padding (combined horizontal/vertical slack)
+
+  function sizeAllMermaidSvgs() {
+    // Full-slide diagrams
+    document.querySelectorAll('.slide-diagram .diagram-container[data-mermaid-pre] svg').forEach(svg => {
+      const slide = svg.closest('section[role="group"]');
+      const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
+      const titleH = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
+      const caption = slide && slide.querySelector('.diagram-caption');
+      const capH = caption ? caption.getBoundingClientRect().height + 16 : 0;
+
+      const availW = document.documentElement.clientWidth - SLIDE_PAD * 2 - PANEL_INSET;
+      const availH = window.innerHeight - SLIDE_PAD * 2 - titleH - capH - PANEL_INSET;
+
+      const result = sizeSvgMeasured(svg, availW, availH, 34, 54);
+      logSizing(svg, result, 'slide-diagram');
+      markMermaidReadyFromSvg(svg);
+    });
+
+    // Two-column diagrams
     document.querySelectorAll('.slide-two-column .diagram-container[data-mermaid-pre] svg').forEach(svg => {
-      const slide  = svg.closest('section[role="group"]');
+      const slide = svg.closest('section[role="group"]');
       const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
       const titleH = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
       const container = svg.closest('.diagram-container');
-      // After RAF, getBoundingClientRect reflects the actual grid-sized column width.
-      const colW = container.getBoundingClientRect().width || (document.documentElement.clientWidth / 2);
+      const colW = container?.getBoundingClientRect().width || (document.documentElement.clientWidth / 2);
+
       const availW = colW - PANEL_INSET;
       const availH = window.innerHeight - SLIDE_PAD * 2 - titleH - PANEL_INSET;
-      pickSizer(svg)(svg, availW, availH);
+
+      const result = sizeSvgMeasured(svg, availW, availH, 30, 46);
+      logSizing(svg, result, 'slide-two-column');
+      markMermaidReadyFromSvg(svg);
     });
 
-    // layout: figure — Mermaid: do NOT use .figure-asset getBoundingClientRect (often ~0
-    // before layout); do NOT use pickSizer’s sizeSvg (20–24pt font band clamps large fits).
-    // Match the CSS max-width and max-height: calc(…vh * --figure-scale) caps.
-    const FIG_WRAP_INSET = 80;  // ~horizontal padding 2rem*2 + border
-    const FIG_V_PAD = 48;  // top/bottom padding slack inside wrap vs SVG box
+    // Figure layout
+    const FIG_WRAP_INSET = 80;
+    const FIG_V_PAD = 48;
     document.querySelectorAll('.slide-figure .figure-asset .diagram-container[data-mermaid-pre] svg').forEach(svg => {
       const section = svg.closest('section.slide-figure');
       if (!section) return;
+
       const isOnly = section.classList.contains('figure-only');
-      const wFrac = isOnly ? 0.95 : 0.88;  // match .figure-asset-wrap max-width caps
-      const vhFrac = isOnly ? 0.78 : 0.72;  // match img/svg max-height: calc(…vh * scale)
+      const wFrac = isOnly ? 0.95 : 0.88;
+      const vhFrac = isOnly ? 0.78 : 0.72;
       const raw = (getComputedStyle(section).getPropertyValue('--figure-scale') || '1').trim();
       const fscale = Math.max(0.25, Math.min(4, parseFloat(raw) || 1));
+
       const titleBlock = section.querySelector('header.slide-heading-stack') || section.querySelector('h2');
-      const titleBottom = titleBlock ? titleBlock.getBoundingClientRect().bottom : 0;
-      const maxBelowTitle = window.innerHeight - titleBottom - SLIDE_PAD;
+      const titleH = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
+
+      // Do NOT use getBoundingClientRect().bottom here: for offscreen slides in a
+      // scroll-snap container, bottom depends on scroll position and can produce
+      // incorrect available height at initial load. Use viewport-relative math.
+      const maxBelowTitle = window.innerHeight - (2 * SLIDE_PAD) - titleH;
+
       const cw = document.documentElement.clientWidth - 2 * SLIDE_PAD;
       const maxWrapW = Math.min(cw, cw * wFrac * fscale);
       const availW = Math.max(40, maxWrapW - FIG_WRAP_INSET);
+
       const fromVh = window.innerHeight * vhFrac * fscale;
       const availH = Math.max(60, Math.min(fromVh, maxBelowTitle) - FIG_V_PAD);
-      sizeSvgFit(svg, availW, availH);
+
+      const result = sizeSvgMeasured(svg, availW, availH, 34, 54);
+      logSizing(svg, result, 'slide-figure');
+      markMermaidReadyFromSvg(svg);
     });
 
-    // Figure-wide: Mermaid in the flex panel — size to the wrap box (summary + footer
-    // already reduced the available region via flex layout).
+    // Figure-wide
     const FW_INSET = 40;
     document.querySelectorAll('.slide-figure-wide .figure-wide-figure-wrap .diagram-container[data-mermaid-pre] svg').forEach(svg => {
       const wrap = svg.closest('.figure-wide-figure-wrap');
       if (!wrap) return;
+
       const b = wrap.getBoundingClientRect();
       const fig = svg.closest('.figure-wide-figure');
       const cap = fig && fig.querySelector('figcaption');
       const capH = (cap && cap.getBoundingClientRect().height) || 0;
-      const gap  = cap ? 12 : 0;
+      const gap = cap ? 12 : 0;
+
       const availW = Math.max(40, b.width - FW_INSET);
       const availH = Math.max(60, b.height - FW_INSET - capH - gap);
-      pickSizer(svg)(svg, availW, availH);
+
+      const result = sizeSvgMeasured(svg, availW, availH, 30, 46);
+      logSizing(svg, result, 'slide-figure-wide');
+      markMermaidReadyFromSvg(svg);
     });
-  </script>
-  {% endif %}
-
-{% if has_bullet_animation %}
-<script src="{{ gsap_script_url | e }}"></script>
-<script>
-(function () {
-  if (!window.gsap) return;
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.querySelectorAll('[data-bullet-stagger]').forEach(function (section) {
-    var raw = section.getAttribute('data-bullet-stagger');
-    if (!raw) return;
-    var cfg;
-    try { cfg = JSON.parse(raw); } catch (e) { return; }
-    var items = section.querySelectorAll('.slide-body li');
-    if (!items.length) return;
-    if (reduce) {
-      gsap.set(items, { clearProps: 'all' });
-      return;
-    }
-    var x0 = typeof cfg.x_offset === 'number' ? cfg.x_offset : -24;
-    gsap.set(items, { opacity: 0, x: x0 });
-    var thr = typeof cfg.threshold === 'number' ? cfg.threshold : 0.45;
-    var observer = new IntersectionObserver(function (entries, obs) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        obs.disconnect();
-        gsap.to(items, {
-          opacity: 1,
-          x: 0,
-          duration: typeof cfg.duration === 'number' ? cfg.duration : 0.45,
-          ease: cfg.ease || 'power2.out',
-          stagger: typeof cfg.stagger === 'number' ? cfg.stagger : 0.12
-        });
-      });
-    }, { threshold: thr });
-    observer.observe(section);
-  });
-
-  // Key-driven bullet focus: dim all but the currently focused bullet; configured key advances focus.
-  var focusSections = Array.prototype.slice.call(
-    document.querySelectorAll('[data-bullet-focus]')
-  );
-  if (!focusSections.length) return;
-
-  var states = new Map();   // section -> { items, idx, dim, dur, ease, key }
-  var visible = new Set();  // sections currently in view
-
-  focusSections.forEach(function (section) {
-    var raw = section.getAttribute('data-bullet-focus');
-    var cfg;
-    try { cfg = JSON.parse(raw); } catch (e) { return; }
-    var items = section.querySelectorAll('.slide-body li');
-    if (!items.length) return;
-    var dim = typeof cfg.dim === 'number' ? cfg.dim : 0.25;
-    var state = {
-      items: items,
-      idx: 0,
-      dim: dim,
-      dur: typeof cfg.duration === 'number' ? cfg.duration : 0.3,
-      ease: cfg.ease || 'power2.out',
-      key: (cfg.key || 'j').toLowerCase(),
-      backKey: (cfg.back_key || 'k').toLowerCase()
-    };
-    states.set(section, state);
-    if (reduce) {
-      gsap.set(items, { opacity: 1 });
-      return;
-    }
-    gsap.set(items, { opacity: dim });
-    gsap.set(items[0], { opacity: 1 });
-  });
-
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (entry.isIntersecting) visible.add(entry.target);
-      else visible.delete(entry.target);
-    });
-  }, { threshold: 0.5 });
-  focusSections.forEach(function (s) { io.observe(s); });
-
-  function activeSection() {
-    if (visible.size === 1) return visible.values().next().value;
-    var best = null, bestArea = 0;
-    visible.forEach(function (s) {
-      var r = s.getBoundingClientRect();
-      var a = Math.max(0, r.width) * Math.max(0, r.height);
-      if (a > bestArea) { bestArea = a; best = s; }
-    });
-    return best;
   }
 
-  document.addEventListener('keydown', function (ev) {
-    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
-    var tag = (ev.target && ev.target.tagName) || '';
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ev.target && ev.target.isContentEditable)) return;
-    var section = activeSection();
-    if (!section) return;
-    var st = states.get(section);
-    if (!st) return;
-    var k = ev.key.toLowerCase();
-    var dir = 0;
-    if (k === st.key) dir = 1;
-    else if (k === st.backKey) dir = -1;
-    else return;
-    ev.preventDefault();
-    var newIdx = st.idx + dir;
-    if (newIdx < 0 || newIdx > st.items.length - 1) return;
-    var prev = st.items[st.idx];
-    st.idx = newIdx;
-    var next = st.items[st.idx];
-    if (reduce) {
-      gsap.set([prev, next], { opacity: 1 });
-      return;
-    }
-    gsap.to(prev, { opacity: st.dim, duration: st.dur, ease: st.ease });
-    gsap.to(next, { opacity: 1, duration: st.dur, ease: st.ease });
+  // Expose for view-scale changes (Shift++ / footer controls) so Mermaid SVGs
+  // can be re-sized when the deck zoom changes.
+  window.__mdToYamlSizeAllMermaidSvgs = sizeAllMermaidSvgs;
+
+  sizeAllMermaidSvgs();
+
+  // Re-run after late layout stabilization and on resize.
+  setTimeout(sizeAllMermaidSvgs, 150);
+  setTimeout(sizeAllMermaidSvgs, 600);
+  setTimeout(sizeAllMermaidSvgs, 1500);
+  window.addEventListener('resize', () => {
+    clearTimeout(window.__mermaidResizeTimer);
+    window.__mermaidResizeTimer = setTimeout(sizeAllMermaidSvgs, 80);
   });
-})();
+
+
 </script>
 {% endif %}
 

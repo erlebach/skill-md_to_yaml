@@ -1,7 +1,7 @@
 {% include 'slide_heading_h2.html.j2' %}
 <div class="slide-content-area">
 {% if rendered_mermaid %}
-  <div class="diagram-container">
+  <div class="diagram-container"{{ mermaid_data_attrs | safe }}>
     {{ rendered_mermaid | safe }}
   </div>
   {% if rendered_body %}

@@ -84,6 +84,24 @@ class SlideBase(BaseModel):
         le=4.0,
         description='Override deck content_scale for this slide (None = use deck default).',
     )
+
+    mermaid_scale_mode: Literal['measured', 'fit'] | None = Field(
+        default=None,
+        description=(
+            'Override Mermaid sizing mode for this slide (None = compiler default). '
+            "'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel."
+        ),
+    )
+    mermaid_scale: float | None = Field(
+        default=None,
+        ge=0.25,
+        le=4.0,
+        description=(
+            'Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). '
+            'Still capped to the available panel size.'
+        ),
+    )
+
     body: str | None = Field(None, exclude=True)  # Markdown body, excluded from JSON Schema
 
     @field_validator('math_display_color')
@@ -320,6 +338,24 @@ class ColumnContent(BaseModel):
     src: str | None = None       # path to image/diagram; extension determines rendering (.jpg/.png → <img>, .svg → inline SVG, .mmd → Mermaid)
     alt_text: str | None = None  # required for ADA; enforced by compiler
     source: str | None = None    # inline Mermaid source (legacy; prefer src with .mmd file)
+
+    mermaid_scale_mode: Literal['measured', 'fit'] | None = Field(
+        default=None,
+        description=(
+            'Override Mermaid sizing mode for this column (None = compiler default). '
+            "'measured' tries to meet readable label size; 'fit' just fits to panel."
+        ),
+    )
+    mermaid_scale: float | None = Field(
+        default=None,
+        ge=0.25,
+        le=4.0,
+        description=(
+            'Multiplier applied to Mermaid SVG scale for this column (None = compiler default). '
+            'Still capped to the available panel size.'
+        ),
+    )
+
 
 
 class TwoColumnSlide(SlideBase):

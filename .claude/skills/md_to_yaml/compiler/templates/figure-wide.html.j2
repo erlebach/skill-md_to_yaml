@@ -9,7 +9,7 @@
     <figure class="figure-wide-figure">
       <div class="figure-wide-media">
         {% if rendered_mermaid %}
-          <div class="diagram-container">{{ rendered_mermaid | safe }}</div>
+          <div class="diagram-container"{{ mermaid_data_attrs | safe }}>{{ rendered_mermaid | safe }}</div>
         {% elif rendered_svg %}
           <div class="diagram-container" role="img" aria-label="{{ slide.alt_text | e }}">{{ rendered_svg | safe }}</div>
         {% elif rendered_image %}

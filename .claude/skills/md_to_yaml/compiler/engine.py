@@ -84,6 +84,20 @@ def _bullet_focus_json(cfg: dict[str, float | str] | None) -> str | None:
         return None
     return json.dumps(cfg, separators=(',', ':'))
 
+def _mermaid_data_attrs(obj) -> str:
+    """Serialize Mermaid scaling overrides to data-* attributes on .diagram-container."""
+    attrs = []
+
+    mode = getattr(obj, "mermaid_scale_mode", None)
+    if mode:
+        attrs.append(f' data-scale-mode="{_html.escape(str(mode).strip().lower())}"')
+
+    scale = getattr(obj, "mermaid_scale", None)
+    if scale is not None:
+        attrs.append(f' data-scale-mult="{_html.escape(str(scale).strip())}"')
+
+    return "".join(attrs)
+
 def _render_col_html(col, base_dir: str, embed_images: bool, col_id: str, theme: str) -> str:
     """Render a TwoColumnSlide column to HTML, dispatching on src extension."""
     if col.src:
@@ -92,7 +106,8 @@ def _render_col_html(col, base_dir: str, embed_images: bool, col_id: str, theme:
         alt = col.alt_text or ""
         if ext == ".mmd":
             mermaid_source = _inject_text_color(Path(src_path).read_text(encoding="utf-8"))
-            return (f'<div class="diagram-container" role="img" aria-label="{_html.escape(alt)}">'
+            data_attrs = _mermaid_data_attrs(col)
+            return (f'<div class="diagram-container"{data_attrs} role="img" aria-label="{_html.escape(alt)}">'
                     f'<pre class="mermaid" aria-hidden="true">{_html.escape(mermaid_source)}</pre></div>')
         elif ext == ".svg":
             raw_svg = Path(src_path).read_text(encoding="utf-8")
@@ -103,7 +118,8 @@ def _render_col_html(col, base_dir: str, embed_images: bool, col_id: str, theme:
     elif col.source:
         mermaid_source = _inject_text_color(col.source)
         alt = col.alt_text or ""
-        return (f'<div class="diagram-container" role="img" aria-label="{_html.escape(alt)}">'
+        data_attrs = _mermaid_data_attrs(col)
+        return (f'<div class="diagram-container"{data_attrs} role="img" aria-label="{_html.escape(alt)}">'
                 f'<pre class="mermaid" aria-hidden="true">{_html.escape(mermaid_source)}</pre></div>')
     return ""
 
@@ -492,6 +508,7 @@ def _render(
                 "rendered_image": rendered_image,
                 "rendered_svg": rendered_svg,
                 "rendered_mermaid": rendered_mermaid_html,
+                "mermaid_data_attrs": _mermaid_data_attrs(slide),
                 "rendered_left_col": rendered_left_col,
                 "rendered_right_col": rendered_right_col,
                 "rendered_fw_summary": fw_ctx["rendered_fw_summary"],

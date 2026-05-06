@@ -1,5 +1,193 @@
 # JOURNAL — md_to_yaml Project
 
+## 2026-05-06 10:30 — Mermaid diagrams: prevent “tiny SVG” renders
+
+### Completed Tasks ✅
+- [x] Added a **CSS fallback** so Mermaid-generated SVGs fill the available
+  diagram/figure panel even when Mermaid v11+ markup changes prevent the JS
+  resizer from matching the right SVG.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2` — add
+  `.diagram-container svg { width/height: 100% !important; … }` fallback.
+
+### Key Changes
+- Keeps Mermaid mindmaps/diagrams from rendering at their **tiny intrinsic**
+  size when the post-`mermaid.run()` sizing path is skipped or mis-measures.
+
+### Notes
+- Repro case: `mermaid/mermaid_example.yaml` (mindmap slide previously tiny).
+
+---
+
+## 2026-05-06 12:42 — Mermaid scaling overrides via YAML
+
+### Completed Tasks ✅
+- [x] Added **YAML-driven Mermaid scaling overrides** (mode + multiplier) that
+  are propagated into compiled HTML and applied by the Mermaid sizing script.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/schema/models.py` — allow `mermaid_scale` and
+  `mermaid_scale_mode` on slides and two-column `ColumnContent`.
+- `.claude/skills/md_to_yaml/compiler/engine.py` — pass `mermaid_data_attrs`
+  into slide context; fix `_mermaid_data_attrs` escaping; emit `data-*` attrs.
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2` — read
+  `data-scale-mult`/`data-scale-mode` and apply them in the Mermaid sizing JS.
+- `.claude/skills/md_to_yaml/compiler/templates/{figure,diagram,figure-wide}.html.j2`
+  — attach `data-*` attrs to the `.diagram-container` wrapper when Mermaid is
+  present.
+
+### Key Changes
+- New slide/column keys:
+  - `mermaid_scale`: float (0.25–4.0)
+  - `mermaid_scale_mode`: `measured` (default behavior) or `fit`
+- Compiled output includes:
+  - `data-scale-mult="..."` and optional `data-scale-mode="fit"` on
+    `.diagram-container`, which the runtime sizing code consumes.
+
+### Notes
+- This fixes the earlier situation where overrides existed in code but **never
+  reached the HTML wrapper**, so they couldn’t affect Mermaid sizing.
+
+---
+
+## 2026-05-06 12:56 — Mermaid overrides: remove hardcoded scaler
+
+### Completed Tasks ✅
+- [x] Removed a temporary **hardcoded** Mermaid scaling block in
+  `.claude/skills/md_to_yaml/compiler/templates/base.html.j2` that forced a
+  constant scale, preventing YAML `mermaid_scale` changes from having an effect.
+- [x] Removed `width/height: 100% !important` from the Mermaid SVG fallback so
+  JS sizing (and YAML overrides) can control the final SVG size.
+
+---
+
+## 2026-05-06 13:05 — Mermaid sizing: raise default readable text targets
+
+### Completed Tasks ✅
+- [x] Increased the default `sizeSvgMeasured(..., minTextPx, maxTextPx)` targets
+  so Mermaid diagrams start at a readable size at **viewScale=1** (no need to
+  press Shift+`+` to make them legible).
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+
+---
+
+## 2026-05-06 13:07 — Mermaid sizing: re-run on view-scale changes
+
+### Completed Tasks ✅
+- [x] Fixed “Mermaid starts tiny until Shift+`+`” by triggering a Mermaid re-size
+  pass whenever the deck’s **view scale** changes (footer controls / keyboard).
+- [x] Added a couple of bounded delayed re-size passes after initial render to
+  catch late font/layout stabilization.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+
+---
+
+## 2026-05-06 13:19 — Mermaid sizing: eliminate flash + late renders
+
+### Completed Tasks ✅
+- [x] Added a runtime **pending marker** (`mermaid-pending`) so Mermaid diagrams
+  are hidden until the sizing pass completes (prevents tiny→resized flash).
+- [x] Added a bounded “wait for all Mermaid SVGs” loop before the first sizing
+  pass so late-rendering Mermaid 11 diagram types don’t miss resizing.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+
+---
+
+## 2026-05-06 13:24 — Mermaid mindmap scaling lab harness
+
+### Completed Tasks ✅
+- [x] Added a standalone HTML “lab” page to render a Mermaid v11 **mindmap** in a
+  fixed 960×540 panel and experiment with explicit sizing modes (CSS fit, bbox
+  fit-to-panel, fit-to-panel with a readable text target).
+
+### Files Created/Modified
+- `mermaid_mindmap_scaling_lab.html`
+
+---
+
+## 2026-05-06 13:28 — Mindmap: prefer fit-to-panel scaling
+
+### Completed Tasks ✅
+- [x] Updated Mermaid sizing logic so **mindmap** defaults to deterministic
+  **fit-to-panel** geometry scaling (BBox/viewBox driven), since Mermaid v11
+  mindmap label sizing is not reliably controlled by `fontSize`.
+- [x] Updated the mindmap lab harness with a **Mermaid font size** control that
+  re-renders the diagram so we can verify whether font size affects mindmaps in
+  the current Mermaid build.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+- `mermaid_mindmap_scaling_lab.html`
+
+---
+
+## 2026-05-06 13:32 — Mindmap lab: make Re-render deterministic
+
+### Completed Tasks ✅
+- [x] Updated the mindmap lab harness to use **`mermaid.render()`** with a unique
+  id per run so the **Re-render** button always produces a fresh SVG (avoids any
+  `mermaid.run()` stickiness/caching).
+
+### Files Created/Modified
+- `mermaid_mindmap_scaling_lab.html`
+
+---
+
+## 2026-05-06 13:38 — Mindmap lab: visible metrics readout
+
+### Completed Tasks ✅
+- [x] Made the lab’s metrics output unambiguous by adding a dedicated **Metrics**
+  panel that always shows current `textTarget` / `mermaidFont` values plus the
+  active sizing mode and computed scales.
+
+### Files Created/Modified
+- `mermaid_mindmap_scaling_lab.html`
+
+---
+
+## 2026-05-06 13:45 — Sequence diagram: prefer fit-to-panel scaling
+
+### Completed Tasks ✅
+- [x] Updated Mermaid sizing logic so **sequence diagrams** (Mermaid v11
+  `sequenceDiagram`) default to deterministic **fit-to-panel** geometry scaling
+  (BBox/viewBox), analogous to the mindmap fix.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+
+---
+
+## 2026-05-06 13:52 — Figure sizing: avoid offscreen scroll position dependency
+
+### Completed Tasks ✅
+- [x] Fixed Mermaid sizing on **offscreen figure slides** by removing reliance on
+  `getBoundingClientRect().bottom` (scroll-position dependent in scroll-snap);
+  available height is now computed purely from viewport minus slide padding and
+  title height. This prevents “only sizes correctly after zoom” behavior.
+
+### Files Created/Modified
+- `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`
+
+---
+
+## 2026-05-06 14:18 — Global ADA rule: scroll-invariant geometry
+
+### Completed Tasks ✅
+- [x] Created a global Cursor rule `~/.cursor/rules/ADA.mdc` documenting a strict
+  policy: **avoid scroll-dependent viewport measurements** (e.g.
+  `getBoundingClientRect().bottom`) for sizing, and prefer container-based
+  sizing or scroll-invariant math.
+
+### Files Created/Modified
+- `~/.cursor/rules/ADA.mdc`
+
 ---
 
 ## 2026-04-25 - **figure_crop** slide dev overlay: fix scaling to natural pixels
@@ -19,6 +207,8 @@
 - Pillow and **`POST /__dev/crop`** still expect top-left + size in **original file** pixel space; the fix aligns browser math with that.
 
 ---
+
+
 
 ## 2026-04-24 - Declarative **GSAP** bullet stagger (deck defaults + skill defaults + slide overrides)
 
