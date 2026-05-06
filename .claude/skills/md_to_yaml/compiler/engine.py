@@ -189,6 +189,7 @@ _env = Environment(
 def compile_deck(
     deck: Deck,
     output_path: str,
+    yaml_path: str = "",
     embed_images: bool = False,
     include_skipped: bool = False,
     figure_layout_debug: bool = False,
@@ -205,7 +206,7 @@ def compile_deck(
     ``deck.metadata.figure_layout_debug`` is True, layout figure debug borders
     are enabled in the HTML output.
     """
-    yaml_dir = str(Path(output_path).parent)
+    yaml_dir = str(Path(yaml_path).parent) if yaml_path else str(Path(output_path).parent)
     errors, warnings = validate_deck(deck, base_dir=yaml_dir)
 
     for w in warnings:
@@ -227,6 +228,7 @@ def compile_deck(
     html = _render(
         deck,
         output_path=output_path,
+        yaml_dir=yaml_dir,
         embed_images=embed_images,
         include_skipped=include_skipped,
         macros=macros,
@@ -239,6 +241,7 @@ def compile_deck(
 def _render(
     deck: Deck,
     output_path: str = ".",
+    yaml_dir: str = "",
     embed_images: bool = False,
     include_skipped: bool = False,
     macros: dict[str, str] | None = None,
@@ -338,7 +341,7 @@ def _render(
                 deck.metadata.theme,
             )
         elif slide.layout == "figure":
-            base_dir = str(Path(output_path).parent) if embed_images else "."
+            base_dir = yaml_dir or str(Path(output_path).parent)
             ext = Path(slide.src).suffix.lower()
             if ext == ".mmd":
                 mmd_path = slide.src if Path(slide.src).is_absolute() else Path(base_dir) / slide.src
@@ -399,7 +402,7 @@ def _render(
         rendered_left_col = None
         rendered_right_col = None
         if slide.layout == "two-column":
-            base_dir = str(Path(output_path).parent) if embed_images else "."
+            base_dir = yaml_dir or str(Path(output_path).parent)
             if slide.left:
                 rendered_left_col = _render_col_html(slide.left, base_dir, embed_images, f"{slide_id}-left", deck.metadata.theme)
             if slide.right:
@@ -409,7 +412,7 @@ def _render(
             fw_ctx = _parse_figure_wide_body(
                 getattr(slide, 'body', None), deck.metadata.theme, macros=macros
             )
-            base_dir = str(Path(output_path).parent) if embed_images else "."
+            base_dir = yaml_dir or str(Path(output_path).parent)
             ext = Path(slide.src).suffix.lower()
             if ext == ".mmd":
                 mmd_path = slide.src if Path(slide.src).is_absolute() else Path(base_dir) / slide.src

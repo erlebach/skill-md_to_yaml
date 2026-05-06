@@ -36,6 +36,7 @@ def main() -> None:
     compile_deck(
         deck,
         args.output,
+        yaml_path=args.input,
         embed_images=args.embed_images,
         include_skipped=args.include_skipped,
         figure_layout_debug=args.figure_layout_debug,
