@@ -1727,6 +1727,19 @@
     const isSequence = (container && String(container.dataset.diagramType || '').toLowerCase() === 'sequencediagram');
     normalizeSvgForHostSizing(svg);
 
+    // Crop the SVG viewBox to its actual rendered content bbox.
+    // Fixes two Mermaid v11 layout issues:
+    //   timeline: viewBox is wider than content (arrow extension) → title center is off to the right
+    //   pie:      title text overflows the viewBox left edge → title is clipped
+    try {
+      const bb = svg.getBBox();
+      if (bb && bb.width > 4 && bb.height > 4) {
+        const pad = 6;
+        svg.setAttribute('viewBox',
+          `${bb.x - pad} ${bb.y - pad} ${bb.width + 2*pad} ${bb.height + 2*pad}`);
+      }
+    } catch(e) {}
+
     if (availW <= 0 || availH <= 0) {
       svg.style.width = '100%';
       svg.style.height = 'auto';
