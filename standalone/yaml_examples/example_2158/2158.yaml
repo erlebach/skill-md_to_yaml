@@ -1,0 +1,80 @@
+---
+title: Effective Presentations
+author: Skill Demo
+date: 2026-04-18
+theme: dark
+font: IBM Plex Sans
+---
+
+---
+layout: title
+title: Effective Presentations
+subtitle: Design Principles for Clear, Engaging Slides
+---
+
+---
+layout: hero
+title: One Idea Per Slide, Every Time
+---
+Every strong slide carries exactly one clear message — the layout reinforces it, and the speaker supplies the detail.
+
+---
+layout: content
+title: Build a Narrative Arc
+---
+- **Through-line:** each slide connects logically to the one before
+- **State:** introduce the learning objective up front
+- **Illustrate:** show a figure, diagram, table, or example
+- **Derive:** explain why it matters or what follows next
+
+---
+layout: figure
+title: The State → Illustrate → Derive Cycle
+src: figures/narrative-arc.svg
+figure_scale: 0.6
+alt_text: "Circular flow diagram showing three presentation stages: State (introduce the objective), Illustrate (show a visual or example), and Derive (explain significance). Green arrows connect State to Illustrate to Derive and back to State, with small labels: 'show it', 'why it matters', and 'next idea'."
+---
+
+---
+layout: content
+title: Bullets Are Memory Cues, Not a Script
+---
+- **5×5 rule:** aim for ≤ 5 bullets, ~5 words each — 8 is the hard ceiling
+- **One idea per bullet:** split if a bullet contains "and" twice
+- **Parallel structure:** all bullets start with the same part of speech
+- **Short phrases:** avoid wrapping past two lines
+
+---
+layout: figure
+title: Layout Types at a Glance
+src: figures/layout-decision-tree.mmd
+figure_scale: 0.6
+alt_text: "Mindmap with root node 'Slide Layouts' branching into four categories: Opening (title, hero, divider), Information (content, steps, table, comparison), Visual (figure, diagram, two-column), and Closing (summary, quote, code)."
+---
+
+---
+layout: steps
+title: Every Presentation Has the Same Skeleton
+---
+1. **Open** — title slide, then a hook or agenda, then problem context
+2. **Body** — 4–8 content slides per section; vary layouts throughout
+3. **Close** — key-takeaway summary, then a call to action
+
+---
+layout: content
+title: Variety Signals Importance
+---
+- **3-slide rule:** never repeat the same layout more than 3 times in a row
+- **Layout change = attention cue** — the audience notices a shift
+- **10-second test:** the main point should be graspable in under 10 seconds
+- **Simplification test:** ask whether a complex layout truly serves the message
+
+---
+layout: summary
+title: Key Takeaways
+---
+- One primary message per slide — split rather than cram
+- Build a repeating arc: state → illustrate → derive
+- Short, parallel bullets keep slides readable at distance
+- Vary layouts deliberately to signal topic shifts
+- Test: can the audience grasp the main point in 10 seconds?

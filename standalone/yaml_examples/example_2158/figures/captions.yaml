@@ -1,0 +1,8 @@
+# captions.yaml
+images:
+  - file: narrative-arc.svg
+    caption: "Circular flow showing the State → Illustrate → Derive presentation cycle."
+    alt_text: "Circular flow diagram showing three presentation stages: State (introduce the objective), Illustrate (show a visual or example), and Derive (explain significance). Green arrows connect State to Illustrate to Derive and back to State, with small labels: 'show it', 'why it matters', and 'next idea'."
+  - file: layout-decision-tree.mmd
+    caption: "Mindmap grouping the 15 slide layouts into four categories: Opening, Information, Visual, and Closing."
+    alt_text: "Mindmap with root node 'Slide Layouts' branching into four categories: Opening (title, hero, divider), Information (content, steps, table, comparison), Visual (figure, diagram, two-column), and Closing (summary, quote, code)."

@@ -1,0 +1,170 @@
+---
+title: Testing Content
+author: Gordon Erlebacher
+date: 2026-04-14
+theme: dark
+font: IBM Plex Sans
+---
+
+---
+layout: content
+title: Lists 
+---
+- header 1
+- header 2
+- header 3
+
+---
+layout: content
+title: Lists and Sublists
+---
+- header 1
+  - subheader 1
+  - subheader 2
+- header 2
+    - subheader 1
+    - subheader 2
+- header 3
+
+---
+layout: table
+title: 'The 2×2 Confusion Matrix: Standard Orientation'
+caption: 'Rows = test decision; columns = ground truth. FDR = V/R is a column proportion read down the Reject H0 column.'
+headers: ['Decision \\ Truth', '$H_0$ True', '$H_1$ True']
+rows:
+  - ['**Reject $H_0$**', 'FP — Type I error ($\alpha$)', 'TP — Power ($1-\beta$)']
+  - ['**Fail to reject $H_0$**', 'TN — Correct ($1-\alpha$)', 'FN — Type II error ($\beta$)']
+  - [{text: "(standard column orientation in statistics, transpose of sklearn)", colspan: 3}]
+---
+
+
+---
+layout: divider
+title: Diagram Exploration — Unicode, Equations, and Tables
+---
+
+---
+layout: diagram
+title: "Flowchart with Unicode Labels (Mermaid)"
+alt_text: Flowchart showing a quantum algorithm pipeline with Greek letter labels on nodes and edges
+---
+graph TD
+    A["Input: ψ₀"] --> B["Encode: Û(θ)"]
+    B --> C{"Measure\n⟨ψ|Ĥ|ψ⟩"}
+    C -->|"α > ε"| D["Update: θ ← θ − η∇L"]
+    C -->|"α ≤ ε"| E["Output: ψ*"]
+    D --> B
+    style A fill:#1a3a5c,color:#ffffff
+    style E fill:#1a5c3a,color:#ffffff
+    style C fill:#4a2060,color:#ffffff
+
+- Comment one about the graph 
+- comment two about the graph
+
+---
+layout: diagram
+title: "Algorithm Flow with Unicode Math Symbols (Mermaid)"
+alt_text: Flowchart of gradient descent with Unicode math symbols for norms, gradients, and convergence
+---
+graph LR
+    A["∇f(x)"] --> B{"‖∇f(x)‖ < δ?"}
+    B -->|"No"| C["x ← x − α∇f(x)"]
+    B -->|"Yes"| D["Converged ✓"]
+    C --> A
+    style D fill:#1a5c3a,color:#ffffff
+
+---
+layout: content
+title: "Unicode Limits in Mermaid Node Labels"
+---
+**What works in Mermaid node labels:**
+
+- Greek letters: α β γ δ ε ζ η θ λ μ ν π ρ σ τ φ ψ ω
+- Operators: ∇ ∂ ∑ ∏ ∫ ∞ ∈ ∉ ⊂ ⊃ ∪ ∩ ≤ ≥ ≠ ≈ ±
+- Arrows: → ← ↑ ↓ ⟨ ⟩ ⊗ ⊕
+- Subscripts/superscripts (Unicode): xᵢ x² ψ₀ θₖ
+
+**What does NOT work:**
+
+- True fractions: $\frac{\alpha}{\beta}$ — no layout engine in Mermaid labels
+- Nested structures: $\sum_{i=0}^{n}$ — superscript/subscript positioning
+- Operators: $\hat{H}$, $\tilde{O}$, $\mathcal{L}$ — require LaTeX rendering
+
+---
+layout: content
+title: "Table as Quadrant — Simple (No Equations)"
+notes: "A 2×2 quadrant expressed as a Markdown table. Works today with the existing compiler."
+---
+| | **Low Complexity** | **High Complexity** |
+|---|---|---|
+| **High Impact** | Quick wins: ship now | Strategic bets: plan carefully |
+| **Low Impact** | Skip or defer | Avoid: high cost, low return |
+
+---
+layout: content
+title: "Table as Quadrant — With KaTeX Equations"
+notes: "This is the key case: equations in cells that Mermaid cannot express."
+---
+Bias-variance decomposition across model complexity:
+
+| | **High Bias** | **Low Bias** |
+|---|---|---|
+| **High Variance** | $\text{Error} = \sigma^2 + \mu^2 + \text{Var}$ (worst) | Overfit: $\hat{f}(x) \approx f(x)$ on train only |
+| **Low Variance** | Underfit: $\mathbb{E}[\hat{f}] \neq f(x)$ | $\text{MSE} = \sigma^2$ (ideal) |
+
+---
+layout: content
+title: "Math-Grid: Complexity Comparison Table"
+notes: "A richer table replacing what would otherwise be a diagram. Full KaTeX in every cell."
+---
+| Method | Query Cost | Update Cost | Space |
+|---|---|---|---|
+| Brute force | $O(n \cdot d)$ | $O(1)$ | $O(n \cdot d)$ |
+| KD-tree | $O(\sqrt{n} \cdot d)$ | $O(\log n)$ | $O(n)$ |
+| LSH | $O(n^\rho \cdot d)$ where $\rho < 1$ | $O(1)$ | $O(n^{1+\rho})$ |
+| HNSW | $O(\log n \cdot d)$ | $O(\log n)$ | $O(n \cdot M)$ |
+
+where $M$ is the max number of connections per node.
+
+---
+layout: two-column
+title: "Flowchart + Equation Table Side by Side"
+right:
+  type: diagram
+  alt_text: Simple flowchart of an iterative update step using Unicode symbols
+  source: |
+    graph TD
+      A["θ₀ ← init"] --> B["Compute ∇L(θ)"]
+      B --> C["θ ← θ − η∇L"]
+      C --> D{"‖∇L‖ < ε?"}
+      D -->|"No"| B
+      D -->|"Yes"| E["Return θ*"]
+      style E fill:#1a5c3a,color:#ffffff
+---
+**Update rule** at step $k$:
+
+$$\theta_{k+1} = \theta_k - \eta \nabla_\theta \mathcal{L}(\theta_k)$$
+
+**Convergence** when:
+
+$$\|\nabla \mathcal{L}(\theta_k)\| < \varepsilon$$
+
+**Learning rate** schedule:
+
+$$\eta_k = \frac{\eta_0}{1 + \lambda k}$$
+
+---
+layout: content
+title: "Math-Flow Concept: Node Grid with Equations"
+notes: "Demonstrates what a future math-flow layout type might express in YAML. Currently rendered as a table approximation."
+---
+A pipeline expressed as a structured table of processing stages:
+
+| Stage | Operation | Output Shape |
+|---|---|---|
+| Embedding | $x \mapsto W_E x,\quad W_E \in \mathbb{R}^{d \times V}$ | $(B, T, d)$ |
+| Attention | $\text{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right)V$ | $(B, T, d)$ |
+| FFN | $\max(0,\, xW_1 + b_1)W_2 + b_2$ | $(B, T, d)$ |
+| Layer Norm | $\frac{x - \mu}{\sigma + \epsilon} \cdot \gamma + \beta$ | $(B, T, d)$ |
+
+Arrows between rows imply sequential composition: $f_4 \circ f_3 \circ f_2 \circ f_1$.
