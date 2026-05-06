@@ -1556,6 +1556,10 @@
     const container = pre.closest('.diagram-container');
     if (container) {
       if (type) container.dataset.diagramType = type;
+      // Store the diagram's title text so fixTimelineTitleCentering can find the
+      // title element by content after mermaid.run() replaces the pre.
+      const titleMatch = src.match(/^[ \t]*title[ \t]+(.+)$/im);
+      if (titleMatch) container.dataset.diagramTitle = titleMatch[1].trim();
       container.classList.add('mermaid-pending');
       container.dataset.mermaidPre = '1';
     }
@@ -1930,16 +1934,14 @@
   // getBoundingClientRect (which includes foreignObjects), compute the visual center in
   // SVG coordinate space, and reposition the .titleText element.
   function fixTimelineTitleCentering() {
-    const svgs = document.querySelectorAll('.diagram-container[data-diagram-type="timeline"] svg');
-    console.log('[timeline-title] svgs found:', svgs.length);
-    svgs.forEach(svg => {
+    document.querySelectorAll('.diagram-container[data-diagram-type="timeline"] svg').forEach(svg => {
       const svgRect = svg.getBoundingClientRect();
+      if (!svgRect || svgRect.width < 2) return;
       const vb = svg.viewBox && svg.viewBox.baseVal;
-      console.log('[timeline-title] svgRect:', svgRect.left, svgRect.width, '| vb:', vb && vb.x, vb && vb.width);
+      if (!vb || vb.width < 2) return;
 
-      if (!svgRect || svgRect.width < 2) { console.log('[timeline-title] skip: no svgRect'); return; }
-      if (!vb || vb.width < 2) { console.log('[timeline-title] skip: no viewBox'); return; }
-
+      // Measure visual content bounds via screen coords — getBoundingClientRect
+      // includes foreignObject elements (period/event boxes) unlike getBBox.
       let minX = Infinity, maxX = -Infinity;
       svg.querySelectorAll('foreignObject, rect').forEach(el => {
         const r = el.getBoundingClientRect();
@@ -1948,23 +1950,30 @@
           maxX = Math.max(maxX, r.right);
         }
       });
-      console.log('[timeline-title] content bounds screen:', minX, maxX);
-      if (!isFinite(minX) || maxX <= minX) { console.log('[timeline-title] skip: bad content bounds'); return; }
+      if (!isFinite(minX) || maxX <= minX) return;
 
       const scaleX = vb.width / svgRect.width;
       const centerSVG = vb.x + ((minX + maxX) / 2 - svgRect.left) * scaleX;
-      console.log('[timeline-title] scaleX:', scaleX, '| centerSVG:', centerSVG);
 
+      // Locate the title text element using stored title text (most reliable),
+      // then CSS class, then fall back to the topmost <text> by y-coordinate.
+      const container = svg.closest('.diagram-container');
+      const storedTitle = (container && container.dataset.diagramTitle) || '';
       const allText = Array.from(svg.querySelectorAll('text'));
-      console.log('[timeline-title] text elements:', allText.map(t => ({ cls: t.className?.baseVal || t.getAttribute('class'), x: t.getAttribute('x'), y: t.getAttribute('y'), txt: t.textContent?.trim().substring(0,30) })));
+      const titleEl = (storedTitle
+        ? allText.find(t => (t.textContent || '').trim() === storedTitle)
+        : null)
+        || svg.querySelector('.titleText')
+        || svg.querySelector('text[class*="title"]')
+        || (allText.length
+          ? allText.reduce((top, t) =>
+              parseFloat(t.getAttribute('y') || '9999') < parseFloat(top.getAttribute('y') || '9999')
+                ? t : top)
+          : null);
 
-      const titleEl = svg.querySelector('.titleText')
-                   || svg.querySelector('text[class*="title"]');
-      console.log('[timeline-title] titleEl:', titleEl);
       if (!titleEl) return;
       titleEl.setAttribute('x', centerSVG);
       titleEl.setAttribute('text-anchor', 'middle');
-      console.log('[timeline-title] repositioned to x=' + centerSVG);
     });
   }
 
