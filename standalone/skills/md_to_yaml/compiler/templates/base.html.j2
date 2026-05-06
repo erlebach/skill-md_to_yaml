@@ -1742,7 +1742,9 @@
     }
 
     // Fit based on actual content bbox, but apply scale to the full viewBox so we do not crop.
-    const fitScale = Math.min(availW / contentW, availH / contentH);
+    // Clamp denominators to at least vbW/vbH: when the viewBox is wider than the content bbox
+    // (e.g. Mermaid timeline), vbW * fitScale would exceed availW without this clamp.
+    const fitScale = Math.min(availW / Math.max(contentW, vbW), availH / Math.max(contentH, vbH));
 
     const measuredPx = measureRenderedLabelPx(svg);
 
