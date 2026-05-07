@@ -1733,11 +1733,10 @@
 
     // Crop the SVG viewBox to its actual rendered content bbox.
     // Fixes pie chart: title text overflows the viewBox left edge → title is clipped.
-    // Skip timeline: its boxes are foreignObject elements excluded from getBBox(), so
-    // the crop would be based only on the thin horizontal line and break the layout.
-    // Timeline title centering is handled separately by fixTimelineTitleCentering().
-    const _cropDiagramType = String(container ? container.dataset.diagramType || '' : '').toLowerCase();
-    if (_cropDiagramType !== 'timeline') {
+    // Skip timeline: cropping the viewBox increases scale and causes the SVG to overflow
+    // the card container. Timeline right-dead-space is handled by clipTimelineRightSpace().
+    const _isTimeline = (container && String(container.dataset.diagramType || '').toLowerCase() === 'timeline');
+    if (!_isTimeline) {
       try {
         const bb = svg.getBBox();
         if (bb && bb.width > 4 && bb.height > 4) {
@@ -1984,21 +1983,55 @@
     });
   }
 
+  // Clip the dead space to the right of the arrow in Mermaid timeline SVGs.
+  // Mermaid allocates extra viewBox width past the arrow tip, leaving blank space.
+  // We clip the .diagram-container to the arrow right edge rather than changing the SVG
+  // viewBox (which alters the scale) or SVG width (which shrinks content via aspect ratio).
+  function clipTimelineRightSpace() {
+    document.querySelectorAll('.diagram-container[data-diagram-type="timeline"]').forEach(container => {
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+      const svgRect = svg.getBoundingClientRect();
+      if (!svgRect || svgRect.width < 2) return;
+
+      // Find the rightmost horizontal line (the timeline arrow baseline).
+      let arrowRight = -Infinity;
+      svg.querySelectorAll('line').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.width > 20) arrowRight = Math.max(arrowRight, r.right);
+      });
+      if (!isFinite(arrowRight) || arrowRight <= svgRect.left) return;
+
+      // Clip the container width to just past the arrow tip (+12px padding).
+      const clipW = arrowRight - svgRect.left + 12;
+      if (clipW < svgRect.width - 5) {
+        container.style.width = clipW + 'px';
+        container.style.overflow = 'hidden';
+      }
+    });
+  }
+
   sizeAllMermaidSvgs();
 
   // Re-run after late layout stabilization and on resize.
   setTimeout(sizeAllMermaidSvgs, 150);
   setTimeout(sizeAllMermaidSvgs, 600);
   setTimeout(sizeAllMermaidSvgs, 1500);
-  // Timeline title fix runs after sizing has settled and browser has redrawn.
+  // Timeline title fix and clip run after sizing has settled and browser has redrawn.
   setTimeout(fixTimelineTitleCentering, 250);
+  setTimeout(clipTimelineRightSpace, 300);
   setTimeout(fixTimelineTitleCentering, 750);
+  setTimeout(clipTimelineRightSpace, 800);
   setTimeout(fixTimelineTitleCentering, 1600);
+  setTimeout(clipTimelineRightSpace, 1650);
   window.addEventListener('resize', () => {
     clearTimeout(window.__mermaidResizeTimer);
     window.__mermaidResizeTimer = setTimeout(sizeAllMermaidSvgs, 80);
     clearTimeout(window.__timelineTitleTimer);
-    window.__timelineTitleTimer = setTimeout(fixTimelineTitleCentering, 160);
+    window.__timelineTitleTimer = setTimeout(() => {
+      fixTimelineTitleCentering();
+      clipTimelineRightSpace();
+    }, 160);
   });
 
 
