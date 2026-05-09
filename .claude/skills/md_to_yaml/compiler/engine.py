@@ -121,7 +121,7 @@ def _render_col_html(col, base_dir: str, embed_images: bool, col_id: str, theme:
         data_attrs = _mermaid_data_attrs(col)
         return (f'<div class="diagram-container"{data_attrs} role="img" aria-label="{_html.escape(alt)}">'
                 f'<pre class="mermaid" aria-hidden="true">{_html.escape(mermaid_source)}</pre></div>')
-    return ""
+
 
 
 def _parse_figure_wide_body(body: str | None, theme: str, macros: dict[str, str] | None = None) -> dict:

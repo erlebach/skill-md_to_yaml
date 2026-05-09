@@ -624,7 +624,7 @@
     .diagram-container svg { max-width: 100%; max-height: 52vh; }
     /* Standalone diagram: JS post-processes SVG sizing after Mermaid renders */
     .slide-diagram .diagram-container svg { display: block; margin: 0 auto; }
-    pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; }
+    pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; overflow: hidden; }
 
 
     /* Prevent a visible tiny->resized flash: keep Mermaid output hidden until
@@ -1556,6 +1556,10 @@
     const container = pre.closest('.diagram-container');
     if (container) {
       if (type) container.dataset.diagramType = type;
+      // Store the diagram's title text so fixTimelineTitleCentering can find the
+      // title element by content after mermaid.run() replaces the pre.
+      const titleMatch = src.match(/^[ \t]*title[ \t]+(.+)$/im);
+      if (titleMatch) container.dataset.diagramTitle = titleMatch[1].trim();
       container.classList.add('mermaid-pending');
       container.dataset.mermaidPre = '1';
     }
@@ -1727,6 +1731,22 @@
     const isSequence = (container && String(container.dataset.diagramType || '').toLowerCase() === 'sequencediagram');
     normalizeSvgForHostSizing(svg);
 
+    // Crop the SVG viewBox to its actual rendered content bbox.
+    // Fixes pie chart: title text overflows the viewBox left edge → title is clipped.
+    // Skip timeline: cropping the viewBox increases scale and causes the SVG to overflow
+    // the card container. Timeline right-dead-space is handled by clipTimelineRightSpace().
+    const _isTimeline = (container && String(container.dataset.diagramType || '').toLowerCase() === 'timeline');
+    if (!_isTimeline) {
+      try {
+        const bb = svg.getBBox();
+        if (bb && bb.width > 4 && bb.height > 4) {
+          const pad = 6;
+          svg.setAttribute('viewBox',
+            `${bb.x - pad} ${bb.y - pad} ${bb.width + 2*pad} ${bb.height + 2*pad}`);
+        }
+      } catch(e) {}
+    }
+
     if (availW <= 0 || availH <= 0) {
       svg.style.width = '100%';
       svg.style.height = 'auto';
@@ -1742,7 +1762,9 @@
     }
 
     // Fit based on actual content bbox, but apply scale to the full viewBox so we do not crop.
-    const fitScale = Math.min(availW / contentW, availH / contentH);
+    // Clamp denominators to at least vbW/vbH: when the viewBox is wider than the content bbox
+    // (e.g. Mermaid timeline), vbW * fitScale would exceed availW without this clamp.
+    const fitScale = Math.min(availW / Math.max(contentW, vbW), availH / Math.max(contentH, vbH));
 
     const measuredPx = measureRenderedLabelPx(svg);
 
@@ -1903,15 +1925,113 @@
   // can be re-sized when the deck zoom changes.
   window.__mdToYamlSizeAllMermaidSvgs = sizeAllMermaidSvgs;
 
+  // Fix Mermaid v11 timeline title centering. The timeline renderer places the title
+  // at x = totalSvgWidth/2, but the SVG viewBox includes extra space to the right for
+  // the arrow extension, so the title lands right of visual center. getBBox() cannot
+  // fix this via viewBox crop because timeline boxes are foreignObject elements (excluded
+  // from getBBox). Instead, after layout settles, measure the actual content bounds via
+  // getBoundingClientRect (which includes foreignObjects), compute the visual center in
+  // SVG coordinate space, and reposition the .titleText element.
+  function fixTimelineTitleCentering() {
+    document.querySelectorAll('.diagram-container[data-diagram-type="timeline"] svg').forEach(svg => {
+      const svgRect = svg.getBoundingClientRect();
+      if (!svgRect || svgRect.width < 2) return;
+      const vb = svg.viewBox && svg.viewBox.baseVal;
+      if (!vb || vb.width < 2) return;
+
+      // Measure visual content bounds via screen coords — getBoundingClientRect
+      // includes foreignObject and path elements (period/event boxes) unlike getBBox.
+      let minX = Infinity, maxX = -Infinity;
+      svg.querySelectorAll('foreignObject, rect, path').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.width > 4) {
+          minX = Math.min(minX, r.left);
+          maxX = Math.max(maxX, r.right);
+        }
+      });
+      if (!isFinite(minX) || maxX <= minX) return;
+
+      const scaleX = vb.width / svgRect.width;
+      const centerSVG = vb.x + ((minX + maxX) / 2 - svgRect.left) * scaleX;
+
+      // Locate the title text element using stored title text (most reliable),
+      // then CSS class, then fall back to the topmost <text> by y-coordinate.
+      const container = svg.closest('.diagram-container');
+      const storedTitle = (container && container.dataset.diagramTitle) || '';
+      const allText = Array.from(svg.querySelectorAll('text'));
+      const titleEl = (storedTitle
+        ? allText.find(t => (t.textContent || '').trim() === storedTitle)
+        : null)
+        || svg.querySelector('.titleText')
+        || svg.querySelector('text[class*="title"]')
+        || (allText.length
+          ? allText.reduce((top, t) =>
+              parseFloat(t.getAttribute('y') || '9999') < parseFloat(top.getAttribute('y') || '9999')
+                ? t : top)
+          : null);
+
+      if (!titleEl) return;
+      // Clamp so the title doesn't overflow the SVG viewBox left/right edges.
+      const titleWidth = titleEl.getComputedTextLength ? titleEl.getComputedTextLength() : 0;
+      const halfW = titleWidth / 2;
+      const pad = 5;
+      let x = centerSVG;
+      if (x - halfW < vb.x + pad) x = vb.x + pad + halfW;
+      if (x + halfW > vb.x + vb.width - pad) x = vb.x + vb.width - pad - halfW;
+      titleEl.setAttribute('x', x);
+      titleEl.setAttribute('text-anchor', 'middle');
+    });
+  }
+
+  // Clip the dead space to the right of the arrow in Mermaid timeline SVGs.
+  // Mermaid allocates extra viewBox width past the arrow tip, leaving blank space.
+  // We clip the .diagram-container to the arrow right edge rather than changing the SVG
+  // viewBox (which alters the scale) or SVG width (which shrinks content via aspect ratio).
+  function clipTimelineRightSpace() {
+    document.querySelectorAll('.diagram-container[data-diagram-type="timeline"]').forEach(container => {
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+      const svgRect = svg.getBoundingClientRect();
+      if (!svgRect || svgRect.width < 2) return;
+
+      // Find the rightmost horizontal line (the timeline arrow baseline).
+      let arrowRight = -Infinity;
+      svg.querySelectorAll('line').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.width > 20) arrowRight = Math.max(arrowRight, r.right);
+      });
+      if (!isFinite(arrowRight) || arrowRight <= svgRect.left) return;
+
+      // Clip the container width to just past the arrow tip (+12px padding).
+      const clipW = arrowRight - svgRect.left + 12;
+      if (clipW < svgRect.width - 5) {
+        container.style.width = clipW + 'px';
+        container.style.overflow = 'hidden';
+      }
+    });
+  }
+
   sizeAllMermaidSvgs();
 
   // Re-run after late layout stabilization and on resize.
   setTimeout(sizeAllMermaidSvgs, 150);
   setTimeout(sizeAllMermaidSvgs, 600);
   setTimeout(sizeAllMermaidSvgs, 1500);
+  // Timeline title fix and clip run after sizing has settled and browser has redrawn.
+  setTimeout(fixTimelineTitleCentering, 250);
+  setTimeout(clipTimelineRightSpace, 300);
+  setTimeout(fixTimelineTitleCentering, 750);
+  setTimeout(clipTimelineRightSpace, 800);
+  setTimeout(fixTimelineTitleCentering, 1600);
+  setTimeout(clipTimelineRightSpace, 1650);
   window.addEventListener('resize', () => {
     clearTimeout(window.__mermaidResizeTimer);
     window.__mermaidResizeTimer = setTimeout(sizeAllMermaidSvgs, 80);
+    clearTimeout(window.__timelineTitleTimer);
+    window.__timelineTitleTimer = setTimeout(() => {
+      fixTimelineTitleCentering();
+      clipTimelineRightSpace();
+    }, 160);
   });
 
 
