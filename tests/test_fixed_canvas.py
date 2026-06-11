@@ -94,3 +94,18 @@ def test_mermaid_svg_labels(tmp_path):
     run_pos = html.index('await mermaid.run()')
     gate_pos = html.rindex('fonts.ready', 0, run_pos)
     assert gate_pos > html.index('mermaid.initialize')
+
+
+def test_mermaid_sizes_against_canvas(tmp_path):
+    """Mermaid runtime sizing uses canvas constants, not window.innerHeight. [FC-06]"""
+    from schema.models import DiagramSlide
+    html = _compile(_deck(
+        DiagramSlide(layout='diagram', title='D', alt_text='a graph', body='graph TD\n A-->B'),
+    ), tmp_path)
+    # the sizing helpers must reference the canvas height/width, and must not
+    # measure the live window for diagram available-space
+    assert 'CANVAS_H' in html and 'CANVAS_W' in html
+    assert 'window.innerHeight - SLIDE_PAD' not in html
+    assert 'document.documentElement.clientWidth' not in html
+    # rect measurements are converted out of the transformed viewport space
+    assert 'deckFitScale' in html

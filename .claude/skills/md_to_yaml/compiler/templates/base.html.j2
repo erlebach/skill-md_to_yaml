@@ -1936,20 +1936,32 @@
 
   // Scoped to Mermaid-generated SVGs. We select by [data-mermaid-pre] rather
   // than svg[id^="mermaid"] because Mermaid v11 uses different id schemes by type.
-  const SLIDE_PAD   = 96;  // 1in slide edge
+  const SLIDE_PAD   = 96;  // 96px (1in at 96dpi) slide edge
   const PANEL_INSET = 48;  // panel internal padding (combined horizontal/vertical slack)
+  // Diagrams live inside the fixed 1280x720 stage — available space is canvas
+  // space, never the live window.
+  const CANVAS_W = 1280, CANVAS_H = 720;
+  // getBoundingClientRect returns viewport px, scaled by the stage transform;
+  // divide by the current fit scale to express a measurement in canvas px.
+  function deckFitScale() {
+    const root = document.getElementById('deck-app-root');
+    const s = root ? parseFloat(getComputedStyle(root).getPropertyValue('--deck-fit-scale')) : 1;
+    return (Number.isFinite(s) && s > 0) ? s : 1;
+  }
+  function canvasRectH(el) { return el.getBoundingClientRect().height / deckFitScale(); }
+  function canvasRectW(el) { return el.getBoundingClientRect().width / deckFitScale(); }
 
   function sizeAllMermaidSvgs() {
     // Full-slide diagrams
     document.querySelectorAll('.slide-diagram .diagram-container[data-mermaid-pre] svg').forEach(svg => {
       const slide = svg.closest('section[role="group"]');
       const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
-      const titleH = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
+      const titleH = titleBlock ? canvasRectH(titleBlock) : 60;
       const caption = slide && slide.querySelector('.diagram-caption');
-      const capH = caption ? caption.getBoundingClientRect().height + 16 : 0;
+      const capH = caption ? canvasRectH(caption) + 16 : 0;
 
-      const availW = document.documentElement.clientWidth - SLIDE_PAD * 2 - PANEL_INSET;
-      const availH = window.innerHeight - SLIDE_PAD * 2 - titleH - capH - PANEL_INSET;
+      const availW = CANVAS_W - SLIDE_PAD * 2 - PANEL_INSET;
+      const availH = CANVAS_H - SLIDE_PAD * 2 - titleH - capH - PANEL_INSET;
 
       const result = sizeSvgMeasured(svg, availW, availH, 34, 54);
       logSizing(svg, result, 'slide-diagram');
@@ -1960,12 +1972,12 @@
     document.querySelectorAll('.slide-two-column .diagram-container[data-mermaid-pre] svg').forEach(svg => {
       const slide = svg.closest('section[role="group"]');
       const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
-      const titleH = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
+      const titleH = titleBlock ? canvasRectH(titleBlock) : 60;
       const container = svg.closest('.diagram-container');
-      const colW = container?.getBoundingClientRect().width || (document.documentElement.clientWidth / 2);
+      const colW = (container && canvasRectW(container)) || (CANVAS_W / 2);
 
       const availW = colW - PANEL_INSET;
-      const availH = window.innerHeight - SLIDE_PAD * 2 - titleH - PANEL_INSET;
+      const availH = CANVAS_H - SLIDE_PAD * 2 - titleH - PANEL_INSET;
 
       const result = sizeSvgMeasured(svg, availW, availH, 30, 46);
       logSizing(svg, result, 'slide-two-column');
@@ -1986,18 +1998,17 @@
       const fscale = Math.max(0.25, Math.min(4, parseFloat(raw) || 1));
 
       const titleBlock = section.querySelector('header.slide-heading-stack') || section.querySelector('h2');
-      const titleH = titleBlock ? titleBlock.getBoundingClientRect().height : 60;
+      const titleH = titleBlock ? canvasRectH(titleBlock) : 60;
 
-      // Do NOT use getBoundingClientRect().bottom here: for offscreen slides in a
-      // scroll-snap container, bottom depends on scroll position and can produce
-      // incorrect available height at initial load. Use viewport-relative math.
-      const maxBelowTitle = window.innerHeight - (2 * SLIDE_PAD) - titleH;
+      // Available space below the title, in canvas px: slides are fixed
+      // 1280x720 layers — never measure the live window.
+      const maxBelowTitle = CANVAS_H - (2 * SLIDE_PAD) - titleH;
 
-      const cw = document.documentElement.clientWidth - 2 * SLIDE_PAD;
+      const cw = CANVAS_W - 2 * SLIDE_PAD;
       const maxWrapW = Math.min(cw, cw * wFrac * fscale);
       const availW = Math.max(40, maxWrapW - FIG_WRAP_INSET);
 
-      const fromVh = window.innerHeight * vhFrac * fscale;
+      const fromVh = CANVAS_H * vhFrac * fscale;
       const availH = Math.max(60, Math.min(fromVh, maxBelowTitle) - FIG_V_PAD);
 
       const result = sizeSvgMeasured(svg, availW, availH, 34, 54);
@@ -2011,14 +2022,14 @@
       const wrap = svg.closest('.figure-wide-figure-wrap');
       if (!wrap) return;
 
-      const b = wrap.getBoundingClientRect();
+      const bW = canvasRectW(wrap), bH = canvasRectH(wrap);
       const fig = svg.closest('.figure-wide-figure');
       const cap = fig && fig.querySelector('figcaption');
-      const capH = (cap && cap.getBoundingClientRect().height) || 0;
+      const capH = (cap && canvasRectH(cap)) || 0;
       const gap = cap ? 12 : 0;
 
-      const availW = Math.max(40, b.width - FW_INSET);
-      const availH = Math.max(60, b.height - FW_INSET - capH - gap);
+      const availW = Math.max(40, bW - FW_INSET);
+      const availH = Math.max(60, bH - FW_INSET - capH - gap);
 
       const result = sizeSvgMeasured(svg, availW, availH, 30, 46);
       logSizing(svg, result, 'slide-figure-wide');
@@ -2108,8 +2119,11 @@
       if (!isFinite(arrowRight) || arrowRight <= svgRect.left) return;
 
       // Clip the container width to just past the arrow tip (+12px padding).
-      const clipW = arrowRight - svgRect.left + 12;
-      if (clipW < svgRect.width - 5) {
+      // Rect deltas are viewport px (scaled by the stage transform) — convert
+      // to canvas px before assigning a layout width.
+      const s = deckFitScale();
+      const clipW = (arrowRight - svgRect.left) / s + 12;
+      if (clipW < svgRect.width / s - 5) {
         container.style.width = clipW + 'px';
         container.style.overflow = 'hidden';
       }
