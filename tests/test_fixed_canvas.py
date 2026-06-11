@@ -77,3 +77,20 @@ def test_autofit_present(tmp_path):
     assert 'autofitAll' in html
     assert 'scrollWidth' in html               # width overflow handled, not just height
     assert 'style.zoom' in html
+
+
+def test_mermaid_svg_labels(tmp_path):
+    """Mermaid uses SVG-native labels and defers behind fonts.ready. [FC-05]"""
+    from schema.models import DiagramSlide
+    html = _compile(_deck(
+        DiagramSlide(layout='diagram', title='D', alt_text='a graph',
+                     body='graph TD\n  A[Start] --> B[End]'),
+    ), tmp_path)
+    assert 'htmlLabels: false' in html
+    assert 'htmlLabels: true' not in html
+    assert 'fonts.ready' in html
+    # a fonts.ready gate must sit between mermaid.initialize() and the actual
+    # `await mermaid.run()` call, so labels measure with the real typeface
+    run_pos = html.index('await mermaid.run()')
+    gate_pos = html.rindex('fonts.ready', 0, run_pos)
+    assert gate_pos > html.index('mermaid.initialize')

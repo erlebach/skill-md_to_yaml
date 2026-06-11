@@ -1623,9 +1623,12 @@
     fontSize: 22,
     fontFamily: "'{{ deck.metadata.font }}', sans-serif",
 
-    // Important diagnostic switch:
-    // If flowchart labels are still problematic in v11, try htmlLabels: false.
-    flowchart: { useMaxWidth: false, htmlLabels: true },
+    // SVG-native <text> labels everywhere: the default foreignObject (HTML)
+    // labels are mispositioned or invisible in WebKit when any ancestor
+    // carries a CSS transform — and the fixed-canvas stage is exactly that.
+    // SVG text also rasterizes crisper under transform than HTML-in-SVG.
+    htmlLabels: false,
+    flowchart: { useMaxWidth: false, htmlLabels: false },
     sequence: { useMaxWidth: false },
     timeline: { useMaxWidth: false },
     gantt:    { useMaxWidth: false },
@@ -1662,6 +1665,11 @@
     }
   });
 
+  // Render only after fonts load so label widths are measured with the real
+  // typeface, not a fallback (prevents box-sized-for-the-wrong-font misfits).
+  if (document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready; } catch (e) {}
+  }
   await mermaid.run();
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
@@ -2109,11 +2117,14 @@
   }
 
   sizeAllMermaidSvgs();
+  // Diagrams change slide heights — re-run the controller's per-slide autofit.
+  if (window.__mdToYamlAutofitAll) window.__mdToYamlAutofitAll();
 
   // Re-run after late layout stabilization and on resize.
   setTimeout(sizeAllMermaidSvgs, 150);
   setTimeout(sizeAllMermaidSvgs, 600);
   setTimeout(sizeAllMermaidSvgs, 1500);
+  setTimeout(() => window.__mdToYamlAutofitAll && window.__mdToYamlAutofitAll(), 1600);
   // Timeline title fix and clip run after sizing has settled and browser has redrawn.
   setTimeout(fixTimelineTitleCentering, 250);
   setTimeout(clipTimelineRightSpace, 300);
