@@ -67,3 +67,13 @@ def test_controller_is_fixed_canvas(tmp_path):
     assert '--deck-fit-scale' in html
     assert 'scrollIntoView' not in html
     assert 'deck-hud' in html          # #debug instrumentation (migrate_deck.py HUD)
+
+
+def test_autofit_present(tmp_path):
+    """An autofit routine shrinks any slide whose content exceeds the canvas. [FC-04]"""
+    html = _compile(_deck(
+        TitleSlide(layout='title', title='A very long title that would overflow', subtitle='And a subtitle'),
+    ), tmp_path)
+    assert 'autofitAll' in html
+    assert 'scrollWidth' in html               # width overflow handled, not just height
+    assert 'style.zoom' in html

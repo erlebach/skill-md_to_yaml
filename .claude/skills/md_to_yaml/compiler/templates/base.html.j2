@@ -1583,8 +1583,24 @@
 
     // Autofit is CONTENT-driven (the canvas is a fixed 1280x720), so it runs
     // on content signals — load, fonts, post-Mermaid — never per-resize.
-    // Stub here; the real body lands in Task 1.4.
-    function autofitAll() {}
+    // Any slide whose content exceeds the canvas (either axis) is shrunk with
+    // CSS `zoom`, which participates in layout so text re-wraps. Iterated
+    // because shrinking re-wraps and changes the measured size. Runs over ALL
+    // slides — visibility:hidden preserves layout, so hidden slides measure
+    // correctly (and the boundary audit sees every slide post-fit). The 0.4
+    // floor keeps a pathological slide legible: below it, the section's
+    // overflow-y:auto scrolls instead of clipping.
+    function autofitAll() {
+      slides.forEach(function(s) {
+        s.style.zoom = '';                        // reset before measuring
+        var z = 1, guard = 0;
+        while ((s.scrollHeight > CH + 1 || s.scrollWidth > CW + 1) && z > 0.4 && guard < 4) {
+          z = Math.max(0.4, z * Math.min(CH / s.scrollHeight, CW / s.scrollWidth) * 0.98);  // 2% margin
+          s.style.zoom = String(z);
+          guard++;
+        }
+      });
+    }
     window.__mdToYamlAutofitAll = autofitAll;
     autofitAll();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(autofitAll);
