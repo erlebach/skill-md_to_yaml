@@ -16,7 +16,7 @@
       --font-scale: 1.35;
       /* Fixed footer: deck metadata `footer_scale` / `footer_inset` on <html> override these. */
       --footer-scale: 1;
-      --slide-footer-inset: 0.5in;
+      --slide-footer-inset: 48px;
       /* clear fixed .slide-footer-nav (z-index) — figure slides only adjust bottom padding. */
       --slide-footer-ui-clearance: calc(2.75rem * var(--footer-scale, 1));
     }
@@ -32,8 +32,8 @@
       --font-family: '{{ deck.metadata.font }}', sans-serif;
       --fig-panel: #1e2330;        /* figure panel bg — contrast vs #e6edf3 text ≥ 9:1 (WCAG AA) */
       --fig-panel-border: #2d3548;
-      --two-col-title-gap: 0.5in;           /* gap between slide title and two-column content area */
-      --two-col-fig-max-height: 100%;       /* image height cap in two-col (single figure). 100% = fill column; use e.g. 78vh to cap */
+      --two-col-title-gap: 48px;           /* gap between slide title and two-column content area */
+      --two-col-fig-max-height: 100%;       /* image height cap in two-col (single figure). 100% = fill column; use e.g. 561.6px to cap */
       --two-col-both-fig-max-height: 100%;  /* image height cap when both columns have figures */
     }
 
@@ -83,10 +83,10 @@
       }
     }
 
-    /* Bottom-centered counter + go-to + view scale (fixed; 1in margin band). */
+    /* Bottom-centered counter + go-to + view scale (fixed; 96px margin band). */
     .slide-footer-nav {
       position: fixed;
-      bottom: var(--slide-footer-inset, 0.5in);
+      bottom: var(--slide-footer-inset, 48px);
       left: 50%;
       transform: translateX(-50%);
       z-index: 100;
@@ -212,7 +212,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 1in;
+      padding: 96px;
       scroll-snap-align: start;
       border: 2px solid var(--slide-frame);
       --title-font-mul: calc(var(--font-scale) * var(--title-scale));
@@ -255,7 +255,7 @@
 
     /* Title slide (h1) — ADA projection scale */
     h1 {
-      font-size: calc(clamp(48px, 10vw, 96px) * var(--title-font-mul));
+      font-size: calc(96px * var(--title-font-mul));
       font-weight: 700;
       line-height: 1.0;
       text-wrap: balance;
@@ -269,7 +269,7 @@
       margin-bottom: 1rem;
     }
     .slide-heading-stack--title {
-      font-size: calc(clamp(48px, 10vw, 96px) * var(--title-font-mul));
+      font-size: calc(96px * var(--title-font-mul));
       margin-bottom: 1rem;
     }
     .slide-heading-stack--title h1 {
@@ -287,7 +287,7 @@
       text-wrap: balance;
     }
     .slide-heading-stack--standard {
-      font-size: calc(clamp(32px, 5vw, 52px) * var(--title-font-mul));
+      font-size: calc(52px * var(--title-font-mul));
     }
     .slide-heading-stack--standard h2 {
       font-size: 1em;
@@ -304,7 +304,7 @@
       text-wrap: balance;
     }
     .slide-heading-stack--divider {
-      font-size: calc(clamp(48px, 8vw, 80px) * var(--title-font-mul));
+      font-size: calc(80px * var(--title-font-mul));
     }
     .slide-heading-stack--divider h2 {
       font-size: 1em;
@@ -321,7 +321,7 @@
       text-wrap: balance;
     }
     .slide-quote-block {
-      font-size: calc(clamp(28px, 3.5vw, 44px) * var(--title-font-mul));
+      font-size: calc(44px * var(--title-font-mul));
     }
     section.slide-quote .slide-quote-block blockquote {
       font-size: 1em;
@@ -336,13 +336,13 @@
       text-wrap: balance;
     }
     .slide-title .author {
-      font-size: calc(clamp(20px, 2.2vw, 28px) * var(--content-font-mul));
+      font-size: calc(28px * var(--content-font-mul));
       text-align: center;
       color: var(--muted);
     }
 
     h2 {
-      font-size: calc(clamp(32px, 5vw, 52px) * var(--title-font-mul));
+      font-size: calc(52px * var(--title-font-mul));
       font-weight: 700;
       line-height: 1.1;
       text-wrap: balance;
@@ -361,12 +361,12 @@
       color: var(--accent);
     }
     h3 {
-      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--title-font-mul));
+      font-size: calc(34px * var(--title-font-mul));
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
     .slide-body {
-      font-size: calc(clamp(20px, 2.2vw, 28px) * var(--content-font-mul));
+      font-size: calc(28px * var(--content-font-mul));
       line-height: 1.6;
       text-align: left;
     }
@@ -487,12 +487,12 @@
     }
 
     .hero-description {
-      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--title-font-mul));
+      font-size: calc(34px * var(--title-font-mul));
       color: var(--muted);
       text-align: center;
     }
     .hero-body {
-      font-size: calc(clamp(20px, 2.4vw, 30px) * var(--title-font-mul));
+      font-size: calc(30px * var(--title-font-mul));
       color: var(--muted);
       text-align: center;
       max-width: 50em;
@@ -501,7 +501,7 @@
     }
 
     figcaption {
-      font-size: calc(clamp(18px, 1.8vw, 24px) * var(--content-font-mul));
+      font-size: calc(23.04px * var(--content-font-mul));
       color: var(--muted);
       margin-top: 0.75rem;
     }
@@ -527,7 +527,7 @@
     }
     /* Hard viewport height on two-column slides so the figure's max-height:100% cascade resolves.
        Without this, section[role="group"]'s min-height:100vh lets the section grow past the viewport
-       and the image overflows into/past the bottom 1in margin. */
+       and the image overflows into/past the bottom 96px margin. */
     section[role="group"].slide-two-column,
     section[role="group"].slide-comparison {
       height: 100vh;
@@ -544,7 +544,7 @@
     section.slide-two-column .slide-content-area:has(.two-col--markdown-split),
     section.slide-comparison .slide-content-area {
       justify-content: flex-start;
-      margin-top: 1.5in;
+      margin-top: 144px;
     }
     section.slide-two-column .two-col--markdown-split > .col-left,
     section.slide-two-column .two-col--markdown-split > .col-right,
@@ -565,7 +565,7 @@
     }
     section.slide-two-column .two-col--markdown-split .slide-body > h3,
     section.slide-comparison .two-col .slide-body > h3 {
-      font-size: calc(clamp(22px, 2.8vw, 34px) * var(--title-font-mul) * 1.2);
+      font-size: calc(34px * var(--title-font-mul) * 1.2);
       margin-bottom: 0;
     }
     section.slide-two-column .two-col--markdown-split .slide-body > ul,
@@ -580,7 +580,7 @@
       margin-bottom: 1rem;
     }
     section.slide-comparison .two-col-50-50 > .slide-body > p:first-of-type strong {
-      font-size: calc(clamp(24px, 2.9vw, 36px) * var(--title-font-mul));
+      font-size: calc(36px * var(--title-font-mul));
       font-weight: 700;
       color: var(--accent);
       line-height: 1.25;
@@ -593,7 +593,7 @@
     .two-col-both img { max-height: var(--two-col-both-fig-max-height); }
 
     blockquote {
-      font-size: calc(clamp(28px, 3.5vw, 44px) * var(--content-font-mul));
+      font-size: calc(44px * var(--content-font-mul));
       font-style: italic;
       border-left: 4px solid var(--accent);
       padding-left: 1.5rem;
@@ -607,21 +607,21 @@
       padding: 1.5rem;
       overflow-x: auto;
       overflow-y: auto;
-      max-height: 70vh;
-      font-size: calc(clamp(15px, 1.6vw, 20px) * var(--content-font-mul));
+      max-height: 504px;
+      font-size: calc(20px * var(--content-font-mul));
       line-height: 1.6;
     }
     pre:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-    code { font-family: 'IBM Plex Mono', monospace; font-size: calc(clamp(15px, 1.6vw, 20px) * var(--content-font-mul)); }
+    code { font-family: 'IBM Plex Mono', monospace; font-size: calc(20px * var(--content-font-mul)); }
 
-    .slide-code { overflow: auto; max-height: 75vh; border-radius: 0.5rem; }
+    .slide-code { overflow: auto; max-height: 540px; border-radius: 0.5rem; }
     .slide-codetable { width: 100%; border-collapse: collapse; }
     .slide-codetable td.linenos { vertical-align: top; padding-right: 0.5em; border-right: 1px solid var(--border); user-select: none; width: 1%; white-space: nowrap; }
     .slide-codetable td.code { vertical-align: top; padding-left: 1em; width: 99%; }
     .slide-codetable td.code pre { border: none; padding: 0; margin: 0; max-height: none; }
 
-    .diagram-container { text-align: center; max-height: 75vh; overflow: auto; }
-    .diagram-container svg { max-width: 100%; max-height: 52vh; }
+    .diagram-container { text-align: center; max-height: 540px; overflow: auto; }
+    .diagram-container svg { max-width: 100%; max-height: 374.4px; }
     /* Standalone diagram: JS post-processes SVG sizing after Mermaid renders */
     .slide-diagram .diagram-container svg { display: block; margin: 0 auto; }
     pre.mermaid { background: transparent; border: none; padding: 0; max-height: none; text-align: center; overflow: hidden; }
@@ -684,13 +684,13 @@
     }
 
     /* layout: figure — one viewport; flex min-height:0; extra bottom padding so
-       the white panel never sits under the fixed .slide-footer-nav (1in margin band). */
+       the white panel never sits under the fixed .slide-footer-nav (96px margin band). */
     section[role="group"].slide-figure {
       height: 100vh;
       max-height: 100vh;
       min-height: 0;
       overflow: hidden;
-      padding: 1in 1in calc(1in + var(--slide-footer-ui-clearance, 2.75rem)) 1in;
+      padding: 96px 96px calc(96px + var(--slide-footer-ui-clearance, 2.75rem)) 96px;
     }
     /* overflow: visible here — zoom / transform:scale on media can paint past the
        unscaled box; hidden was clipping the figure (left/bottom). Section clips to 100vh. */
@@ -760,7 +760,7 @@
     .figure-asset > img,
     .figure-asset .diagram-container img {
       max-width: 100%;
-      max-height: calc(72vh * var(--figure-scale, 1));
+      max-height: calc(518.4px * var(--figure-scale, 1));
       width: auto;
       height: auto;
       object-fit: contain;
@@ -769,7 +769,7 @@
     }
     .slide-figure.figure-only .figure-asset-wrap:not(.figure-asset-wrap--fill) .figure-asset > img,
     .slide-figure.figure-only .figure-asset-wrap:not(.figure-asset-wrap--fill) .figure-asset .diagram-container img {
-      max-height: calc(78vh * var(--figure-scale, 1));
+      max-height: calc(561.6px * var(--figure-scale, 1));
     }
     .slide-figure .figure-asset .diagram-container {
       text-align: center;
@@ -778,7 +778,7 @@
     }
     .slide-figure .figure-asset .diagram-container svg {
       max-width: 100%;
-      max-height: calc(72vh * var(--figure-scale, 1));
+      max-height: calc(518.4px * var(--figure-scale, 1));
       width: auto;
       height: auto;
       object-fit: contain;
@@ -786,7 +786,7 @@
       margin: 0 auto;
     }
     .slide-figure.figure-only .figure-asset .diagram-container svg {
-      max-height: calc(78vh * var(--figure-scale, 1));
+      max-height: calc(561.6px * var(--figure-scale, 1));
     }
     .slide-figure .figure-asset .diagram-container pre.mermaid {
       max-width: 100%;
@@ -818,7 +818,7 @@
     .figure-asset-wrap--fill .figure-asset img {
       width: 100%;
       max-width: 100%;
-      max-height: 80vh;
+      max-height: 576px;
       height: auto;
       object-fit: contain;
       display: block;
@@ -828,7 +828,7 @@
     }
     .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset > img,
     .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset img {
-      max-height: 85vh;
+      max-height: 612px;
     }
     .figure-asset-wrap--fill .figure-asset .diagram-container {
       display: flex;
@@ -841,7 +841,7 @@
     .figure-asset-wrap--fill .figure-asset .diagram-container svg {
       width: auto;
       max-width: 100%;
-      max-height: 80vh;
+      max-height: 576px;
       height: auto;
       object-fit: contain;
       display: block;
@@ -850,35 +850,35 @@
       transform-origin: center center;
     }
     .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset .diagram-container svg {
-      max-height: 85vh;
+      max-height: 612px;
     }
     @supports (zoom: 1) {
       .figure-asset-wrap--fill .figure-asset > img,
       .figure-asset-wrap--fill .figure-asset img {
-        max-height: 80vh;
+        max-height: 576px;
         transform: none;
         transform-origin: unset;
         zoom: var(--figure-scale, 1);
       }
       .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset > img,
       .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset img {
-        max-height: 85vh;
+        max-height: 612px;
       }
       .figure-asset-wrap--fill .figure-asset .diagram-container svg {
         width: auto;
         max-width: 100%;
-        max-height: 80vh;
+        max-height: 576px;
         transform: none;
         transform-origin: unset;
         zoom: var(--figure-scale, 1);
       }
       .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset .diagram-container svg {
-        max-height: 85vh;
+        max-height: 612px;
       }
     }
     /* Single diagram slide: diagram dominates */
-    .diagram-only .diagram-container { max-height: 80vh; }
-    .diagram-only .diagram-container svg { max-height: 75vh; }
+    .diagram-only .diagram-container { max-height: 576px; }
+    .diagram-only .diagram-container svg { max-height: 540px; }
 
     .divider-slide { align-items: center; text-align: center; }
 
@@ -1015,18 +1015,18 @@
     .table-scroll-wrapper { overflow-x: auto; max-width: 100%; background: var(--fig-panel); border: 1px solid var(--fig-panel-border); border-radius: 10px; padding: 1rem 1.5rem; }
     .table-scroll-wrapper:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     .table-scroll-wrapper table { width: 100%; border-collapse: collapse; }
-    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; font-size: calc(clamp(18px, 1.9vw, 26px) * var(--content-font-mul)); }
+    .table-scroll-wrapper th, .table-scroll-wrapper td { padding: 0.5em 1em; border: 1px solid var(--accent, #d4a017); text-align: left; font-size: calc(24.32px * var(--content-font-mul)); }
     .table-scroll-wrapper tr.span-row td {
       color: var(--muted);
       font-style: italic;
-      font-size: calc(clamp(15px, 1.5vw, 20px) * var(--content-font-mul));
+      font-size: calc(19.2px * var(--content-font-mul));
       border-top: 2px solid var(--accent);
       border-left: none;
       border-right: none;
       padding-top: 0.6em;
     }
     .table-scroll-wrapper caption {
-      font-size: calc(clamp(18px, 1.8vw, 24px) * var(--content-font-mul));
+      font-size: calc(23.04px * var(--content-font-mul));
       font-weight: bold;
       caption-side: bottom;
       margin-top: 0.75em;
@@ -1081,7 +1081,7 @@
     }
 
     {{ pygments_css | safe }}
-    /* ── figure-wide layout: smart figure — flex under 1in slide padding;
+    /* ── figure-wide layout: smart figure — flex under 96px slide padding;
        figure area flexes; media scales (max 100% / object-fit) so footer fits. ─ */
     section.slide-figure-wide {
       height: 100vh;
@@ -1109,7 +1109,7 @@
       flex: 0 0 auto;
       text-align: left;
       max-width: 64em;
-      font-size: calc(clamp(18px, 2vw, 24px) * var(--content-font-mul));
+      font-size: calc(24px * var(--content-font-mul));
       color: var(--muted);
       margin-bottom: 0.25rem;
     }
@@ -1117,7 +1117,7 @@
       /* Taller default panel; flex still grows when space allows. */
       flex: 1 1 auto;
       flex-shrink: 0;
-      min-height: clamp(12rem, 36vh, 62vh);
+      min-height: 259.2px;
       display: flex;
       flex-direction: column;
       /* visible: scaled max-width/max-height (figure_scale) may exceed 100% of band */
@@ -1173,7 +1173,7 @@
     .figure-wide-media img {
       flex: 0 1 auto;
       max-width: 100%;
-      max-height: 58vh;
+      max-height: 417.6px;
       width: auto;
       height: auto;
       object-fit: contain;
@@ -1185,7 +1185,7 @@
     .figure-wide-media .diagram-container svg,
     .slide-figure-wide .figure-wide-media .diagram-container svg {
       max-width: 100%;
-      max-height: 58vh;
+      max-height: 417.6px;
       width: auto;
       height: auto;
       object-fit: contain;
@@ -1197,14 +1197,14 @@
     @supports (zoom: 1) {
       .slide-figure-wide .figure-wide-media > img,
       .slide-figure-wide .figure-wide-media img {
-        max-height: 58vh;
+        max-height: 417.6px;
         transform: none;
         transform-origin: unset;
         zoom: var(--figure-scale, 1);
       }
       .slide-figure-wide .figure-wide-media .diagram-container svg {
         max-width: 100%;
-        max-height: 58vh;
+        max-height: 417.6px;
         transform: none;
         transform-origin: unset;
         zoom: var(--figure-scale, 1);
