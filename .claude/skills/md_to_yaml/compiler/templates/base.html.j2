@@ -238,6 +238,10 @@
       overflow-y: auto;             /* safety valve if a slide overflows 720px */
     }
     section[role="group"].active { visibility: visible; }
+    /* show() moves programmatic focus to the slide for SR announcements; the
+       default focus ring would outline every slide. Keyboard users navigate
+       with arrows (not Tab), so no visible ring is lost. */
+    section[role="group"]:focus { outline: none; }
     /* Title and divider slides: centered (presentation default) */
     section[role="group"].slide-title,
     section[role="group"].slide-divider {
