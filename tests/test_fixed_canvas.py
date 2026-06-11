@@ -109,3 +109,36 @@ def test_mermaid_sizes_against_canvas(tmp_path):
     assert 'document.documentElement.clientWidth' not in html
     # rect measurements are converted out of the transformed viewport space
     assert 'deckFitScale' in html
+
+
+def test_bounds_audit_emitted(tmp_path):
+    """The compiled page exposes the slide-boundary audit hook. [FC-09a]"""
+    html = _compile(_deck(TitleSlide(layout='title', title='T')), tmp_path)
+    assert '__mdToYamlAuditBounds' in html
+    assert 'visibleRect' in html
+
+
+def test_no_element_crosses_slide_boundary(tmp_path):
+    """No element's visible box crosses its slide's 1280x720 rect. [FC-09b]"""
+    pytest.importorskip('playwright.sync_api')
+    from playwright.sync_api import sync_playwright
+    from schema.models import CodeSlide, SummarySlide
+    out = tmp_path / 'audit.html'
+    compile_deck(_deck(
+        TitleSlide(layout='title', title='A deliberately long stress title for the canvas',
+                   subtitle='Subtitle that wraps across the fixed slide width'),
+        ContentSlide(layout='content', title='Dense content',
+                     body='\n'.join('- bullet point %d with some longer text' % i for i in range(14))),
+        CodeSlide(layout='code', title='Code', language='python',
+                  body='\n'.join('print(%d)' % i for i in range(40))),
+        SummarySlide(layout='summary', title='Summary', body='- Done\n- Really done'),
+    ), str(out))
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1280, 'height': 720})   # fit scale == 1
+        page.goto(out.as_uri())
+        page.wait_for_function('() => !!window.__mdToYamlAuditBounds')
+        page.wait_for_timeout(700)        # fonts.ready re-runs autofit; let it settle
+        violations = page.evaluate('window.__mdToYamlAuditBounds(1.5)')
+        browser.close()
+    assert violations == [], f'elements crossing slide bounds: {violations}'

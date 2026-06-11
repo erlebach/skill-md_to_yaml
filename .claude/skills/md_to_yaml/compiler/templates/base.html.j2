@@ -223,7 +223,11 @@
     }
 
     section[role="group"] {
-      position: absolute; inset: 0;
+      /* Explicit box, not inset:0 — autofit pairs CSS zoom with an inverse
+         width/height so the rendered box stays exactly 1280x720; inset-based
+         sizing under zoom is engine-quirky (Chrome collapses the box). */
+      position: absolute; left: 0; top: 0;
+      width: 1280px; height: 720px;
       display: flex;
       flex-direction: column;
       padding: 96px;
@@ -627,7 +631,10 @@
     pre:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     code { font-family: 'IBM Plex Mono', monospace; font-size: calc(20px * var(--content-font-mul)); }
 
-    .slide-code { overflow: auto; max-height: 540px; border-radius: 0.5rem; }
+    /* Descendant selector on purpose: the section ALSO carries class
+       "slide-code" (slide-{layout}), and capping the section's height breaks
+       the fixed 1280x720 layer. Only the inner Pygments wrapper is capped. */
+    section .slide-code { overflow: auto; max-height: 540px; border-radius: 0.5rem; }
     .slide-codetable { width: 100%; border-collapse: collapse; }
     .slide-codetable td.linenos { vertical-align: top; padding-right: 0.5em; border-right: 1px solid var(--border); user-select: none; width: 1%; white-space: nowrap; }
     .slide-codetable td.code { vertical-align: top; padding-left: 1em; width: 99%; }
@@ -1411,6 +1418,9 @@
           'fit scale: ' + s.toFixed(4),
           'slide    : ' + (idx + 1) + '/' + slides.length
         ].join(String.fromCharCode(10));
+        var bad = auditBounds();
+        hud.textContent += String.fromCharCode(10) + 'bounds   : ' + bad.length + ' offender(s)';
+        if (bad.length) console.table(bad);
       }
     }
 
@@ -1583,20 +1593,29 @@
 
     // Autofit is CONTENT-driven (the canvas is a fixed 1280x720), so it runs
     // on content signals — load, fonts, post-Mermaid — never per-resize.
-    // Any slide whose content exceeds the canvas (either axis) is shrunk with
-    // CSS `zoom`, which participates in layout so text re-wraps. Iterated
-    // because shrinking re-wraps and changes the measured size. Runs over ALL
-    // slides — visibility:hidden preserves layout, so hidden slides measure
-    // correctly (and the boundary audit sees every slide post-fit). The 0.4
-    // floor keeps a pathological slide legible: below it, the section's
-    // overflow-y:auto scrolls instead of clipping.
+    // Any slide whose content exceeds its box (either axis) is shrunk with
+    // CSS `zoom` PAIRED WITH an inverse width/height, so the rendered box
+    // stays exactly 1280x720 while the internal coordinate space grows —
+    // text re-wraps to the wider space. Overflow is detected by comparing
+    // scrollHeight/Width to clientHeight/Width (same coordinate space under
+    // zoom — comparing against the 720 constant ratchets every slide to the
+    // floor, because zoom rescales the element's internal coordinates).
+    // Iterated because shrinking re-wraps and changes the measured size.
+    // Runs over ALL slides — visibility:hidden preserves layout, so hidden
+    // slides measure correctly (and the boundary audit sees every slide
+    // post-fit). The 0.4 floor keeps a pathological slide legible: below it,
+    // the section's overflow-y:auto scrolls instead of clipping.
     function autofitAll() {
       slides.forEach(function(s) {
-        s.style.zoom = '';                        // reset before measuring
+        s.style.zoom = ''; s.style.width = ''; s.style.height = '';  // reset before measuring
         var z = 1, guard = 0;
-        while ((s.scrollHeight > CH + 1 || s.scrollWidth > CW + 1) && z > 0.4 && guard < 4) {
-          z = Math.max(0.4, z * Math.min(CH / s.scrollHeight, CW / s.scrollWidth) * 0.98);  // 2% margin
+        while ((s.scrollHeight > s.clientHeight + 1 || s.scrollWidth > s.clientWidth + 1)
+               && z > 0.4 && guard < 4) {
+          z = Math.max(0.4, z * Math.min(s.clientHeight / s.scrollHeight,
+                                         s.clientWidth / s.scrollWidth) * 0.98);  // 2% margin
           s.style.zoom = String(z);
+          s.style.width = (CW / z) + 'px';        // inverse size: rendered box
+          s.style.height = (CH / z) + 'px';       // stays exactly 1280x720
           guard++;
         }
       });
@@ -1605,6 +1624,48 @@
     autofitAll();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(autofitAll);
     window.addEventListener('pageshow', autofitAll);
+
+    // ---- slide-boundary audit -------------------------------------------
+    // An element "crosses the boundary" when its VISIBLE box — its rect
+    // intersected with every overflow-clipping ancestor up to the slide —
+    // extends past the slide's rect. Content inside an overflow:auto
+    // scroller is clipped by design and does not count. Used by the #debug
+    // HUD and by the headless boundary test.
+    function visibleRect(el, slide) {
+      var r = el.getBoundingClientRect();
+      var box = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+      for (var a = el.parentElement; a && a !== slide; a = a.parentElement) {
+        var cs = getComputedStyle(a);
+        if (/(auto|scroll|hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY)) {
+          var ar = a.getBoundingClientRect();
+          box.left = Math.max(box.left, ar.left);    box.top = Math.max(box.top, ar.top);
+          box.right = Math.min(box.right, ar.right); box.bottom = Math.min(box.bottom, ar.bottom);
+        }
+      }
+      return box;
+    }
+    function auditBounds(epsCanvasPx) {
+      var scale = parseFloat(getComputedStyle(deckRoot).getPropertyValue('--deck-fit-scale')) || 1;
+      var eps = (epsCanvasPx || 1.5) * scale;       // tolerate cross-engine glyph drift
+      var out = [];
+      slides.forEach(function(slide, i) {
+        var sb = slide.getBoundingClientRect();
+        slide.querySelectorAll('*').forEach(function(el) {
+          var b = visibleRect(el, slide);
+          if (b.right - b.left < 1 || b.bottom - b.top < 1) return;   // empty / display:none
+          var over = Math.max(sb.left - b.left, sb.top - b.top,
+                              b.right - sb.right, b.bottom - sb.bottom);
+          if (over > eps) out.push({
+            slide: i + 1,
+            tag: el.tagName.toLowerCase(),
+            cls: (el.getAttribute('class') || '').split(' ')[0],
+            overflowCanvasPx: Math.round(over / scale * 10) / 10
+          });
+        });
+      });
+      return out;
+    }
+    window.__mdToYamlAuditBounds = auditBounds;
   })();
   </script>
   {% if has_mermaid %}
