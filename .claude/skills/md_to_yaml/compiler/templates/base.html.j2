@@ -12,6 +12,9 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
+      /* Fixed deck canvas (16:9): all px below are authored against 1280x720. */
+      --deck-canvas-w: 1280;
+      --deck-canvas-h: 720;
       /* Baseline zoom; per-slide --title-scale / --content-scale set on each section. */
       --font-scale: 1.35;
       /* Fixed footer: deck metadata `footer_scale` / `footer_inset` on <html> override these. */
@@ -52,8 +55,8 @@
 
     html, body {
       height: 100%;
-      overflow-x: hidden;
-      overflow-y: hidden;
+      overflow: hidden;
+      overscroll-behavior: none;
       background: var(--bg);
       color: var(--text);
       font-family: var(--font-family);
@@ -70,17 +73,20 @@
     }
     .skip-link:focus { left: 0; }
 
-    /* Slide content wrapper: in-page view scale (see HANDOFF_ZOOM.md). Nav stays a
-       sibling so position:fixed in the footer is not broken by transform fallbacks. */
+    /* Fixed 1280x720 stage. Center is pinned to the clip's center by arithmetic
+       (50% offset minus half the fixed size); the JS-computed --deck-fit-scale
+       scales it about that center. No grid/flex alignment ever touches this
+       oversized box — cross-engine alignment of overflowing boxes is exactly
+       where retrofit attempts broke. Footer nav stays a SIBLING of this stage
+       so its position:fixed is never re-anchored by the transform. */
     #deck-app-root {
-      --deck-view-scale: 1;
-      zoom: var(--deck-view-scale);
-    }
-    @supports not (zoom: 0.5) {
-      #deck-app-root {
-        transform-origin: top center;
-        transform: scale(var(--deck-view-scale));
-      }
+      position: absolute;
+      left: 50%; top: 50%;
+      margin: -360px 0 0 -640px;            /* -H/2, -W/2 */
+      width: 1280px; height: 720px;
+      transform-origin: 50% 50%;
+      transform: scale(var(--deck-fit-scale, 1));
+      overflow: hidden;
     }
 
     /* Bottom-centered counter + go-to + view scale (fixed; 96px margin band). */
@@ -200,24 +206,25 @@
       outline-offset: 1px;
     }
 
-    main {
-      scroll-snap-type: y mandatory;
-      overflow-y: auto;
-      overflow-x: hidden;
-      height: 100vh;
-      width: 100vw;
+    /* The clip: always the full viewport; the stage scales inside it. */
+    main#main-content {
+      position: fixed; inset: 0;
+      overflow: hidden;
+      background: var(--bg);
     }
 
     section[role="group"] {
-      min-height: 100vh;
+      position: absolute; inset: 0;
       display: flex;
       flex-direction: column;
       padding: 96px;
-      scroll-snap-align: start;
       border: 2px solid var(--slide-frame);
       --title-font-mul: calc(var(--font-scale) * var(--title-scale));
       --content-font-mul: calc(var(--font-scale) * var(--content-scale));
+      visibility: hidden;           /* keeps layout: Mermaid/MathML can measure */
+      overflow-y: auto;             /* safety valve if a slide overflows 720px */
     }
+    section[role="group"].active { visibility: visible; }
     /* Title and divider slides: centered (presentation default) */
     section[role="group"].slide-title,
     section[role="group"].slide-divider {
@@ -525,13 +532,10 @@
       justify-content: center;
       align-items: center;
     }
-    /* Hard viewport height on two-column slides so the figure's max-height:100% cascade resolves.
-       Without this, section[role="group"]'s min-height:100vh lets the section grow past the viewport
-       and the image overflows into/past the bottom 96px margin. */
+    /* Two-column slides clip hard so the figure's max-height:100% cascade
+       resolves against the fixed 720px layer (inset:0 supplies the height). */
     section[role="group"].slide-two-column,
     section[role="group"].slide-comparison {
-      height: 100vh;
-      max-height: 100vh;
       overflow: hidden;
     }
     /* Reserve a gap below the title so the figure never encroaches on it */
@@ -683,17 +687,15 @@
       text-align: center;
     }
 
-    /* layout: figure — one viewport; flex min-height:0; extra bottom padding so
-       the white panel never sits under the fixed .slide-footer-nav (96px margin band). */
+    /* layout: figure — flex min-height:0; extra bottom padding so the white
+       panel never sits under the fixed .slide-footer-nav (96px margin band). */
     section[role="group"].slide-figure {
-      height: 100vh;
-      max-height: 100vh;
       min-height: 0;
       overflow: hidden;
       padding: 96px 96px calc(96px + var(--slide-footer-ui-clearance, 2.75rem)) 96px;
     }
     /* overflow: visible here — zoom / transform:scale on media can paint past the
-       unscaled box; hidden was clipping the figure (left/bottom). Section clips to 100vh. */
+       unscaled box; hidden was clipping the figure (left/bottom). Section clips to the canvas. */
     .slide-figure .slide-content-area {
       min-height: 0;
       flex: 1 1 0;
@@ -1037,6 +1039,9 @@
 
     .slide-notes { display: none; }
 
+    /* Printing/PDF export: undo the fixed-canvas layering and lay slides out
+       statically, one per page (adapted from migrate_deck.py's print block —
+       without this, the absolute visibility:hidden layers print as one page). */
     @media print {
       @page { size: landscape; margin: 0; }
       html, body {
@@ -1045,15 +1050,18 @@
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      main { overflow: visible !important; height: auto !important; scroll-snap-type: none !important; }
+      main#main-content { position: static; overflow: visible; }
+      #deck-app-root { position: static; margin: 0; width: auto; height: auto;
+        transform: none; overflow: visible; }
       section[role="group"] {
-        break-after: page;
-        height: 100vh;
-        overflow: hidden;
+        position: static; visibility: visible;
+        height: auto; min-height: 0;
+        break-after: page; page-break-after: always;
+        overflow: visible;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      .slide-footer-nav { display: none !important; }
+      .slide-footer-nav, #deck-hud { display: none !important; }
     }
 
     .visually-hidden {
@@ -1084,9 +1092,6 @@
     /* ── figure-wide layout: smart figure — flex under 96px slide padding;
        figure area flexes; media scales (max 100% / object-fit) so footer fits. ─ */
     section.slide-figure-wide {
-      height: 100vh;
-      max-height: 100vh;
-      min-height: 100vh;
       overflow: hidden;
     }
     section.slide-figure-wide > h2 {

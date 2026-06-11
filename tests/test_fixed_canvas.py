@@ -20,7 +20,6 @@ def _compile(deck, tmp_path) -> str:
     return out.read_text()
 
 
-@pytest.mark.xfail(reason='section-level 100vh/100vw removed in Task 1.2', strict=True)
 def test_no_fluid_units_in_output(tmp_path):
     """Compiled CSS must contain no clamp()/vw/vh/in fluid units. [FC-01]"""
     import re
@@ -35,3 +34,23 @@ def test_no_fluid_units_in_output(tmp_path):
     assert not re.search(r'\b\d*\.?\d+vmin\b', style)
     assert not re.search(r'\b\d*\.?\d+vmax\b', style)
     assert not re.search(r'(?<![\w.])\d*\.?\d+in\b', style)
+
+
+@pytest.mark.xfail(reason='scrollIntoView controller replaced in Task 1.3', strict=True)
+def test_fixed_canvas_structure(tmp_path):
+    """Stage is a fixed-size canvas; slides are absolute layers; no scroll-snap. [FC-02]"""
+    html = _compile(_deck(
+        TitleSlide(layout='title', title='T'),
+        ContentSlide(layout='content', title='C', body='text'),
+    ), tmp_path)
+    style = html
+    assert 'scroll-snap-type' not in style          # scroll model removed
+    assert 'scrollIntoView' not in style            # nav rewritten (Task 1.3)
+    assert '--deck-canvas-w: 1280' in style
+    assert '--deck-canvas-h: 720' in style
+    # stage center-pinned by arithmetic
+    assert 'margin: -360px 0 0 -640px' in style or 'margin:-360px 0 0 -640px' in style
+    # slides are visibility-toggled layers
+    assert '.active' in style
+    # printing/PDF export lays slides out statically (migrate_deck.py print block)
+    assert 'page-break-after: always' in style
