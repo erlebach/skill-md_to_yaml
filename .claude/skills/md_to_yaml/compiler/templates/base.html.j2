@@ -206,6 +206,15 @@
       outline-offset: 1px;
     }
 
+    /* #debug HUD (append #debug to the URL): overlays the geometry numbers
+       the browser reports, so misbehavior on a device reports exact figures. */
+    #deck-hud {
+      display: none;
+      position: fixed; top: 8px; left: 8px; z-index: 999;
+      font: 12px/1.5 monospace; color: #0f0; background: rgba(0,0,0,.8);
+      padding: 8px 10px; border-radius: 6px; white-space: pre; pointer-events: none;
+    }
+
     /* The clip: always the full viewport; the stage scales inside it. */
     main#main-content {
       position: fixed; inset: 0;
@@ -1292,11 +1301,15 @@
       </form>
       <button type="button" id="slide-goto-open" class="slide-goto-open" aria-expanded="false" aria-controls="slide-goto-form" title="Go to slide (keyboard: G)">#</button>
     </nav>
+    <div id="deck-hud" aria-hidden="true"></div>
   </main>
   <script>
   (function() {
     var deckRoot = document.getElementById('deck-app-root');
     var slides = Array.from(document.querySelectorAll('#deck-app-root [role="group"]'));
+    var clip = document.getElementById('main-content');
+    var hud = document.getElementById('deck-hud');
+    var CW = 1280, CH = 720;
     var idx = 0;
     var counter = document.getElementById('slide-counter');
     var gotoForm = document.getElementById('slide-goto-form');
@@ -1373,13 +1386,38 @@
         });
       } catch (err) {}
     }
+    // fit(): the single scaling principle, identical on every device. Measure
+    // the CLIPPING element (correct on iOS even mid-toolbar-animation — never
+    // window.innerHeight) and scale the stage about its arithmetic-pinned
+    // center. viewScale is the user's +/-/0 multiplier on top of the fit.
+    function fit() {
+      var r = clip.getBoundingClientRect();
+      var s = Math.min(r.width / CW, r.height / CH) * viewScale;
+      deckRoot.style.setProperty('--deck-fit-scale', String(s));
+      if (scalePctEl) scalePctEl.textContent = formatScalePct(viewScale);
+      // #debug HUD (from migrate_deck.py): append #debug to the URL and every
+      // number the browser reports is overlaid — turns "looks wrong on my
+      // phone" into exact figures.
+      if (hud && location.hash.indexOf('debug') !== -1) {
+        hud.style.display = 'block';
+        var vv = window.visualViewport;
+        hud.textContent = [
+          'clip     : ' + r.width.toFixed(1) + ' x ' + r.height.toFixed(1),
+          'inner    : ' + window.innerWidth + ' x ' + window.innerHeight,
+          (vv ? 'visualVP : ' + vv.width.toFixed(1) + ' x ' + vv.height.toFixed(1) +
+                '  scale ' + vv.scale.toFixed(2) +
+                '  offset ' + vv.offsetLeft.toFixed(0) + ',' + vv.offsetTop.toFixed(0)
+              : 'visualVP : n/a'),
+          'fit scale: ' + s.toFixed(4),
+          'slide    : ' + (idx + 1) + '/' + slides.length
+        ].join(String.fromCharCode(10));
+      }
+    }
+
     function applyViewScale(next) {
       viewScale = clampViewScale(next);
-      if (deckRoot) {
-        deckRoot.style.setProperty('--deck-view-scale', String(viewScale));
-      }
-      if (scalePctEl) scalePctEl.textContent = formatScalePct(viewScale);
       persistViewScale();
+      fit();
       requestMermaidResize();
     }
 
@@ -1428,22 +1466,31 @@
       closeGoto();
     }
 
-    // Keep idx in sync with the visible slide (handles find-in-page, direct scroll, etc.)
-    var observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          idx = slides.indexOf(entry.target);
-          counter.textContent = (idx + 1) + ' / ' + slides.length;
-        }
-      });
-    }, { threshold: 0.5 });
-    slides.forEach(function(s) { observer.observe(s); });
-
-    function goTo(n) {
+    // Discrete slides: show one layer at a time. No scrolling, no
+    // IntersectionObserver — idx is the single source of truth.
+    function show(n) {
       idx = Math.max(0, Math.min(n, slides.length - 1));
-      slides[idx].scrollIntoView({behavior: 'instant', block: 'start'});
+      slides.forEach(function(el, i) { el.classList.toggle('active', i === idx); });
       counter.textContent = (idx + 1) + ' / ' + slides.length;
+      var s = slides[idx];
+      if (!s.hasAttribute('tabindex')) s.setAttribute('tabindex', '-1');
+      try { s.focus({ preventScroll: true }); } catch (err) {}
+      fit();
     }
+    function goTo(n) { show(n); }
+
+    // Touch: horizontal swipe advances/retreats; vertical-dominant gestures
+    // are ignored so scrolling a dense slide still works (migrate_deck.py).
+    var tx = null, ty = null;
+    clip.addEventListener('touchstart', function(e) {
+      var t = e.changedTouches[0]; tx = t.clientX; ty = t.clientY;
+    }, { passive: true });
+    clip.addEventListener('touchend', function(e) {
+      if (tx === null) return;
+      var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+      tx = ty = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > 1.5 * Math.abs(dy)) show(idx + (dx < 0 ? 1 : -1));
+    }, { passive: true });
 
     gotoOpen.addEventListener('click', function() { openGoto(); });
 
@@ -1501,7 +1548,9 @@
         }
       }
 
-      if (e.target.closest('[role="region"]')) return;
+      /* Don't hijack keys aimed at interactive controls (footer buttons/goto
+         form): Space must still activate a focused button. */
+      if (e.target.closest('button, a, input, select, textarea, form')) return;
 
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
         e.preventDefault(); goTo(idx + 1);
@@ -1513,6 +1562,33 @@
         e.preventDefault(); goTo(slides.length - 1);
       }
     });
+
+    // Re-fit on every signal that can change geometry (each entry maps to an
+    // observed device failure — do not prune; see migrate_deck.py NAV_JS):
+    // ResizeObserver on the clip, window resize, orientation (300ms settle),
+    // visualViewport resize+scroll (pinch/toolbar layer), pageshow (bfcache),
+    // fonts.ready (late metrics), and two delayed retries (toolbar settle).
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(clip);
+    window.addEventListener('resize', fit);
+    window.addEventListener('orientationchange', function() { setTimeout(fit, 300); });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', fit);
+      window.visualViewport.addEventListener('scroll', fit);
+    }
+    window.addEventListener('pageshow', fit);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    setTimeout(fit, 500); setTimeout(fit, 1500);
+
+    show(0);
+
+    // Autofit is CONTENT-driven (the canvas is a fixed 1280x720), so it runs
+    // on content signals — load, fonts, post-Mermaid — never per-resize.
+    // Stub here; the real body lands in Task 1.4.
+    function autofitAll() {}
+    window.__mdToYamlAutofitAll = autofitAll;
+    autofitAll();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(autofitAll);
+    window.addEventListener('pageshow', autofitAll);
   })();
   </script>
   {% if has_mermaid %}

@@ -36,7 +36,6 @@ def test_no_fluid_units_in_output(tmp_path):
     assert not re.search(r'(?<![\w.])\d*\.?\d+in\b', style)
 
 
-@pytest.mark.xfail(reason='scrollIntoView controller replaced in Task 1.3', strict=True)
 def test_fixed_canvas_structure(tmp_path):
     """Stage is a fixed-size canvas; slides are absolute layers; no scroll-snap. [FC-02]"""
     html = _compile(_deck(
@@ -54,3 +53,17 @@ def test_fixed_canvas_structure(tmp_path):
     assert '.active' in style
     # printing/PDF export lays slides out statically (migrate_deck.py print block)
     assert 'page-break-after: always' in style
+
+
+def test_controller_is_fixed_canvas(tmp_path):
+    """Controller toggles .active, measures the clip via ResizeObserver, supports touch. [FC-03]"""
+    html = _compile(_deck(
+        TitleSlide(layout='title', title='T'),
+        ContentSlide(layout='content', title='C', body='text'),
+    ), tmp_path)
+    assert 'ResizeObserver' in html
+    assert "classList.toggle('active'" in html or 'classList.toggle("active"' in html
+    assert 'touchstart' in html and 'touchend' in html
+    assert '--deck-fit-scale' in html
+    assert 'scrollIntoView' not in html
+    assert 'deck-hud' in html          # #debug instrumentation (migrate_deck.py HUD)
