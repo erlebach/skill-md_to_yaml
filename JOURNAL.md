@@ -1,5 +1,41 @@
 # JOURNAL — md_to_yaml Project
 
+## 2026-06-12 16:52 — Diagram-source validation, two-col panel band + panel_scale, scale-knob fixes
+
+- Line-numbered code panels regained the panel chrome (background/border/
+  radius/1.5rem padding on the Pygments table; `border-collapse: separate`
+  since collapse discards table padding) — padding parity with plain code,
+  gutter now inside the panel, alignment preserved.
+- New compile-time WARNING: `layout: diagram` with no Mermaid body, inline
+  `<svg>`, or `src:` (engine silently rendered a blank panel). Starter list
+  shared as `validators.MERMAID_STARTERS`; six new tests.
+- Authored Mermaid for nine silently-blank diagram slides across six
+  fixtures; `valid_deck` fenced mermaid block unfenced (raw-only on diagram).
+- Comparison/two-col in-panel column headings follow `content_scale` (were
+  `title_scale`; identical at default knobs).
+- Two-col diagram panels band-true + maximized band (16px title gap, 48px
+  bottom inset via `:has`); `panel_scale` extended to `layout: two-column`;
+  Mermaid sizer measures the panel, not the column. Schema regenerated.
+- Verification: 187 tests green; compile-all clean; headless geometry probes.
+- Handoff: `docs/superpowers/HANDOFF_2026-06-12_16h52m_EST.md`.
+
+### Details
+- Files: `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`,
+  `compiler/validators.py`, `compiler/engine.py`, `schema/models.py`,
+  `schema/deck.schema.json` (regenerated), `tests/test_validators.py`,
+  `tests/test_models.py`; fixtures `real_quixer_implementation` (4 diagrams,
+  user-driven content_scale/two-column experiments),
+  `real_clustering_ch8_tutorial`, `real_density_clustering` (one
+  `xychart-beta`), `real_prototype_clustering_tutorial` (one `block-beta`
+  grid), `real_quantum_transformers_impl`, `valid_deck`.
+- `content_scale` on an overfull slide: text grows, shrink-only autofit zooms
+  the slide back, figures take the zoom hit (measured zoom 0.626 at 1.5 on
+  quixer slide 10) — knob headroom is bounded by fit; documented in handoff.
+- Mermaid subgraph-label clipping confirmed systematic (wrapped subgraph
+  titles lose their second line) — engine-level fix pending.
+
+---
+
 ## 2026-06-12 13:50 — Fixed-canvas rendering: panel-true sizing, scale knobs, fixture QA
 
 - Figure/comparison/diagram panels size against their real measured boxes
