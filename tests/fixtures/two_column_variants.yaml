@@ -6,7 +6,7 @@ layout: two-column
 title: Text and Image
 right:
   type: figure
-  src: photo.png
+  src: placeholder.png
   alt_text: A photo
 ---
 Left side is free text.
@@ -24,7 +24,7 @@ layout: two-column
 title: Both Structured
 left:
   type: figure
-  src: left.png
+  src: placeholder.png
   alt_text: Left image
 right:
   type: diagram
@@ -37,7 +37,7 @@ title: Narrow Wide
 proportion: 40/60
 left:
   type: figure
-  src: small.png
+  src: placeholder.png
   alt_text: Small image
 ---
 Wide text column on the right side.

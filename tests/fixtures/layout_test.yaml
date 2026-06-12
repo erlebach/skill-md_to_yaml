@@ -44,51 +44,33 @@ title: Two-Column Image Variations
 ---
 layout: two-column
 title: "Image Left, Bullets Right"
-proportion: 40/60
+proportion: 50/50
 left:
   type: figure
   src: figures/_page_2_Figure_1.jpeg
   alt_text: Roadmap diagram showing the evolution from classical transformers through PQC-based and QLA-based quantum paradigms, spanning near-term NISQ-era to long-term fault-tolerant quantum computing, with open research questions at each stage
 ---
-Key paradigm transitions:
+# Key paradigm transitions:
 
 - **Classical transformers** face $O(N^2)$ computational bottleneck
 - **PQC-based paradigm** uses parameterized quantum circuits for near-term hardware
 - **QLA-based paradigm** targets fault-tolerant quantum era
-- Quantum pairwise and holistic attention mechanisms replace classical self-attention
-- Open questions remain on scalability and genuine algorithmic speedup
+- Quantum attention mechanisms replace classical self-attention
 
 ---
 layout: two-column
 title: "Bullets Left, Image Right"
-proportion: 60/40
+proportion: 50/50
 right:
   type: figure
   src: figures/_page_4_Figure_1.jpeg
   alt_text: Architecture diagram of a transformer block showing the data flow from inputs through self-attention, add-and-norm layers, feed-forward network, and a second add-and-norm layer to produce feature maps, with a detail panel showing QKV mapping, attention score computation, and weighted value aggregation
 ---
-Transformer block components:
 
 - **Self-Attention** computes query-key-value mappings
 - **Add & Norm** layers stabilize gradient flow via residual connections
 - **Feed Forward** network applies non-linear transformations per position
 - Attention scores determine how tokens relate to each other
-- Weighted value aggregation produces context-aware representations
-
----
-layout: two-column
-title: "Images in Both Columns"
-proportion: 50/50
-left:
-  type: figure
-  src: figures/_page_5_Figure_20.jpeg
-  alt_text: Two-part diagram showing (a) a parameterized quantum circuit with Rx, Ry rotation gates and CNOT entangling gates across four qubits, and (b) a variational quantum-classical hybrid loop where data is encoded via U(x), processed through a PQC U(theta), measured, and parameters are updated by a classical optimizer minimizing cost function C(x, theta)
-right:
-  type: figure
-  src: figures/_page_15_Figure_9.jpeg
-  alt_text: Conceptual illustration of PQC learning showing classical 2D data points (green squares and red circles) being embedded into a quantum Hilbert space represented as a Bloch sphere, where a separating hyperplane is learned, then projected back to classical space producing a linearly separable output
----
-Variational quantum circuits (left) enable hybrid quantum-classical optimization loops. The PQC learning process (right) embeds classical data into quantum Hilbert space for enhanced separability.
 
 ---
 layout: divider
@@ -98,7 +80,7 @@ title: Two-Column Mermaid Variations
 ---
 layout: two-column
 title: "Mermaid Left, Bullets Right"
-proportion: 40/60
+proportion: 50/50
 left:
   type: diagram
   alt_text: Flowchart showing the CI/CD pipeline stages from code commit through build, test, and deploy to production
@@ -113,20 +95,18 @@ left:
       G -->|Yes| H[Deploy to Staging]
       G -->|No| F
       H --> I[Deploy to Production]
+# CI/CD pipeline best practices:
 ---
-CI/CD pipeline best practices:
 
 - **Automated builds** trigger on every commit to main
 - **Unit tests** run in parallel for fast feedback
 - **Integration tests** validate cross-service contracts
 - Failed tests immediately notify the responsible developer
-- **Staging deployment** mirrors production for final validation
-- Production deploys use blue-green or canary strategies
 
 ---
 layout: two-column
 title: "Bullets Left, Mermaid Right"
-proportion: 60/40
+proportion: 50/50
 right:
   type: diagram
   alt_text: Entity-relationship diagram showing the data model with User, Order, Product, and Review entities and their relationships
@@ -156,12 +136,10 @@ right:
         int rating
         string text
       }
+# Data model design decisions:
 ---
-Data model design decisions:
 
 - **Users** can place multiple orders and write reviews
 - **Orders** contain one or more products (many-to-many)
 - **Reviews** link both to users and products for accountability
 - All entities use integer primary keys for indexing performance
-- Timestamps on orders enable time-series analytics
-- Price stored as float on products; totals computed at order time
