@@ -91,6 +91,20 @@ def test_two_column_slide_no_columns():
     assert slide.right is None
 
 
+def test_two_column_panel_scale_accepts_float_and_pair():
+    slide = TwoColumnSlide(layout='two-column', title='TC', panel_scale=0.8)
+    assert slide.panel_scale == 0.8
+    slide2 = TwoColumnSlide(layout='two-column', title='TC', panel_scale=[1.0, 0.5])
+    assert slide2.panel_scale == [1.0, 0.5]
+
+
+def test_two_column_panel_scale_rejects_invalid():
+    with pytest.raises(ValidationError):
+        TwoColumnSlide(layout='two-column', title='TC', panel_scale=1.5)
+    with pytest.raises(ValidationError):
+        TwoColumnSlide(layout='two-column', title='TC', panel_scale=[0.9])
+
+
 def test_two_column_slide_proportion_default():
     slide = TwoColumnSlide(layout='two-column', title='TC')
     assert slide.proportion == '50/50'

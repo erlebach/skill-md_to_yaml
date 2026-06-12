@@ -594,9 +594,11 @@
       width: 100%;
       gap: calc(1.35rem * 1.5 * 1.5);
     }
+    /* In-panel column headings follow content scale (the slide h2 alone
+       follows title scale) so content_scale resizes the whole panel uniformly. */
     section.slide-two-column .two-col--markdown-split .slide-body > h3,
     section.slide-comparison .two-col .slide-body > h3 {
-      font-size: calc(34px * var(--title-font-mul) * 1.2);
+      font-size: calc(34px * var(--content-font-mul) * 1.2);
       margin-bottom: 0;
     }
     section.slide-two-column .two-col--markdown-split .slide-body > ul,
@@ -611,7 +613,7 @@
       margin-bottom: 1rem;
     }
     section.slide-comparison .two-col-50-50 > .slide-body > p:first-of-type strong {
-      font-size: calc(36px * var(--title-font-mul));
+      font-size: calc(36px * var(--content-font-mul));
       font-weight: 700;
       color: var(--accent);
       line-height: 1.25;
@@ -649,7 +651,18 @@
        "slide-code" (slide-{layout}), and capping the section's height breaks
        the fixed 1280x720 layer. Only the inner Pygments wrapper is capped. */
     section .slide-code { overflow: auto; max-height: 540px; border-radius: 0.5rem; }
-    .slide-codetable { width: 100%; border-collapse: collapse; }
+    /* In linenos mode the table (not a pre) is the outermost box, so it must
+       carry the panel chrome the global pre rule provides in plain mode.
+       border-collapse must stay 'separate': 'collapse' discards table padding. */
+    .slide-codetable {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+    }
     .slide-codetable td.linenos { vertical-align: top; padding-right: 0.5em; border-right: 1px solid var(--border); user-select: none; width: 1%; white-space: nowrap; }
     /* The gutter is a <div>, not <pre> (a11y: renderers swap it) — without the
        code pre's exact font metrics its line pitch drifts from the code lines.
@@ -718,14 +731,27 @@
     .slide-diagram .diagram-container > pre.mermaid {
       text-align: center;
     }
-    /* Two-column diagram column: fill column width, let SVG viewBox set height */
+    /* Two-column diagram column: panel fills the column's full band (width
+       AND height), matching the standalone diagram panel contract — a
+       content-sized panel collapses around short SVGs and feeds the Mermaid
+       sizer a circular (svg-driven) height cap. SVG centers inside.
+       --panel-scale-x/y (per-slide panel_scale) shrink from that maximum. */
     .slide-two-column .diagram-container {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: stretch;
-      width: 100%;
+      flex: 0 1 calc(var(--panel-scale-y, 1) * 100%);
+      width: calc(var(--panel-scale-x, 1) * 100%);
+      align-self: center;
+      min-height: 0;
     }
+    /* Diagram-bearing two-column slides: maximize the panel band — tight
+       title gap and half the usual bottom margin (shrink back per slide via
+       panel_scale). The footer pill begins lower, so the deeper panel
+       stays clear of it. */
+    section.slide-two-column:has(.diagram-container) { padding-bottom: 48px; }
+    section.slide-two-column:has(.diagram-container) .slide-content-area { margin-top: 16px; }
     .slide-two-column .diagram-container > [role="img"],
     .slide-two-column .diagram-container > pre.mermaid {
       text-align: center;
@@ -2146,18 +2172,16 @@
       markMermaidReadyFromSvg(svg);
     });
 
-    // Two-column diagrams: the grid column's height is fixed by the layout
-    // (independent of the SVG inside it), so measure the column directly.
-    // Deriving availH from canvas constants over-subtracts the slide padding
-    // and strands ~90px of usable column height.
+    // Two-column diagrams: the panel (.diagram-container) fills the column
+    // band (flex-basis 100%, scaled by --panel-scale-x/y), so its box is
+    // fixed by the layout — measure it directly, like slide-diagram above.
+    // Measuring the column instead would ignore panel_scale and overrun a
+    // shrunken panel.
     document.querySelectorAll('.slide-two-column .diagram-container[data-mermaid-pre] svg').forEach(svg => {
       const container = svg.closest('.diagram-container');
-      const colEl = container && container.closest('.col-left, .col-right');
-      const colW = (container && canvasRectW(container)) || (CANVAS_W / 2);
-      const colH = colEl ? canvasRectH(colEl) : (CANVAS_H - SLIDE_PAD * 2 - 60);
 
-      const availW = colW * PANEL_FILL;
-      const availH = colH * PANEL_FILL;
+      const availW = canvasRectW(container) * PANEL_FILL;
+      const availH = canvasRectH(container) * PANEL_FILL;
 
       const result = sizeSvgMeasured(svg, availW, availH, 30, 46);
       logSizing(svg, result, 'slide-two-column');

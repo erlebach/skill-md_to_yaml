@@ -3430,6 +3430,25 @@
           ],
           "title": "Proportion",
           "type": "string"
+        },
+        "panel_scale": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Shrink diagram column panels relative to their default size (the full column band): a single fraction applies to both axes, a two-item list is [horizontal, vertical]. Each value 0.2-1.0.",
+          "title": "Panel Scale"
         }
       },
       "required": [

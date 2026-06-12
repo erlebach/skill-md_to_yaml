@@ -324,6 +324,18 @@ class FigureWideSlide(SlideBase):
     )
 
 
+def _validate_panel_scale(v):
+    """Shared panel_scale check: float or [horizontal, vertical], each 0.2-1.0."""
+    if v is None:
+        return v
+    if isinstance(v, list) and len(v) != 2:
+        raise ValueError('panel_scale list must be [horizontal, vertical]')
+    for x in (v if isinstance(v, list) else [v]):
+        if not 0.2 <= x <= 1.0:
+            raise ValueError('panel_scale values must be between 0.2 and 1.0')
+    return v
+
+
 class DiagramSlide(SlideBase):
     """SVG/Mermaid diagram slide. alt_text is required for ADA compliance."""
     layout: Literal['diagram']
@@ -340,14 +352,7 @@ class DiagramSlide(SlideBase):
     @field_validator('panel_scale')
     @classmethod
     def _check_panel_scale(cls, v):
-        if v is None:
-            return v
-        if isinstance(v, list) and len(v) != 2:
-            raise ValueError('panel_scale list must be [horizontal, vertical]')
-        for x in (v if isinstance(v, list) else [v]):
-            if not 0.2 <= x <= 1.0:
-                raise ValueError('panel_scale values must be between 0.2 and 1.0')
-        return v
+        return _validate_panel_scale(v)
 
 
 class ColumnContent(BaseModel):
@@ -384,6 +389,19 @@ class TwoColumnSlide(SlideBase):
     left: ColumnContent | None = None
     right: ColumnContent | None = None
     proportion: Literal['50/50', '40/60', '60/40'] = '50/50'
+    panel_scale: float | list[float] | None = Field(
+        default=None,
+        description=(
+            'Shrink diagram column panels relative to their default size (the '
+            'full column band): a single fraction applies to both axes, a '
+            'two-item list is [horizontal, vertical]. Each value 0.2-1.0.'
+        ),
+    )
+
+    @field_validator('panel_scale')
+    @classmethod
+    def _check_panel_scale(cls, v):
+        return _validate_panel_scale(v)
 
 
 class QuoteSlide(SlideBase):
