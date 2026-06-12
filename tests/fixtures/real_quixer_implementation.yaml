@@ -23,8 +23,19 @@ Classical self-attention computes pairwise token similarities and produces weigh
 ---
 layout: diagram
 title: Architecture Overview
-alt_text: "Quixer four-stage pipeline left-to-right: Classical Tokens flow into Unitary Embedding (blue box), then LCU Mixing (green box), then QSVT Non-linearity (orange box), and finally Measurement and Readout (blue box). Arrows connect each stage sequentially. Classical tokens enter at top of first stage; Classical vector to FFN exits at bottom of last stage."
+alt_text: "Quixer four-stage pipeline left-to-right: Classical Tokens flow into Unitary Embedding (blue box), then LCU Mixing (green box), then QSVT Non-linearity (orange box), and finally Measurement and Readout (blue box). Arrows connect each stage sequentially, with Classical tokens entering on the left and Classical vector to FFN exiting on the right."
 ---
+flowchart LR
+    T([Classical tokens]) --> E[Unitary Embedding]
+    E --> L[LCU Mixing]
+    L --> Q[QSVT Non-linearity]
+    Q --> M[Measurement and Readout]
+    M --> F([Classical vector to FFN])
+    style E fill:#1f6feb,stroke:#1f6feb,color:#ffffff
+    style L fill:#2da44e,stroke:#2da44e,color:#ffffff
+    style Q fill:#d29922,stroke:#d29922,color:#ffffff
+    style M fill:#1f6feb,stroke:#1f6feb,color:#ffffff
+
 The Quixer pipeline transforms a classical token sequence through four stages: embedding, mixing, non-linear transformation, and measurement.
 ---
 layout: steps
@@ -77,20 +88,35 @@ $$\text{QSVT}(A, P) = W \cdot P(\Sigma) \cdot V^\dagger$$
 - **Degree-k polynomial:** captures k-token interactions, enabling higher-order reasoning without additional circuit depth proportional to k.
 - The polynomial coefficients are determined by **phase angles** — trainable parameters of the model.
 
-> QSVT requires fault-tolerant quantum hardware. On NISQ devices, the circuit depth for useful polynomial degrees may exceed coherence times.
+QSVT requires fault-tolerant quantum hardware. On NISQ devices, the circuit depth for useful polynomial degrees may exceed coherence times.
 ---
 layout: diagram
 title: "Circuit: Parameterized Quantum Circuit Unit"
-alt_text: "PQC unit circuit on 3 qubits (q0, q1, q2). Each qubit has three rotation gates Rz, Ry, Rz (blue boxes) forming the rotation layer. Then CNOT gates entangle qubits in a ring topology: q0 controls q1, q1 controls q2, q2 controls q0. A dashed orange vertical line indicates this combined rotation+entanglement layer is repeated L times. Output produces |Q>, |K>, or |V> states."
+alt_text: "Flow diagram of one PQC unit: input qubits q0, q1, q2 enter a rotation layer applying Rz, Ry, Rz to each qubit, then an entangling CNOT ring connecting q0 to q1, q1 to q2, and q2 to q0. The rotation plus entanglement layer is enclosed in a box labeled repeated L times. The output is the state Q, K, or V."
 ---
+flowchart LR
+    subgraph REP[Repeated L times]
+        R[Rotations Rz, Ry, Rz on each qubit] --> C[CNOT ring: q0 to q1, q1 to q2, q2 to q0]
+    end
+    IN([Qubits q0, q1, q2]) --> R
+    C --> OUT([Output state Q, K, or V])
+
 Each unitary transformation in Quixer is implemented as a PQC — alternating layers of single-qubit rotations and entangling gates.
 
 For `n` qubits and `L` layers, the total parameter count is `3 x n x L` per PQC unit.
 ---
 layout: diagram
 title: "Circuit: The Swap Test"
-alt_text: "Three-wire quantum circuit for the Swap Test. Top wire: ancilla |0> with Hadamard gate H, then control dot on CSWAP (Fredkin) gate connecting to middle and bottom wires, then second Hadamard H, then measurement M. Middle wire: Query state |Q_i>. Bottom wire: Key state |K_j>. SWAP targets shown as X marks on Query and Key wires. Result: P(0) = 1/2 + 1/2|<Q|K>|^2."
+alt_text: "Flow diagram of the Swap Test: an ancilla qubit initialized to zero passes through a Hadamard gate, then a controlled SWAP gate that also receives the Query state Q_i and Key state K_j, then a second Hadamard gate, then measurement. The probability of measuring zero equals one half plus one half times the squared overlap of Q and K."
 ---
+flowchart LR
+    A([Ancilla in state 0]) --> H1[Hadamard H]
+    H1 --> CS[Controlled SWAP]
+    CS --> H2[Hadamard H]
+    H2 --> M[Measure ancilla]
+    Q([Query state Q_i]) --> CS
+    K([Key state K_j]) --> CS
+
 The Swap Test computes token similarity by measuring the overlap between two quantum states:
 
 $$P(0) = \frac{1}{2} + \frac{1}{2}\left|\langle Q_i | K_j \rangle\right|^2$$
@@ -102,14 +128,35 @@ title: Putting It Together
 ---
 
 ---
-layout: diagram
+layout: two-column
 title: Full Algorithmic Flow
-alt_text: "Vertical flow diagram with six stages connected by downward arrows. Classical token sequence (grey box) flows into Angle Encoding producing unitary gates U_w (blue), then LCU computing mixed operator A = sum alpha_j U_w_j (green), then QSVT applying polynomial P to singular values Sigma (orange), then Measurement extracting expectation values (grey), then Classical FFN producing output (blue). Stages 1 through 4 enclosed in dashed blue box labeled Quantum Processor."
+proportion: 50/50
+content_scale: 0.75
+panel_scale: [.5, 1.0]
+right:
+  type: diagram
+  alt_text: "Vertical flow diagram with six stages connected by downward arrows. Classical token sequence (grey box) flows into Angle Encoding producing unitary gates U_w (blue), then LCU computing the mixed operator A from a weighted sum of token unitaries (green), then QSVT applying polynomial P to singular values (orange), then Measurement extracting expectation values (grey), then Classical FFN producing output (blue). The middle four stages are enclosed in a box labeled Quantum Processor."
+  source: |
+    flowchart TB
+      subgraph QP[Quantum Processor]
+        E[Angle Encoding: unitary gates U_w] --> L[LCU: mixed operator A from weighted sum of token unitaries]
+        L --> S[QSVT: polynomial P applied to singular values]
+        S --> M[Measurement: expectation values]
+      end
+      T[Classical token sequence] --> E
+      M --> F[Classical FFN produces output]
+      style T fill:#57606a,stroke:#57606a,color:#ffffff
+      style E fill:#1f6feb,stroke:#1f6feb,color:#ffffff
+      style L fill:#2da44e,stroke:#2da44e,color:#ffffff
+      style S fill:#d29922,stroke:#d29922,color:#ffffff
+      style M fill:#57606a,stroke:#57606a,color:#ffffff
+      style F fill:#1f6feb,stroke:#1f6feb,color:#ffffff
 ---
 The complete Quixer execution combines all primitives into a hybrid quantum-classical pipeline that processes a token sequence end to end.
 ---
 layout: comparison
 title: Pros and Cons
+content_scale: 1.3
 ---
 **Advantages:**
 
@@ -129,6 +176,7 @@ title: Pros and Cons
 ---
 layout: summary
 title: Conclusions
+content_scale: 1.3
 ---
 Quixer demonstrates a principled approach to quantum self-attention that goes beyond simply porting classical operations to quantum hardware.
 

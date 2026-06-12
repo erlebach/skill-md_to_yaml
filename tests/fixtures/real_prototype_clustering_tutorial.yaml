@@ -57,8 +57,13 @@ To minimize SSE, alternate between two steps:
 ---
 layout: diagram
 title: "Estimating Weights: Intuition"
-alt_text: "Number line showing point x at 2.5 between centroids c1 at position 1 and c2 at position 5. The distance from x to c1 is 1.5 units; the distance from x to c2 is 2.5 units. Point x is closer to c1."
+alt_text: "Flow diagram of a number line: centroid c1 at position 1 connects to point x at 2.5 by an edge labeled distance 1.5, and x connects to centroid c2 at position 5 by an edge labeled distance 2.5. Point x, highlighted in amber, is closer to c1."
 ---
+flowchart LR
+    C1([c1 = 1]) -- distance 1.5 --> X((x = 2.5))
+    X -- distance 2.5 --> C2([c2 = 5])
+    style X fill:#d29922,stroke:#d29922,color:#0d1117
+
 Consider a single point **x = 2.5** between two centroids **c₁ = 1** and **c₂ = 5**:
 
 $$\text{SSE}(x) = w_{x1}(2.5 - 1)^2 + w_{x2}(5 - 2.5)^2 = 2.25\,w_{x1} + 6.25\,w_{x2}$$
@@ -265,8 +270,19 @@ title: "Self-Organizing Maps (SOM)"
 ---
 layout: diagram
 title: "SOM: How Updates Work"
-alt_text: "A 5-by-2 grid of SOM centroid nodes. The center node in the top row is labeled W (winner) and highlighted in amber. Its immediate grid neighbors are shown in orange-brown, indicating medium-sized updates. Corner nodes farthest from the winner are dark, indicating little or no update. An arrow from above labeled 'input x' points to the winner node."
+alt_text: "A 5-by-2 grid of SOM centroid blocks. The center block of the top row is labeled W = winner and highlighted in amber. The blocks immediately left, right, and below the winner are orange-brown, indicating medium-sized updates; diagonal neighbors are darker brown, indicating smaller updates; the remaining blocks, including corners, are dark, indicating little or no update."
 ---
+block-beta
+    columns 5
+    a["c1"] b["c2"] W["W = winner"] c["c4"] d["c5"]
+    e["c6"] f["c7"] g["c8"] h["c9"] i["c10"]
+    style W fill:#d29922,stroke:#d29922,color:#0d1117
+    style b fill:#b3661a,color:#ffffff
+    style c fill:#b3661a,color:#ffffff
+    style g fill:#b3661a,color:#ffffff
+    style f fill:#8a4f14,color:#ffffff
+    style h fill:#8a4f14,color:#ffffff
+
 - Update magnitude weighted by grid distance to winner
 - Learning rate and neighborhood radius *decrease over time*
 ---

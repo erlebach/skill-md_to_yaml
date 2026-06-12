@@ -12,8 +12,18 @@ subtitle: "Bridging quantum computing and attention-based neural networks for ne
 ---
 layout: diagram
 title: The Classical Transformer
-alt_text: "Classical Transformer encoder layer: Input Embedding flows up through Positional Encoding, Multi-Head Self-Attention with Add and Norm residual, Feed-Forward Network with Add and Norm residual, to Output. Two dashed side arrows show skip connections bypassing the attention and feed-forward sub-layers."
+alt_text: "Classical Transformer encoder layer: Input Embedding flows through Positional Encoding, Multi-Head Self-Attention with Add and Norm residual, Feed-Forward Network with Add and Norm residual, to Output. Two dashed skip-connection arrows bypass the attention and feed-forward sub-layers."
 ---
+flowchart TB
+    I[Input Embedding] --> P[Positional Encoding]
+    P --> A[Multi-Head Self-Attention]
+    A --> N1[Add and Norm]
+    N1 --> F[Feed-Forward Network]
+    F --> N2[Add and Norm]
+    N2 --> O[Output]
+    P -. skip connection .-> N1
+    N1 -. skip connection .-> N2
+
 The Transformer architecture (Vaswani et al., 2017) replaced recurrence with self-attention, enabling parallel processing of entire sequences.
 
 **Core equation:**
@@ -22,8 +32,16 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\righ
 ---
 layout: diagram
 title: The Quantum Transformer
-alt_text: "Quantum Transformer hybrid architecture: Classical Input flows right through Quantum Encoding, Quantum Self-Attention PQC, Quantum Feed-Forward PQC, Measurement, to Classical Output. A dashed feedback loop labeled 'Classical optimizer updates circuit parameters' connects the output back to the quantum circuits."
+alt_text: "Quantum Transformer hybrid architecture: Classical Input flows right through Quantum Encoding, Quantum Self-Attention PQC, Quantum Feed-Forward PQC, Measurement, to Classical Output. A dashed feedback loop labeled 'Classical optimizer updates circuit parameters' connects the output back to the quantum self-attention circuit."
 ---
+flowchart LR
+    CI[Classical Input] --> QE[Quantum Encoding]
+    QE --> QA[Quantum Self-Attention PQC]
+    QA --> QF[Quantum Feed-Forward PQC]
+    QF --> M[Measurement]
+    M --> CO[Classical Output]
+    CO -. Classical optimizer updates circuit parameters .-> QA
+
 A Quantum Transformer replaces classical sub-layers with parameterized quantum circuits (PQCs). Input data is encoded into quantum states, processed through quantum attention and feed-forward circuits, then measured to produce classical outputs.
 
 Key design choices:

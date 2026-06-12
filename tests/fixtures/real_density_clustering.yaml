@@ -104,8 +104,13 @@ An isometric cube wireframe representing a 3D data space with x, y, and z axes. 
 ---
 layout: diagram
 title: "Subspace Projections: A Closer Look"
-alt_text: "Three side-by-side 2D scatter plots showing the same 3D dataset projected onto x-y, x-z, and y-z planes. In the x-y plot: blue circles cluster upper-left, green triangles cluster upper-right, orange squares form a spread-out cluster lower-center — 3 groups. In the x-z plot: blue circles cluster middle-left, green triangles cluster upper-right — 2 groups. In the y-z plot: blue circles and green triangles overlap in the upper-left as a shared subcluster, and orange squares are scattered — 1 tight plus scattered pattern."
+alt_text: "Flow diagram: a node labeled Same 3D dataset branches into three projection nodes. The x-y plane node shows 3 groups (blue, green, orange); the x-z plane node shows 2 groups (blue, green); the y-z plane node shows blue and green overlapping as a shared subcluster with orange scattered."
 ---
+flowchart LR
+    P[Same 3D dataset] --> XY[x-y plane: 3 groups - blue, green, orange]
+    P --> XZ[x-z plane: 2 groups - blue, green]
+    P --> YZ[y-z plane: blue and green overlap, orange scattered]
+
 Projecting the same 3D dataset onto each 2D plane reveals a different cluster structure in each view — the number and membership of clusters changes per projection.
 
 Same 3D dataset, three projections: x–y shows 3 groups; x–z shows 2; y–z reveals a shared y-subcluster.
@@ -259,8 +264,15 @@ $$f(y) = \sum_{i=1}^{n} K(x_i, y)$$
 ---
 layout: diagram
 title: "DENCLUE: Density Landscape"
-alt_text: "A 1D kernel density plot. The x-axis represents data space and y-axis represents density. Five peaks labeled A, B, C, D, and E from left to right. A horizontal dashed orange line at height xi marks the minimum density threshold. Three vertical dotted gray lines mark local minima (valleys) between peaks. Peaks A, B, and C are separated by valleys that dip below xi — they form three distinct clusters. Peak D is smaller and peak E is the tallest; the density between D and E stays above xi, so they are merged into a single cluster labeled merge(D, E)."
+alt_text: "Line chart of a one-dimensional density landscape. The x-axis marks peaks A through E with valley points between them; the y-axis is density from 0 to 10. The density line peaks at A (6), B (5), C (7), D (3), and E (9, the tallest). A second flat line marks the threshold xi at height 2. The valleys between A, B, and C dip below the threshold, so A, B, and C form three separate clusters; the valley between D and E stays at 2.5, above the threshold, so D and E merge into one cluster."
 ---
+xychart-beta
+    title "Density landscape: peaks A to E with threshold xi = 2"
+    x-axis ["A", "v1", "B", "v2", "C", "v3", "D", "v4", "E"]
+    y-axis "density" 0 --> 10
+    line [6, 1, 5, 0.8, 7, 1.2, 3, 2.5, 9]
+    line [2, 2, 2, 2, 2, 2, 2, 2, 2]
+
 Clusters emerge from peaks of the density function. The threshold ξ acts as a "water level" — peaks above it form clusters; valleys above it merge adjacent peaks.
 
 - Cluster A (under peak A), Cluster B (under peak B), Cluster C (under peak C)

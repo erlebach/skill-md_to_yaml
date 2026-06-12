@@ -172,8 +172,19 @@ Companion figure highlighting parameter updates.
 ---
 layout: diagram
 title: "Dense versus Sparse Gaussian Clustering"
-alt_text: "Two-panel diagram contrasting Gaussian mixture covariance parameterizations. Left panel shows a rotated ellipse labeled Dense (full covariance matrix, O(k d squared) parameters, flexible ellipses capturing feature correlations). Right panel shows an axis-aligned thinner ellipse labeled Sparse (diagonal covariance, O(k d) parameters, trading flexibility for speed)."
+alt_text: "Two side-by-side panels contrasting Gaussian mixture covariance parameterizations. Left panel, labeled Dense full covariance, notes rotated ellipses capturing feature correlations and order k times d squared parameters. Right panel, labeled Sparse diagonal covariance, notes axis-aligned ellipses with no cross-feature terms and order k times d parameters. An arrow labeled trades flexibility for speed connects the dense panel to the sparse panel."
 ---
+flowchart LR
+    subgraph DENSE[Dense full covariance]
+        D1[Rotated ellipses capture feature correlations]
+        D2[Parameters: k times d squared]
+    end
+    subgraph SPARSE[Sparse diagonal covariance]
+        S1[Axis-aligned ellipses, no cross-feature terms]
+        S2[Parameters: k times d]
+    end
+    DENSE -- trades flexibility for speed --> SPARSE
+
 Dense models pair each cluster with a full covariance matrix; sparse models share structure
 (diagonal/spherical) to cut parameters. EM with full covariances needs far more parameters
 than k-means, which only tracks means.

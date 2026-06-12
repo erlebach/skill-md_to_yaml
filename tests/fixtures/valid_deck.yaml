@@ -38,12 +38,10 @@ layout: diagram
 title: Data Flow
 alt_text: Sequence diagram showing request flow from client to server
 ---
-```mermaid
 sequenceDiagram
     Client->>Server: Request
     Server->>DB: Query
     DB->>Server: Result
-```
 ---
 layout: two-column
 title: Side by Side
