@@ -145,7 +145,7 @@ def test_image_path_ref():
     from compiler.renderers.image import render_image
     result = render_image("fig.png", "Alt text", embed=False)
     assert '<img src="fig.png"' in result
-    assert 'alt=""' in result
+    assert 'alt="Alt text"' in result
 
 
 def test_image_embed():
