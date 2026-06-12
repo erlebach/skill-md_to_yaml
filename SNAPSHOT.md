@@ -1,17 +1,18 @@
 # Project Snapshot
 
-**Last updated:** 2026-05-06 14:18 (local)
+**Last updated:** 2026-06-12 13h50mEST
 
 ## Current Architecture
 
-- **YAML DSL compiler**: `compiler/` — Jinja2-based engine rendering YAML slide decks to self-contained HTML
-- **Schema/Parser**: `schema/` — validates hybrid YAML+Markdown deck files
+- **YAML DSL compiler**: `.claude/skills/md_to_yaml/compiler/` — Jinja2-based engine rendering YAML slide decks to self-contained HTML (**single source**: the root `compiler/`/`schema/` copies and `standalone/` are gone)
+- **Schema/Parser**: `.claude/skills/md_to_yaml/schema/` — validates hybrid YAML+Markdown deck files
 - **Skill definitions**: `docs/transcribe_to_html/`, `docs/md_to_yaml/`; repo skills under **`skills/`** — **`deck-compile`** (bundled compiler), **`deck-author`**, **`figure-spec`** (each has `SKILL.md` + **`USAGE.md`**); **`create_figure_captions`** if present
-- **Templates**: `compiler/templates/` — Jinja2 HTML templates per layout type (title, content, figure, table, etc.)
-- **Renderers**: `compiler/renderers/` — Python modules for math, code, images, Markdown processing
+- **Templates**: `.claude/skills/md_to_yaml/compiler/templates/` — Jinja2 HTML templates per layout type (title, content, figure, table, etc.)
+- **Renderers**: `.claude/skills/md_to_yaml/compiler/renderers/` — Python modules for math, code, images, Markdown processing
 
 ## Active Features
 
+- **Fixed 1280×720 canvas** (branch `fixed-canvas-generator`) — the generator emits zoom-independent slides natively: fluid units frozen to px, discrete-slide controller, per-slide autofit (zoom + inverse box; also checks content-area containment), slide-boundary audit (`#debug` HUD + Playwright test). Mermaid sizing measures the **real panel/column** (`PANEL_FILL = 0.95`), runs at autofit zoom 1, and autofit gets the final say. Knobs: per-slide **`panel_scale`** on `layout: diagram` (float or `[x, y]`, 0.2–1.0 → `--panel-scale-x/y`), **`mermaid_scale`** (0.25–4.0, honored in measured mode, clamped to panel fit), **`mermaid_scale_mode`** (`measured`|`fit`). Figure-only slides pin the panel to the content area down to the one-inch margin; comparison slides get the panel chrome with geometrically centered columns. Mermaid baking to SVG remains Phase 2 (plan: `docs/superpowers/plans/2026-06-11-fixed-canvas-slide-generator.md`).
 - **In-page view scale** — **`view_scale`** (default **1.0**, range **0.25–4**) and optional **`remember_view_scale`** on **`DeckMetadata`**; HTML **`#deck-app-root`** applies **`--deck-view-scale`** (**`zoom`**, **`transform`** fallback). **Fixed bottom bar** (slide counter, view-scale, go-to): **`footer_inset`** (default **`0.5in`**) = CSS **`bottom`**; **`footer_scale`** (**0.5–2.5**, default **1.0**) = **`--footer-scale`** on **`<html>`** for larger/smaller control chrome; **`--slide-footer-ui-clearance`** scales with **`footer_scale`**. See **`CSS_CONTROLS.md`** (Fixed footer). Keys **`+`/`=`**, **`−`**, **`0`**, **`?viewScale=`**, **`localStorage`** **`mdToYamlDeckViewScale`** (see **`HANDOFF_ZOOM.md`**).
 - **Display math tuning** — deck metadata and per-slide frontmatter: **`math_display_scale`** (**0.75–2.0**, default **1.0**), **`math_display_center`** (default **true**), and optional **`math_display_color`** (e.g. **`cyan`**, hex, **`hsl(...)`**) for **`$$...$$`** block MathML in body, hero, and table cells; HTML sets **`--math-display-scale`**, optional **`--math-display-color`**, and **`math-display-eq-center`** / **`math-display-eq-start`** on each **`<section>`** (under **`.claude/skills/md_to_yaml`**). When centering is on, block MathML also uses **`width: fit-content; max-width: 100%`** with **`margin: auto`** so bare **`<math>`** between paragraphs still centers.
 - **Slide `subtitle`** — optional on all layouts that have **`title`**; rendered below the heading with **80%** of the title font size (CSS **`0.8em`** on **`header.slide-heading-stack`**); rich text / inline math like **`title`**
@@ -65,6 +66,8 @@ md_to_yaml/
 
 ## Recent Changes
 
+- **2026-06-12**: **Panel-true sizing + scale knobs** — Mermaid panels measured directly (not canvas constants), `panel_scale`/`mermaid_scale` knobs live, autofit↔sizing ordering fixed, inline `>`/`#` render literally, all fixtures conform to deck recommendations. See JOURNAL 2026-06-12 13:50 and `docs/superpowers/HANDOFF_2026-06-12_13h41m_EST.md`.
+- **2026-06-11**: **Fixed-canvas generator (Phase 1)** — 1280×720 stage, frozen units, discrete controller, autofit, boundary audit; `standalone/` removed; fixture assets repaired. Commits `cbcc14a`…`3e6d8ed`.
 - **2026-05-06**: **Global ADA rule** — added `~/.cursor/rules/ADA.mdc` to codify
   scroll-invariant measurement practices (avoid viewport `bottom/top` for
   offscreen sizing; prefer container-based sizing).

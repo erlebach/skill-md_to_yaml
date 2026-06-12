@@ -1,5 +1,31 @@
 # JOURNAL — md_to_yaml Project
 
+## 2026-06-12 13:50 — Fixed-canvas rendering: panel-true sizing, scale knobs, fixture QA
+
+- Figure/comparison/diagram panels size against their real measured boxes
+  (not canvas constants); figure-only panel pinned to the content area down
+  to the one-inch margin; `PANEL_FILL = 0.95` fill policy.
+- New per-slide `panel_scale` on `layout: diagram` (float or `[x, y]`,
+  0.2–1.0); `mermaid_scale` now honored in measured mode, clamped to fit.
+- Autofit↔sizing ordering fixed (size at zoom 1, autofit last) — wide
+  diagrams were getting clipped; autofit also checks content-area overflow.
+- Inline fragments starting with `>`/`#` render literally; code-gutter line
+  metrics now match the code column.
+- All fixtures conform to deck recommendations; raw-Mermaid blank-line leaks
+  fixed. Verification: suite 179 green; headless containment probes pass.
+- Handoff: `docs/superpowers/HANDOFF_2026-06-12_13h41m_EST.md`.
+
+### Details
+- Commits `74b3612`, `e727ecf`, `cdb9fd5`, `3e6d8ed` (06-11) and `5d7861f`,
+  `aaf5df2`, `001d44b`, `ab32c45` (06-12) on branch `fixed-canvas-generator`.
+- Files: `.claude/skills/md_to_yaml/compiler/templates/base.html.j2`,
+  `compiler/engine.py`, `compiler/renderers/__init__.py`, `schema/models.py`,
+  `schema/deck.schema.json` (regenerated; was stale), `tests/fixtures/*`,
+  `tests/test_rich_content.py`, `tests/measure_two_col_mermaid.py` (headless
+  geometry probe), `generate_html_files.sh` (compile-all loop).
+
+---
+
 ## 2026-05-06 10:30 — Mermaid diagrams: prevent “tiny SVG” renders
 
 ### Completed Tasks ✅
