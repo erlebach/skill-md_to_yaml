@@ -30,7 +30,7 @@ title: Part Two
 ---
 layout: figure
 title: Architecture Diagram
-src: placeholder.png
+src: attention_scaling_contrast.png
 alt_text: System architecture showing three microservices connected via message queue
 ---
 ---
@@ -47,9 +47,10 @@ sequenceDiagram
 ---
 layout: two-column
 title: Side by Side
+proportion: 40/60
 right:
   type: figure
-  src: placeholder.png
+  src: attention_scaling_contrast.png
   alt_text: Example photograph
 ---
 The left column has free text explaining the image on the right.

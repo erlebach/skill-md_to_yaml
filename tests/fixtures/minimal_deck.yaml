@@ -2,7 +2,7 @@
 title: Test Deck
 theme: dark
 ---
-# Title Slide
 layout: title
+title: Title Slide
 subtitle: Subtitle
 ---

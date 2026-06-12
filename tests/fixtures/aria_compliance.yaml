@@ -83,6 +83,18 @@ HAVING COUNT(*) > 5
 ORDER BY avg_salary DESC;
 ```
 ---
+layout: table
+title: Browser Support Matrix
+caption: Assistive technology compatibility by browser
+headers: ["Browser", "NVDA", "JAWS", "VoiceOver", "TalkBack"]
+rows:
+  - ["Chrome", "Full", "Full", "Partial", "Full"]
+  - ["Firefox", "Full", "Full", "Partial", "N/A"]
+  - ["Safari", "N/A", "N/A", "Full", "N/A"]
+  - ["Edge", "Full", "Full", "Partial", "Full"]
+row_headers: true
+---
+---
 layout: code
 title: Shell Script
 language: bash
@@ -96,17 +108,6 @@ for file in *.csv; do
     wc -l "$file"
 done
 ```
----
-layout: table
-title: Browser Support Matrix
-caption: Assistive technology compatibility by browser
-headers: ["Browser", "NVDA", "JAWS", "VoiceOver", "TalkBack"]
-rows:
-  - ["Chrome", "Full", "Full", "Partial", "Full"]
-  - ["Firefox", "Full", "Full", "Partial", "N/A"]
-  - ["Safari", "N/A", "N/A", "Full", "N/A"]
-  - ["Edge", "Full", "Full", "Partial", "Full"]
-row_headers: true
 ---
 ---
 layout: table
@@ -151,7 +152,6 @@ title: Accessible vs Inaccessible
 - Sufficient color contrast
 - Keyboard navigation support
 - Screen reader compatibility
-- Focus indicators visible
 
 <!-- split -->
 
@@ -161,7 +161,6 @@ title: Accessible vs Inaccessible
 - Low contrast text
 - Mouse-only interactions
 - No ARIA labels
-- Focus outline removed
 ---
 layout: steps
 title: Accessibility Audit Process

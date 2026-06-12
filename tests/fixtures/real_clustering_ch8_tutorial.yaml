@@ -21,6 +21,11 @@ title: "What You Will Practice Recognizing"
 - Mixture models, EM, dense versus sparse Gaussian assumptions.
 - Self-organizing maps: grid topology, neighborhood updates, trade-offs.
 ---
+layout: divider
+title: Soft Clustering Foundations
+---
+
+---
 layout: content
 title: "Hard (Crisp) versus Soft (Fuzzy) Clustering"
 ---
@@ -103,6 +108,11 @@ BCFCM (bias-corrected fuzzy c-means, Ahmed et al., IEEE TMI 2002).
 
 Each segmentation method separates tissue types differently — comparing outputs trains
 recognition of algorithm trade-offs.
+---
+layout: divider
+title: Probabilistic Clustering
+---
+
 ---
 layout: content
 title: "Clustering with Mixture Models"
@@ -192,6 +202,11 @@ title: "Alternatives When EM Is the Wrong Tool"
 - MCMC and other Bayesian inference approaches when you need uncertainty beyond a point estimate.
 - Hybrid pipelines: use k-means or fuzzy methods for initialization or speed, then refine selectively.
 ---
+layout: divider
+title: Self-Organizing Maps
+---
+
+---
 layout: content
 title: "Self-Organizing Maps (SOM)"
 ---
@@ -208,6 +223,11 @@ SOM grid topologies enforce a 2D (or 3D) manifold for visualization.
 
 Topology enforces a 2D (or 3D) manifold for visualization — useful for exploratory
 interpretation even when data live in higher dimensions.
+---
+layout: divider
+title: SOM in Action
+---
+
 ---
 layout: content
 title: "Online Update Snapshots"

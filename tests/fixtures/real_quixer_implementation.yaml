@@ -97,6 +97,11 @@ $$P(0) = \frac{1}{2} + \frac{1}{2}\left|\langle Q_i | K_j \rangle\right|^2$$
 
 The probability of measuring the ancilla as zero gives the attention logit — the quantum analogue of the dot-product attention score.
 ---
+layout: divider
+title: Putting It Together
+---
+
+---
 layout: diagram
 title: Full Algorithmic Flow
 alt_text: "Vertical flow diagram with six stages connected by downward arrows. Classical token sequence (grey box) flows into Angle Encoding producing unitary gates U_w (blue), then LCU computing mixed operator A = sum alpha_j U_w_j (green), then QSVT applying polynomial P to singular values Sigma (orange), then Measurement extracting expectation values (grey), then Classical FFN producing output (blue). Stages 1 through 4 enclosed in dashed blue box labeled Quantum Processor."
@@ -110,8 +115,7 @@ title: Pros and Cons
 
 - **Holistic mixing:** all tokens interact simultaneously via LCU superposition
 - **Higher-order interactions:** QSVT enables skip-k-grams in a single quantum step
-- **Complex-valued weights:** trainable complex coefficients leverage quantum interference
-- **Exponential state space:** n qubits span a 2^n-dimensional Hilbert space
+- **Complex weights in an exponential space:** trainable complex coefficients leverage quantum interference across the 2^n-dimensional Hilbert space of n qubits
 - **Theoretical speedup:** inner-product via Swap Test reduces per-pair complexity from O(d) to O(1)
 
 <!-- split -->
@@ -119,8 +123,7 @@ title: Pros and Cons
 **Disadvantages:**
 
 - **Hardware requirements:** QSVT demands fault-tolerant quantum computers not yet available at scale
-- **Post-selection overhead:** LCU requires post-selecting on ancilla measurements, which succeeds probabilistically
-- **Measurement bottleneck:** extracting classical information requires many measurement shots
+- **Measurement overhead:** LCU post-selection on ancilla measurements succeeds only probabilistically, and extracting classical information requires many shots
 - **Training complexity:** hybrid quantum-classical optimization is slow; barren plateaus may arise
 - **Limited empirical validation:** Quixer demonstrated only on small-scale simulations
 ---

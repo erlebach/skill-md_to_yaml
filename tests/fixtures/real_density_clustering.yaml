@@ -53,6 +53,11 @@ The algorithm is elegantly simple: discretize → count → threshold → connec
 
 A seven-by-seven grid where most cells have a count of zero (empty). Two dense regions are highlighted. The left cluster (blue outline) spans columns 2–5, rows 3–6, with cell counts from 3 to 21. The right cluster (green outline) is a two-column by two-row block with counts of 18, 24, 27, and 31.
 ---
+layout: divider
+title: Subspace Clustering
+---
+
+---
 layout: two-column
 title: "Subspace Clustering: The Challenge"
 proportion: 50/50
@@ -147,6 +152,11 @@ This is identical in structure to the **Apriori principle** in association rule 
 
 The search grows bottom-up from 1D to higher dimensions, pruning aggressively at each level. This makes CLIQUE tractable in practice despite the exponential search space.
 ---
+layout: divider
+title: "CLIQUE: From Theory to Practice"
+---
+
+---
 layout: two-column
 title: "CLIQUE: Algorithm Pseudocode"
 proportion: 40/60
@@ -195,6 +205,11 @@ proportion: 50/50
 
 The fixed threshold is CLIQUE's primary weakness. Clusters with different local densities require different thresholds, but CLIQUE uses one global value for all subspaces.
 ---
+layout: divider
+title: DENCLUE
+---
+
+---
 layout: two-column
 title: "DENCLUE: Kernel Density Estimation"
 proportion: 50/50
@@ -242,6 +257,15 @@ $$f(y) = \sum_{i=1}^{n} K(x_i, y)$$
 - Saddle points and valleys separate different clusters
 - Global density depends on the bandwidth σ
 ---
+layout: diagram
+title: "DENCLUE: Density Landscape"
+alt_text: "A 1D kernel density plot. The x-axis represents data space and y-axis represents density. Five peaks labeled A, B, C, D, and E from left to right. A horizontal dashed orange line at height xi marks the minimum density threshold. Three vertical dotted gray lines mark local minima (valleys) between peaks. Peaks A, B, and C are separated by valleys that dip below xi — they form three distinct clusters. Peak D is smaller and peak E is the tallest; the density between D and E stays above xi, so they are merged into a single cluster labeled merge(D, E)."
+---
+Clusters emerge from peaks of the density function. The threshold ξ acts as a "water level" — peaks above it form clusters; valleys above it merge adjacent peaks.
+
+- Cluster A (under peak A), Cluster B (under peak B), Cluster C (under peak C)
+- Cluster D+E merged: density between D and E stays above ξ throughout
+---
 layout: two-column
 title: "DENCLUE Algorithm: Three Steps"
 proportion: 50/50
@@ -269,15 +293,6 @@ Each data point climbs the density gradient until it reaches a local maximum. Th
 If a point's density at its starting location is below ξ, it is classified as **noise** and rejected — no cluster assignment is made.
 
 Two attractors D and E are **merged** into one cluster if there exists a path between them where the density never falls below ξ — they are connected through a high-density region.
----
-layout: diagram
-title: "DENCLUE: Density Landscape"
-alt_text: "A 1D kernel density plot. The x-axis represents data space and y-axis represents density. Five peaks labeled A, B, C, D, and E from left to right. A horizontal dashed orange line at height xi marks the minimum density threshold. Three vertical dotted gray lines mark local minima (valleys) between peaks. Peaks A, B, and C are separated by valleys that dip below xi — they form three distinct clusters. Peak D is smaller and peak E is the tallest; the density between D and E stays above xi, so they are merged into a single cluster labeled merge(D, E)."
----
-Clusters emerge from peaks of the density function. The threshold ξ acts as a "water level" — peaks above it form clusters; valleys above it merge adjacent peaks.
-
-- Cluster A (under peak A), Cluster B (under peak B), Cluster C (under peak C)
-- Cluster D+E merged: density between D and E stays above ξ throughout
 ---
 layout: content
 title: "When to Use Each Algorithm"

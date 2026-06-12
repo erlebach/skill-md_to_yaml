@@ -128,7 +128,6 @@ title: Model Selection — XGBoost vs Neural Net
 - Inference latency: 2ms p99
 - Interpretable via SHAP
 - Handles missing values natively
-- No GPU required
 
 <!-- split -->
 
@@ -138,7 +137,6 @@ title: Model Selection — XGBoost vs Neural Net
 - Inference latency: 8ms p99
 - Black box without explainability layer
 - Requires imputation preprocessing
-- Better on unstructured features
 ---
 layout: table
 title: Cross-Validation Results

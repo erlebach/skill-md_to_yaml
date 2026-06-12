@@ -43,14 +43,17 @@ graph TD
     APP --> QUEUE[RabbitMQ]
     QUEUE --> WORKER[Background Worker]
     WORKER --> DB
-
     style DB fill:#dc2626,color:#fff
     style APP fill:#dc2626,color:#fff
 ---
 ---
 layout: diagram
 title: Target Microservices Architecture
+title_scale: 0.95
 alt_text: Distributed microservices architecture with API gateway, event bus, independent databases per service, and Kubernetes orchestration
+panel_scale: 1.0
+mermaid_scale: 0.90
+mermaid_scale_mode: measured
 ---
 graph TD
     CDN[CloudFront CDN] --> GW[API Gateway]
@@ -58,17 +61,14 @@ graph TD
     GW --> USER[User Service]
     GW --> ORDER[Order Service]
     GW --> NOTIFY[Notification Service]
-
     AUTH --> DB_AUTH[(Auth DB)]
     USER --> DB_USER[(User DB)]
     ORDER --> DB_ORDER[(Order DB)]
     NOTIFY --> DB_NOTIFY[(Notify DB)]
-
     ORDER --> BUS[EventBridge]
     BUS --> NOTIFY
     BUS --> ANALYTICS[Analytics Pipeline]
     ANALYTICS --> DW[(Data Warehouse)]
-
     style GW fill:#f59e0b,color:#000
     style BUS fill:#f59e0b,color:#000
 ---
@@ -94,6 +94,8 @@ title: Migration Strategy
 ---
 layout: steps
 title: Strangler Fig Pattern
+# title_scale: 2.00
+content_scale: 2.0
 ---
 1. Deploy API gateway in front of the monolith as a routing layer
 2. Extract authentication into a standalone service behind the gateway
@@ -111,7 +113,6 @@ title: Lift-and-Shift vs Re-architecture
 - Risk: Low
 - No code changes required
 - Same scalability limitations
-- Quick win for compliance
 
 <!-- split -->
 
@@ -121,7 +122,6 @@ title: Lift-and-Shift vs Re-architecture
 - Risk: Medium-High
 - Enables auto-scaling per service
 - Independent deployment cycles
-- Long-term cost optimization
 ---
 layout: code
 title: Kubernetes Deployment
@@ -214,20 +214,18 @@ description: Monitoring, tracing, and alerting for distributed systems
 layout: diagram
 title: Observability Stack
 alt_text: Three pillars of observability showing metrics flowing to Prometheus and Grafana, traces to Jaeger, and logs to Loki, all unified in Grafana dashboards
+mermaid_scale: 0.95
 ---
 graph LR
     SVC[Services] -->|metrics| PROM[Prometheus]
     SVC -->|traces| JAEGER[Jaeger]
     SVC -->|logs| LOKI[Loki]
-
     PROM --> GRAFANA[Grafana Dashboards]
     JAEGER --> GRAFANA
     LOKI --> GRAFANA
-
     GRAFANA --> ALERT[Alert Manager]
     ALERT --> PAGER[PagerDuty]
     ALERT --> SLACK[Slack]
-
     style GRAFANA fill:#f59e0b,color:#000
 ---
 ---
@@ -270,11 +268,11 @@ title: SLA Targets by Service
 caption: Availability and latency targets per service tier
 headers: ["Service", "Tier", "Availability", "p50 Latency", "p99 Latency", "Error Budget"]
 rows:
-  - ["API Gateway", "Critical", "99.99%", "<10ms", "<50ms", "4.3 min/mo"]
-  - ["Auth", "Critical", "99.99%", "<15ms", "<75ms", "4.3 min/mo"]
-  - ["Orders", "High", "99.95%", "<25ms", "<100ms", "21.6 min/mo"]
-  - ["Notifications", "Standard", "99.9%", "<50ms", "<200ms", "43.2 min/mo"]
-  - ["Analytics", "Low", "99.5%", "<100ms", "<500ms", "3.6 hr/mo"]
+  - ["API Gateway", "Critical", "99.99%", "$<10$ms", "$<50$ms", "4.3 min/mo"]
+  - ["Auth", "Critical", "99.99%", "$<15$ms", "$<75$ms", "4.3 min/mo"]
+  - ["Orders", "High", "99.95%", "$<25$ms", "$<100$ms", "21.6 min/mo"]
+  - ["Notifications", "Standard", "99.9%", "$<50$ms", "$<200$ms", "43.2 min/mo"]
+  - ["Analytics", "Low", "99.5%", "$<100$ms", "$<500$ms", "3.6 hr/mo"]
 row_headers: true
 ---
 ---
@@ -295,19 +293,20 @@ Where $A_{actual}$ is measured availability and $A_{target}$ is the SLA target.
 layout: diagram
 title: CI/CD Pipeline
 alt_text: Continuous integration and deployment pipeline showing code commit triggering lint, test, build, staging deploy, canary release, and full production rollout stages
+mermaid_scale: 1.0
 ---
-graph LR
-    COMMIT[Git Push] --> LINT[Lint + Format]
-    LINT --> TEST[Unit Tests]
-    TEST --> BUILD[Docker Build]
-    BUILD --> SCAN[Security Scan]
-    SCAN --> STAGE[Deploy Staging]
-    STAGE --> INTEG[Integration Tests]
-    INTEG --> CANARY[Canary 5%]
-    CANARY --> FULL[Full Rollout]
-
-    CANARY -->|metrics bad| ROLLBACK[Auto Rollback]
-
+flowchart TD
+    subgraph CI [CI]
+        direction LR
+        COMMIT[Git Push] --> LINT[Lint + Format] --> TEST[Unit Tests] --> BUILD[Docker Build] --> SCAN[Security Scan]
+    end
+    subgraph CD [CD]
+        direction LR
+        STAGE[Deploy Staging] --> INTEG[Integration Tests] --> CANARY[Canary 5%]
+        CANARY --> FULL[Full Rollout]
+        CANARY -->|metrics bad| ROLLBACK[Auto Rollback]
+    end
+    CI --> CD
     style ROLLBACK fill:#dc2626,color:#fff
     style FULL fill:#16a34a,color:#fff
 ---
@@ -366,18 +365,14 @@ graph TD
     EXT[External Traffic] --> WAF[Web Application Firewall]
     WAF --> GW[API Gateway + OAuth2]
     GW --> MESH{Service Mesh - Istio}
-
     MESH --> SVC1[Service A]
     MESH --> SVC2[Service B]
     MESH --> SVC3[Service C]
-
     SVC1 <-->|mTLS| SVC2
     SVC2 <-->|mTLS| SVC3
-
     VAULT[HashiCorp Vault] -.->|secrets| SVC1
     VAULT -.->|secrets| SVC2
     VAULT -.->|secrets| SVC3
-
     style MESH fill:#f59e0b,color:#000
     style VAULT fill:#7c3aed,color:#fff
 ---
