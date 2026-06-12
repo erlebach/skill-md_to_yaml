@@ -562,16 +562,26 @@
       margin-top: var(--two-col-title-gap);
     }
     /* Text split in two columns: start under title (avoid vertical centering gap) */
-    section.slide-two-column .slide-content-area:has(.two-col--markdown-split),
-    section.slide-comparison .slide-content-area {
+    section.slide-two-column .slide-content-area:has(.two-col--markdown-split) {
       justify-content: flex-start;
       margin-top: 144px;
     }
     section.slide-two-column .two-col--markdown-split > .col-left,
-    section.slide-two-column .two-col--markdown-split > .col-right,
+    section.slide-two-column .two-col--markdown-split > .col-right {
+      justify-content: flex-start;
+    }
+    /* Comparison: the content area is the panel (same chrome as figure
+       slides) — it spans title-to-bottom-margin, and each column centers
+       its content on the panel's geometry. */
+    section.slide-comparison .slide-content-area {
+      background: var(--fig-panel);
+      border: 1px solid var(--fig-panel-border);
+      border-radius: 10px;
+      padding: 16px 32px;
+    }
     section.slide-comparison .two-col > .col-left,
     section.slide-comparison .two-col > .col-right {
-      justify-content: flex-start;
+      justify-content: center;
     }
     /* Heading-to-list: .slide-body must be flex for gap to apply (col-* only has one child). */
     section.slide-two-column .two-col--markdown-split > .col-left.slide-body,
@@ -690,9 +700,14 @@
       padding: 1rem 1.5rem;
     }
 
-    /* Standalone diagram slide: container fills content area and centers diagram vertically */
+    /* Standalone diagram slide: container fills content area and centers
+       diagram vertically. --panel-scale-x/y (per-slide panel_scale) shrink
+       the panel relative to that default; the JS sizer measures the panel
+       after layout, so the diagram follows automatically. */
     .slide-diagram .slide-content-area > .diagram-container {
-      flex: 1;
+      flex: 0 1 calc(var(--panel-scale-y, 1) * 100%);
+      width: calc(var(--panel-scale-x, 1) * 100%);
+      align-self: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -906,6 +921,55 @@
       .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset .diagram-container svg {
         max-height: 612px;
       }
+    }
+    /* Pinned-panel mode: figure-only slides (no body) with a file asset
+       (--fill; Mermaid keeps its fit-content panel + JS sizing). The content
+       area is the slide's deterministic box below the title, so inset:0 of it
+       IS absolute canvas coordinates; the panel fills it entirely and the
+       media is container-relative with a small inner padding. Replaces the
+       frozen 518/561/576/612px caps in this mode — those could exceed the
+       panel's real flex space and paint past it (overflow stays visible for
+       figure_scale zoom). Declared after the @supports zoom block so the
+       equal-specificity max-height overrides win by order. */
+    /* Drop the footer clearance here: the panel bottom lands on the one-inch
+       margin (624px); the footer pill (half-inch inset, top ~639px) stays clear. */
+    section[role="group"].slide-figure.figure-only {
+      padding-bottom: 96px;
+    }
+    .slide-figure.figure-only .slide-content-area {
+      position: relative;
+    }
+    .slide-figure.figure-only .slide-content-area > .figure-container:has(.figure-asset-wrap--fill) {
+      position: absolute;
+      inset: 0;
+    }
+    .slide-figure.figure-only .figure-container:has(.figure-asset-wrap--fill) > figure {
+      height: 100%;
+      min-height: 0;
+    }
+    .slide-figure.figure-only .figure-asset-wrap--fill {
+      flex: 1 1 0;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 20px;
+    }
+    .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset {
+      flex: 1 1 0;
+      min-height: 0;
+    }
+    .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset > img,
+    .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset img,
+    .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset .diagram-container svg {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .slide-figure.figure-only .figure-asset-wrap--fill .figure-asset .diagram-container {
+      min-height: 0;
+      height: 100%;
     }
     /* Single diagram slide: diagram dominates */
     .diagram-only .diagram-container { max-height: 576px; }
@@ -1302,7 +1366,7 @@
     {% if slide.layout == 'diagram' and not slide.body %}{% set extra_class = ' diagram-only' %}{% endif %}
     {% if title_has_math %}{% set extra_class = extra_class ~ ' slide-heading-math' %}{% endif %}
     {% if s.math_display_center|default(true) %}{% set extra_class = extra_class ~ ' math-display-eq-center' %}{% else %}{% set extra_class = extra_class ~ ' math-display-eq-start' %}{% endif %}
-    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}"{% if s.bullet_stagger_json %} data-bullet-stagger="{{ s.bullet_stagger_json | e }}"{% endif %}{% if s.bullet_focus_json %} data-bullet-focus="{{ s.bullet_focus_json | e }}"{% endif %} style="--title-scale: {{ s.title_scale }}; --content-scale: {{ s.content_scale }}; --math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}{% if slide.layout in ['figure', 'figure-wide'] and s.figure_scale is not none %} --figure-scale: {{ s.figure_scale }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
+    <section id="{{ slide_id }}" role="group" class="slide-{{ slide.layout }}{{ extra_class }}"{% if s.bullet_stagger_json %} data-bullet-stagger="{{ s.bullet_stagger_json | e }}"{% endif %}{% if s.bullet_focus_json %} data-bullet-focus="{{ s.bullet_focus_json | e }}"{% endif %} style="--title-scale: {{ s.title_scale }}; --content-scale: {{ s.content_scale }}; --math-display-scale: {{ s.math_display_scale }};{% if s.math_display_color %} --math-display-color: {{ s.math_display_color | e }};{% endif %}{% if slide.layout in ['figure', 'figure-wide'] and s.figure_scale is not none %} --figure-scale: {{ s.figure_scale }};{% endif %}{% if s.panel_scale_x is not none %} --panel-scale-x: {{ s.panel_scale_x }}; --panel-scale-y: {{ s.panel_scale_y }};{% endif %}" aria-roledescription="slide" aria-label="Slide {{ loop.index }} of {{ total }}" aria-labelledby="{{ slide_id }}-heading">
       {% include slide.layout ~ '.html.j2' %}
     </section>
     {% endfor %}
@@ -1622,10 +1686,20 @@
       slides.forEach(function(s) {
         s.style.zoom = ''; s.style.width = ''; s.style.height = '';  // reset before measuring
         var z = 1, guard = 0;
-        while ((s.scrollHeight > s.clientHeight + 1 || s.scrollWidth > s.clientWidth + 1)
+        // Content painting into the section's padding band (e.g. past a
+        // panel-shaped content area) never overflows the section box, so
+        // also require the content area to contain its children.
+        var ca = s.querySelector('.slide-content-area');
+        function caRatio() {
+          if (!ca || ca.scrollHeight <= ca.clientHeight + 1) return 1;
+          return ca.clientHeight / ca.scrollHeight;
+        }
+        while ((s.scrollHeight > s.clientHeight + 1 || s.scrollWidth > s.clientWidth + 1
+                || caRatio() < 1)
                && z > 0.4 && guard < 4) {
           z = Math.max(0.4, z * Math.min(s.clientHeight / s.scrollHeight,
-                                         s.clientWidth / s.scrollWidth) * 0.98);  // 2% margin
+                                         s.clientWidth / s.scrollWidth,
+                                         caRatio()) * 0.98);  // 2% margin
           s.style.zoom = String(z);
           s.style.width = (CW / z) + 'px';        // inverse size: rendered box
           s.style.height = (CH / z) + 'px';       // stays exactly 1280x720
@@ -1989,6 +2063,13 @@
       reason = 'no-measurable-label-text';
     }
 
+    // Author override (mermaid_scale): multiply the chosen scale, never past
+    // the panel fit. >1 grows toward filling the panel; <1 widens the margin.
+    if (mult !== 1) {
+      scale = Math.min(scale * mult, fitScale);
+      reason += '+mult';
+    }
+
     svg.style.width = (vbW * scale) + 'px';
     svg.style.height = (vbH * scale) + 'px';
 
@@ -2012,6 +2093,7 @@
   // than svg[id^="mermaid"] because Mermaid v11 uses different id schemes by type.
   const SLIDE_PAD   = 96;  // 96px (1in at 96dpi) slide edge
   const PANEL_INSET = 48;  // panel internal padding (combined horizontal/vertical slack)
+  const PANEL_FILL = 0.95; // max fraction of its panel a Mermaid diagram may occupy
   // Diagrams live inside the fixed 1280x720 stage — available space is canvas
   // space, never the live window.
   const CANVAS_W = 1280, CANVAS_H = 720;
@@ -2040,16 +2122,24 @@
   function canvasRectW(el) { return el.getBoundingClientRect().width / elScale(el); }
 
   function sizeAllMermaidSvgs() {
-    // Full-slide diagrams
+    // Sizing must run at autofit zoom 1. Autofit pairs zoom with an inverse
+    // box, inflating the slide's internal coordinate space — a panel measured
+    // in that space yields an svg that stays too wide once a later autofit
+    // pass resets the zoom (the panel's overflow then clips it). Reset all
+    // slides, size against true geometry, then re-run autofit at the end so
+    // it gets the final say with the final svg sizes.
+    document.querySelectorAll('section[role="group"]').forEach(s => {
+      s.style.zoom = ''; s.style.width = ''; s.style.height = '';
+    });
+    // Full-slide diagrams: the panel (.diagram-container) is flex:1, so its
+    // box is fixed by the layout (title and caption already carved out).
+    // Measure it directly minus its own padding — canvas-constant arithmetic
+    // over-subtracts and strands panel space as margin.
     document.querySelectorAll('.slide-diagram .diagram-container[data-mermaid-pre] svg').forEach(svg => {
-      const slide = svg.closest('section[role="group"]');
-      const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
-      const titleH = titleBlock ? canvasRectH(titleBlock) : 60;
-      const caption = slide && slide.querySelector('.diagram-caption');
-      const capH = caption ? canvasRectH(caption) + 16 : 0;
+      const panel = svg.closest('.diagram-container');
 
-      const availW = CANVAS_W - SLIDE_PAD * 2 - PANEL_INSET;
-      const availH = CANVAS_H - SLIDE_PAD * 2 - titleH - capH - PANEL_INSET;
+      const availW = canvasRectW(panel) * PANEL_FILL;
+      const availH = canvasRectH(panel) * PANEL_FILL;
 
       const result = sizeSvgMeasured(svg, availW, availH, 34, 54);
       logSizing(svg, result, 'slide-diagram');
@@ -2066,8 +2156,8 @@
       const colW = (container && canvasRectW(container)) || (CANVAS_W / 2);
       const colH = colEl ? canvasRectH(colEl) : (CANVAS_H - SLIDE_PAD * 2 - 60);
 
-      const availW = colW - PANEL_INSET;
-      const availH = colH - PANEL_INSET;
+      const availW = colW * PANEL_FILL;
+      const availH = colH * PANEL_FILL;
 
       const result = sizeSvgMeasured(svg, availW, availH, 30, 46);
       logSizing(svg, result, 'slide-two-column');
@@ -2125,6 +2215,9 @@
       logSizing(svg, result, 'slide-figure-wide');
       markMermaidReadyFromSvg(svg);
     });
+
+    // Autofit gets the final say, now that every svg has its final size.
+    if (window.__mdToYamlAutofitAll) window.__mdToYamlAutofitAll();
   }
 
   // Expose for view-scale changes (Shift++ / footer controls) so Mermaid SVGs

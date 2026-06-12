@@ -307,6 +307,38 @@
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
         },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -384,6 +416,38 @@
           ],
           "default": null,
           "title": "Source"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this column (None = compiler default). 'measured' tries to meet readable label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this column (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         }
       },
       "required": [
@@ -504,6 +568,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [
@@ -637,6 +733,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [
@@ -1018,6 +1146,38 @@
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
         },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -1033,6 +1193,25 @@
         "alt_text": {
           "title": "Alt Text",
           "type": "string"
+        },
+        "panel_scale": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Shrink the diagram panel relative to its default size (the full content area): a single fraction applies to both axes, a two-item list is [horizontal, vertical]. Each value 0.2-1.0.",
+          "title": "Panel Scale"
         }
       },
       "required": [
@@ -1155,6 +1334,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [
@@ -1288,6 +1499,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [
@@ -1446,6 +1689,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [
@@ -1627,6 +1902,38 @@
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
         },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -1772,6 +2079,38 @@
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
         },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -1904,6 +2243,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [
@@ -2050,6 +2421,38 @@
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
         },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -2182,6 +2585,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [
@@ -2335,6 +2770,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [
@@ -2510,6 +2977,38 @@
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
         },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
+        },
         "body": {
           "anyOf": [
             {
@@ -2654,6 +3153,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [
@@ -2823,6 +3354,38 @@
           "default": null,
           "description": "Override deck content_scale for this slide (None = use deck default).",
           "title": "Content Scale"
+        },
+        "mermaid_scale_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "measured",
+                "fit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override Mermaid sizing mode for this slide (None = compiler default). 'measured' tries to meet a readable on-screen label size; 'fit' just fits to panel.",
+          "title": "Mermaid Scale Mode"
+        },
+        "mermaid_scale": {
+          "anyOf": [
+            {
+              "maximum": 4.0,
+              "minimum": 0.25,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiplier applied to Mermaid SVG scale for this slide (None = compiler default). Still capped to the available panel size.",
+          "title": "Mermaid Scale"
         },
         "body": {
           "anyOf": [

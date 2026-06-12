@@ -489,6 +489,14 @@ def _render(
                 else deck.metadata.figure_scale
             )
 
+        panel_scale = getattr(slide, "panel_scale", None)
+        if panel_scale is None:
+            panel_scale_x = panel_scale_y = None
+        elif isinstance(panel_scale, (list, tuple)):
+            panel_scale_x, panel_scale_y = float(panel_scale[0]), float(panel_scale[1])
+        else:
+            panel_scale_x = panel_scale_y = float(panel_scale)
+
         bsc = _merge_bullet_stagger_config(deck, slide)
         bfc = _merge_bullet_focus_config(deck, slide)
         slides_context.append(
@@ -522,6 +530,8 @@ def _render(
                 "title_scale": eff_title_scale,
                 "content_scale": eff_content_scale,
                 "figure_scale": eff_figure_scale,
+                "panel_scale_x": panel_scale_x,
+                "panel_scale_y": panel_scale_y,
                 "bullet_stagger_json": _bullet_stagger_json(bsc),
                 "bullet_focus_json": _bullet_focus_json(bfc),
             }
