@@ -641,6 +641,15 @@
     section .slide-code { overflow: auto; max-height: 540px; border-radius: 0.5rem; }
     .slide-codetable { width: 100%; border-collapse: collapse; }
     .slide-codetable td.linenos { vertical-align: top; padding-right: 0.5em; border-right: 1px solid var(--border); user-select: none; width: 1%; white-space: nowrap; }
+    /* The gutter is a <div>, not <pre> (a11y: renderers swap it) — without the
+       code pre's exact font metrics its line pitch drifts from the code lines.
+       line-height must be 125% to mirror the Pygments-emitted .slide-code pre
+       rule (not the global pre 1.6). */
+    .slide-codetable td.linenos .linenodiv > div {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: calc(20px * var(--content-font-mul));
+      line-height: 125%;
+    }
     .slide-codetable td.code { vertical-align: top; padding-left: 1em; width: 99%; }
     .slide-codetable td.code pre { border: none; padding: 0; margin: 0; max-height: none; }
 
@@ -2009,12 +2018,26 @@
   // getBoundingClientRect returns viewport px, scaled by the stage transform;
   // divide by the current fit scale to express a measurement in canvas px.
   function deckFitScale() {
+    // Derive the applied scale from the stage's rendered rect rather than the
+    // --deck-fit-scale var: the rect reflects the transform that is actually
+    // in effect at call time, immune to var-propagation timing.
     const root = document.getElementById('deck-app-root');
-    const s = root ? parseFloat(getComputedStyle(root).getPropertyValue('--deck-fit-scale')) : 1;
-    return (Number.isFinite(s) && s > 0) ? s : 1;
+    const w = root ? root.getBoundingClientRect().width : 0;
+    return (Number.isFinite(w) && w > 0) ? (w / CANVAS_W) : 1;
   }
-  function canvasRectH(el) { return el.getBoundingClientRect().height / deckFitScale(); }
-  function canvasRectW(el) { return el.getBoundingClientRect().width / deckFitScale(); }
+  // Effective rendered scale of an element = fit transform x per-slide autofit
+  // zoom. Autofit pairs zoom with an inverse width/height, so the slide's own
+  // rect stays 1280x720 and cannot reveal the zoom — but any inner block can:
+  // offset sizes are in the slide's internal (layout) px while the rect is
+  // visual px. Sizing an SVG in internal px is correct because its inline
+  // width/height resolve in that same coordinate space.
+  function elScale(el) {
+    const probe = (el && el.offsetWidth) ? el : (el && el.parentElement);
+    if (!probe || !probe.offsetWidth) return deckFitScale();
+    return probe.getBoundingClientRect().width / probe.offsetWidth;
+  }
+  function canvasRectH(el) { return el.getBoundingClientRect().height / elScale(el); }
+  function canvasRectW(el) { return el.getBoundingClientRect().width / elScale(el); }
 
   function sizeAllMermaidSvgs() {
     // Full-slide diagrams
@@ -2033,16 +2056,18 @@
       markMermaidReadyFromSvg(svg);
     });
 
-    // Two-column diagrams
+    // Two-column diagrams: the grid column's height is fixed by the layout
+    // (independent of the SVG inside it), so measure the column directly.
+    // Deriving availH from canvas constants over-subtracts the slide padding
+    // and strands ~90px of usable column height.
     document.querySelectorAll('.slide-two-column .diagram-container[data-mermaid-pre] svg').forEach(svg => {
-      const slide = svg.closest('section[role="group"]');
-      const titleBlock = slide && (slide.querySelector('header.slide-heading-stack') || slide.querySelector('h2'));
-      const titleH = titleBlock ? canvasRectH(titleBlock) : 60;
       const container = svg.closest('.diagram-container');
+      const colEl = container && container.closest('.col-left, .col-right');
       const colW = (container && canvasRectW(container)) || (CANVAS_W / 2);
+      const colH = colEl ? canvasRectH(colEl) : (CANVAS_H - SLIDE_PAD * 2 - 60);
 
       const availW = colW - PANEL_INSET;
-      const availH = CANVAS_H - SLIDE_PAD * 2 - titleH - PANEL_INSET;
+      const availH = colH - PANEL_INSET;
 
       const result = sizeSvgMeasured(svg, availW, availH, 30, 46);
       logSizing(svg, result, 'slide-two-column');
