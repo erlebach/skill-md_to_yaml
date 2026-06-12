@@ -5,6 +5,7 @@ from schema.models import (
     Deck,
     DeckMetadata,
     ContentSlide,
+    DiagramSlide,
     TwoColumnSlide,
     ColumnContent,
 )
@@ -132,3 +133,56 @@ def test_bullet_limit_ok_for_eight():
     _, warnings = validate_deck(deck)
     bullet_warnings = [w for w in warnings if 'bullet' in w]
     assert bullet_warnings == []
+
+
+# ---------------------------------------------------------------------------
+# Diagram source warnings
+# ---------------------------------------------------------------------------
+
+def _diagram_slide(body=None):
+    return DiagramSlide(layout='diagram', title='Diag', alt_text='A diagram', body=body)
+
+
+def test_diagram_prose_body_warning():
+    """Diagram slide whose body is plain prose -> WARNING naming the slide."""
+    deck = _deck([_content_slide(), _diagram_slide(body='Just a caption paragraph.')])
+    _, warnings = validate_deck(deck)
+    assert any('**WARNING** slide 2' in w and 'diagram' in w for w in warnings)
+
+
+def test_diagram_missing_body_warning():
+    """Diagram slide with no body at all -> WARNING."""
+    deck = _deck([_diagram_slide(body=None)])
+    _, warnings = validate_deck(deck)
+    assert any('**WARNING** slide 1' in w and 'diagram' in w for w in warnings)
+
+
+def test_diagram_mermaid_body_no_warning():
+    """Mermaid-prefixed body -> no diagram-source warning."""
+    deck = _deck([_diagram_slide(body='flowchart LR\n    A --> B')])
+    _, warnings = validate_deck(deck)
+    assert [w for w in warnings if 'renderable' in w] == []
+
+
+def test_diagram_inline_svg_body_no_warning():
+    """Inline <svg> body -> no diagram-source warning."""
+    body = '<svg viewBox="0 0 10 10"><rect width="10" height="10"/></svg>'
+    deck = _deck([_diagram_slide(body=body)])
+    _, warnings = validate_deck(deck)
+    assert [w for w in warnings if 'renderable' in w] == []
+
+
+def test_diagram_src_backed_no_warning():
+    """A src-backed diagram surface is exempt. DiagramSlide has no src field
+    today, so drive the checker directly with a stub."""
+    from types import SimpleNamespace
+    from compiler.validators import _check_diagram_sources
+    stub = SimpleNamespace(layout='diagram', src='diagram.svg', body=None)
+    assert _check_diagram_sources([stub]) == []
+
+
+def test_engine_uses_shared_mermaid_starters():
+    """Renderer and validator must share one starter list (no drift)."""
+    from compiler import engine
+    from compiler.validators import MERMAID_STARTERS
+    assert engine.MERMAID_STARTERS is MERMAID_STARTERS

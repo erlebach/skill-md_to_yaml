@@ -14,7 +14,7 @@ from schema.animation_defaults import (
     SKILL_GSAP_SCRIPT_URL_DEFAULT,
 )
 from schema.models import BulletFocusSettings, BulletStaggerSettings, Deck
-from compiler.validators import validate_deck
+from compiler.validators import validate_deck, MERMAID_STARTERS
 from compiler.renderers import (
     render_body,
     render_rich_text,
@@ -375,24 +375,7 @@ def _render(
                     base_dir=base_dir,
                 )
         elif slide.layout == "diagram" and getattr(slide, "body", None):
-            mermaid_starters = (
-                "graph ",
-                "sequenceDiagram",
-                "classDiagram",
-                "flowchart ",
-                "erDiagram",
-                "gantt",
-                "pie ",
-                "gitGraph",
-                "stateDiagram",
-                "xychart-beta",
-                "mindmap",
-                "quadrantChart",
-                "timeline",
-                "sankey-beta",
-                "block-beta",
-            )
-            if slide.body.strip().startswith(mermaid_starters):
+            if slide.body.strip().startswith(MERMAID_STARTERS):
                 # Split body into Mermaid source and optional caption body.
                 # Mermaid header line is flush-left; subsequent lines are indented.
                 # Caption (if any) follows after a blank line.

@@ -12,6 +12,26 @@ from compiler.contrast import contrast_ratio
 
 THEME_BACKGROUNDS = {'dark': '#0d1117', 'light': '#ffffff'}
 
+# First-token prefixes the engine recognizes as Mermaid source in diagram
+# bodies. Shared with compiler.engine so renderer and validator cannot drift.
+MERMAID_STARTERS = (
+    "graph ",
+    "sequenceDiagram",
+    "classDiagram",
+    "flowchart ",
+    "erDiagram",
+    "gantt",
+    "pie ",
+    "gitGraph",
+    "stateDiagram",
+    "xychart-beta",
+    "mindmap",
+    "quadrantChart",
+    "timeline",
+    "sankey-beta",
+    "block-beta",
+)
+
 
 def _check_alt_text(slides: list) -> list[str]:
     """Check that every image/diagram surface has non-empty alt_text."""
@@ -124,6 +144,29 @@ def _check_image_paths(slides: list, base_dir: str = '.') -> list[str]:
     return warnings
 
 
+def _check_diagram_sources(slides: list) -> list[str]:
+    """Warn when a diagram slide would render an empty panel.
+
+    The engine renders a diagram slide only from a Mermaid-prefixed body,
+    an inline <svg> body, or a src file; anything else silently produces a
+    blank panel, so flag it at compile time.
+    """
+    warnings: list[str] = []
+    for i, slide in enumerate(slides, start=1):
+        if slide.layout != 'diagram':
+            continue
+        if getattr(slide, 'src', None):
+            continue
+        body = (getattr(slide, 'body', None) or '').strip()
+        if body.startswith(MERMAID_STARTERS) or body.startswith('<svg'):
+            continue
+        warnings.append(
+            f"**WARNING** slide {i}: diagram slide has no renderable source "
+            f"(body must start with Mermaid syntax or <svg>, or provide src)"
+        )
+    return warnings
+
+
 def validate_deck(deck: Deck, base_dir: str = '.') -> tuple[list[str], list[str]]:
     """Run all pre-render validators and return (errors, warnings).
 
@@ -136,5 +179,6 @@ def validate_deck(deck: Deck, base_dir: str = '.') -> tuple[list[str], list[str]
         _check_layout_variety(slides)
         + _check_bullet_limits(slides)
         + _check_image_paths(slides, base_dir=base_dir)
+        + _check_diagram_sources(slides)
     )
     return errors, warnings
