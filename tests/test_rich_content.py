@@ -291,3 +291,19 @@ def test_table_model_in_anyslide():
     )
     from schema.models import TableSlide
     assert isinstance(slide, TableSlide)
+
+
+def test_rich_text_leading_gt_is_literal():
+    """A cell like '>10K rps' is data, not a Markdown blockquote."""
+    from compiler.renderers import render_rich_text
+    out = render_rich_text(">10K rps")
+    assert "blockquote" not in out
+    assert "&gt;10K rps" in out or ">10K rps" in out
+
+
+def test_rich_text_leading_hash_is_literal():
+    """A cell like '#1 rank' is data, not a Markdown heading."""
+    from compiler.renderers import render_rich_text
+    out = render_rich_text("#1 rank")
+    assert "<h1" not in out
+    assert "#1 rank" in out

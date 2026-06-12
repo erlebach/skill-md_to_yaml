@@ -83,6 +83,12 @@ def render_rich_text(text: str, theme: str = 'dark', macros: dict[str, str] | No
         return ''
     text = extract_and_render_math(str(text), macros=macros)
     text, saved = _shield_math(text)
+    # These fields are inline fragments: a leading '>' or '#' is data
+    # (e.g. ">10K rps"), not a blockquote/heading. Escape it so Markdown
+    # renders the character literally.
+    lead = text.lstrip()[:1]
+    if lead in ('>', '#'):
+        text = text.replace(lead, '\\' + lead, 1)
     text = render_markdown(text)
     text = _restore_math(text, saved)
     return postprocess_emphasized_mathml(text)
